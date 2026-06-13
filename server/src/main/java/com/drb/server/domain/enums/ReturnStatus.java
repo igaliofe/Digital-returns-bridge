@@ -1,0 +1,3 @@
+package com.drb.server.domain.enums;
+
+public enum ReturnStatus { OPEN, WAITING_FOR_PICKUP, BARCODE_ASSIGNED, PICKED_UP, ARRIVED_TO_WAREHOUSE, INSPECTED, CLOSED, NEEDS_MORE_INFO }

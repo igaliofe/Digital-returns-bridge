@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Digital Returns Bridge</title>
+    <style>
+        html, body { margin: 0; padding: 0; height: 100%; }
+        body { display: flex; flex-direction: column; min-height: 100vh; font-family: var(--font-family, sans-serif); }
+        .app-header { flex: 0 0 auto; border-bottom: 1px solid #e5e7eb; background: #ffffff; }
+        .app-header .ui-menubar { border: 0; border-radius: 0; }
+        .app-content { flex: 1 1 auto; padding: 16px; box-sizing: border-box; overflow: auto; }
+    </style>
+</h:head>
+<h:body>
+    <header class="app-header">
+        <h:form>
+            <p:menubar>
+                <p:menuitem value="Dashboard" url="#{request.contextPath}/dashboard.xhtml" icon="pi pi-home"/>
+                <p:menuitem value="Returns" url="#{request.contextPath}/returns/list.xhtml" icon="pi pi-list"/>
+                <p:menuitem value="New Return" url="#{request.contextPath}/returns/create.xhtml" icon="pi pi-plus"/>
+                <p:menuitem value="Warehouse" url="#{request.contextPath}/warehouse/receiving.xhtml" icon="pi pi-inbox"/>
+                <p:menuitem value="Reports" url="#{request.contextPath}/reports.xhtml" icon="pi pi-chart-bar"/>
+                <p:submenu label="Admin" icon="pi pi-cog">
+                    <p:menuitem value="Users" url="#{request.contextPath}/admin/users.xhtml"/>
+                    <p:menuitem value="Customers" url="#{request.contextPath}/admin/customers.xhtml"/>
+                    <p:menuitem value="Products" url="#{request.contextPath}/admin/products.xhtml"/>
+                    <p:menuitem value="Drivers" url="#{request.contextPath}/admin/drivers.xhtml"/>
+                </p:submenu>
+                <p:menuitem value="Logout" action="#{loginBean.logout}" icon="pi pi-sign-out"/>
+            </p:menubar>
+        </h:form>
+    </header>
+    <main class="app-content">
+        <p:messages showDetail="true" showSummary="false" closable="true"/>
+        <ui:insert name="content"/>
+    </main>
+</h:body>
+</html>

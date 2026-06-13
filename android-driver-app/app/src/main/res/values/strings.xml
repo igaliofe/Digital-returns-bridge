@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DRB Driver</string>
+    <string name="login_title">Driver Login</string>
+    <string name="phone_hint">Phone Number</string>
+    <string name="login_button">Login</string>
+    <string name="logout">Logout</string>
+    <string name="assign_barcode">Assign Barcode</string>
+    <string name="scan_barcode">Scan Barcode</string>
+    <string name="confirm_pickup">Confirm Pickup</string>
+    <string name="barcode_not_assigned">Not assigned</string>
+    <string name="barcode_assigned">Barcode Assigned</string>
+
+    <!-- Sticker / barcode attachment guidance -->
+    <string name="sticker_instruction">Attach the barcode sticker firmly to the outside of the package so it is clearly visible and scannable.</string>
+    <string name="multi_carton_note">If the return has multiple cartons, attach the barcode to the package containing the defective item.</string>
+
+    <!-- Pickup confirmation labels -->
+    <string name="item_condition_label">Item Condition</string>
+    <string name="defect_type_label">Defect Type</string>
+    <string name="defect_location_label">Defect Location</string>
+    <string name="defect_location_other_hint">Describe defect location (if Other)</string>
+    <string name="signature_label">Driver Signature</string>
+    <string name="signature_clear">Clear Signature</string>
+
+    <!-- Image capture labels -->
+    <string name="image_type_label">Image Type</string>
+</resources>

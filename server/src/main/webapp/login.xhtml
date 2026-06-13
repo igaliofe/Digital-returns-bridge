@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title>Login — Digital Returns Bridge</title>
+    <style>
+        body { background: #f4f6f9; }
+        .login-container { max-width: 420px; margin: 80px auto; padding: 32px; }
+    </style>
+</h:head>
+<h:body>
+    <div class="login-container">
+        <h:form id="loginForm">
+            <p:panel header="Digital Returns Bridge — Sign In">
+                <p:messages id="msgs" showDetail="true" showSummary="false" closable="true"/>
+                <div style="margin-bottom: 12px;">
+                    <p:outputLabel for="phone" value="Phone Number" style="display:block;margin-bottom:4px;"/>
+                    <p:inputText id="phone" value="#{loginBean.phoneNumber}"
+                                 placeholder="e.g. 0501234567" required="true"
+                                 requiredMessage="Phone number is required"
+                                 style="width:100%;"/>
+                    <p:message for="phone" display="text"/>
+                </div>
+                <p:commandButton value="Sign In"
+                                 action="#{loginBean.login}"
+                                 icon="pi pi-sign-in"
+                                 styleClass="ui-button-primary"
+                                 style="width:100%;margin-top:8px;"
+                                 update="msgs"/>
+            </p:panel>
+        </h:form>
+    </div>
+</h:body>
+</html>

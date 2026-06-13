@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+<h:head><title>Return Details — Digital Returns Bridge</title></h:head>
+<h:body>
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+<ui:define name="content">
+
+    <ui:fragment rendered="#{returnDetailsBean.returnRequest == null}">
+        <p:message severity="warn" summary="Return request not found." detail="Please check the ID parameter."/>
+    </ui:fragment>
+
+    <ui:fragment rendered="#{returnDetailsBean.returnRequest != null}">
+        <h:form>
+
+        <h2 style="margin-bottom:16px;">
+            Return ##{returnDetailsBean.returnRequest.id}
+            <span style="font-size:14px;color:#666;margin-left:8px;">
+                Status: #{returnDetailsBean.returnRequest.status.name()}
+            </span>
+        </h2>
+
+        <!-- Core Details -->
+        <p:panel header="Return Information" style="margin-bottom:16px;">
+            <p:graphicImage value="#{returnDetailsBean.returnRequest.product.imageUrl}"
+                            rendered="#{not empty returnDetailsBean.returnRequest.product.imageUrl}"
+                            style="max-width:200px;border:1px solid #ddd;border-radius:6px;margin-bottom:12px;"/>
+            <p:panelGrid columns="4" style="width:100%;">
+                <p:outputLabel value="Customer"/>
+                <h:outputText value="#{returnDetailsBean.returnRequest.customer.fullName}"/>
+                <p:outputLabel value="Phone"/>
+                <h:outputText value="#{returnDetailsBean.returnRequest.customer.phone}"/>
+
+                <p:outputLabel value="Product"/>
+                <h:outputText value="#{returnDetailsBean.returnRequest.product.name}"/>
+                <p:outputLabel value="SKU"/>
+                <h:outputText value="#{returnDetailsBean.returnRequest.product.sku}"/>
+
+                <p:outputLabel value="Order Number"/>
+                <h:outputText value="#{returnDetailsBean.returnRequest.orderNumber}"/>
+                <p:outputLabel value="Priority"/>
+                <h:outputText value="#{returnDetailsBean.returnRequest.priority}"/>
+
+                <p:outputLabel value="Reason"/>
+                <h:outputText value="#{returnDetailsBean.returnRequest.reason}"
+                              style="white-space:pre-wrap;"/>
+                <p:outputLabel value="Defect Description"/>
+                <h:outputText value="#{returnDetailsBean.returnRequest.defectDescription}"
+                              style="white-space:pre-wrap;"/>
+
+                <p:outputLabel value="Opened By"/>
+                <h:outputText value="#{returnDetailsBean.returnRequest.openedByUser != null ? returnDetailsBean.returnRequest.openedByUser.fullName : '—'}"/>
+                <p:outputLabel value="Created At"/>
+                <h:outputText value="#{returnDetailsBean.returnRequest.createdAt}">
+                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm" type="localDateTime"/>
+                </h:outputText>
+            </p:panelGrid>
+        </p:panel>
+
+        <!-- Barcode Block -->
+        <p:panel header="Barcode / Pickup" style="margin-bottom:16px;">
+            <ui:fragment rendered="#{not returnDetailsBean.barcodeAssigned}">
+                <p:message severity="warn" summary="Barcode not assigned"
+                           detail="No barcode has been assigned to this return request yet."/>
+            </ui:fragment>
+            <ui:fragment rendered="#{returnDetailsBean.barcodeAssigned}">
+                <p:panelGrid columns="2" style="width:100%;">
+                    <p:outputLabel value="Barcode"/>
+                    <h:outputText value="#{returnDetailsBean.returnRequest.barcode}"
+                                  style="font-family:monospace;font-size:18px;font-weight:bold;"/>
+                    <p:outputLabel value="Assigned At"/>
+                    <h:outputText value="#{returnDetailsBean.returnRequest.barcodeAssignedAt}">
+                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm" type="localDateTime"/>
+                    </h:outputText>
+                    <p:outputLabel value="Assigned By Driver"/>
+                    <h:outputText value="#{returnDetailsBean.returnRequest.barcodeAssignedByDriver != null ? returnDetailsBean.returnRequest.barcodeAssignedByDriver.user.fullName : '—'}"/>
+                </p:panelGrid>
+            </ui:fragment>
+
+            <p:panelGrid columns="2" style="width:100%;margin-top:8px;">
+                <p:outputLabel value="Assigned Driver"/>
+                <h:outputText value="#{returnDetailsBean.returnRequest.driver != null ? returnDetailsBean.returnRequest.driver.user.fullName : '—'}"/>
+            </p:panelGrid>
+        </p:panel>
+
+        <!-- Image Gallery -->
+        <p:panel header="Images" style="margin-bottom:16px;"
+                 rendered="#{not empty returnDetailsBean.images}">
+            <p:galleria value="#{returnDetailsBean.images}" var="img"
+                        numVisible="5" style="max-width:640px;" showThumbnails="true">
+                <f:facet name="item">
+                    <p:graphicImage value="#{img.imageUrl}" style="max-width:100%;"/>
+                </f:facet>
+                <f:facet name="thumbnail">
+                    <p:graphicImage value="#{img.imageUrl}" style="width:60px;height:60px;object-fit:cover;"/>
+                </f:facet>
+            </p:galleria>
+        </p:panel>
+
+        <!-- Status Timeline -->
+        <p:panel header="Status History" style="margin-bottom:16px;"
+                 rendered="#{not empty returnDetailsBean.statusHistory}">
+            <p:dataTable value="#{returnDetailsBean.statusHistory}" var="sh"
+                         style="width:100%;" emptyMessage="No status changes recorded.">
+                <p:column headerText="Date">
+                    <h:outputText value="#{sh.changedAt}">
+                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm" type="localDateTime"/>
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="From">
+                    <h:outputText value="#{sh.oldStatus != null ? sh.oldStatus.name() : '—'}"/>
+                </p:column>
+                <p:column headerText="To">
+                    <h:outputText value="#{sh.newStatus != null ? sh.newStatus.name() : '—'}"/>
+                </p:column>
+                <p:column headerText="Changed By">
+                    <h:outputText value="#{sh.changedByUser != null ? sh.changedByUser.fullName : '—'}"/>
+                </p:column>
+                <p:column headerText="Notes">
+                    <h:outputText value="#{sh.comment}"/>
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+
+        <p:button value="Back to List"
+                  href="#{request.contextPath}/returns/list.xhtml"
+                  styleClass="ui-button-secondary"
+                  icon="pi pi-arrow-left"/>
+
+        </h:form>
+    </ui:fragment>
+
+</ui:define>
+</ui:composition>
+</h:body>
+</html>

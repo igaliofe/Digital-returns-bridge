@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+<h:head><title>Customers Admin — Digital Returns Bridge</title></h:head>
+<h:body>
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+<ui:define name="content">
+
+    <h2 style="margin-bottom:16px;">Customer Management</h2>
+
+    <h:form id="customersForm">
+        <p:messages showDetail="true" closable="true"/>
+
+        <p:toolbar style="margin-bottom:8px;">
+            <p:toolbarGroup>
+                <p:commandButton value="New Customer" icon="pi pi-plus"
+                                 action="#{customerAdminBean.prepareCreate}"
+                                 update="customersForm createDialog"
+                                 oncomplete="PF('createCustomerDlg').show();"/>
+            </p:toolbarGroup>
+        </p:toolbar>
+
+        <p:dataTable id="customersTable" value="#{customerAdminBean.customers}" var="c"
+                     editable="true" editMode="row"
+                     paginator="true" rows="20"
+                     emptyMessage="No customers found."
+                     style="width:100%;">
+
+            <p:column headerText="ID" style="width:60px;">
+                <h:outputText value="#{c.id}"/>
+            </p:column>
+
+            <p:column headerText="Full Name">
+                <p:cellEditor>
+                    <f:facet name="output"><h:outputText value="#{c.fullName}"/></f:facet>
+                    <f:facet name="input">
+                        <p:inputText value="#{c.fullName}" style="width:100%;"/>
+                    </f:facet>
+                </p:cellEditor>
+            </p:column>
+
+            <p:column headerText="Phone">
+                <p:cellEditor>
+                    <f:facet name="output"><h:outputText value="#{c.phone}"/></f:facet>
+                    <f:facet name="input">
+                        <p:inputText value="#{c.phone}" style="width:100%;"/>
+                    </f:facet>
+                </p:cellEditor>
+            </p:column>
+
+            <p:column headerText="Email">
+                <p:cellEditor>
+                    <f:facet name="output"><h:outputText value="#{c.email}"/></f:facet>
+                    <f:facet name="input">
+                        <p:inputText value="#{c.email}" style="width:100%;"/>
+                    </f:facet>
+                </p:cellEditor>
+            </p:column>
+
+            <p:column headerText="Address">
+                <p:cellEditor>
+                    <f:facet name="output"><h:outputText value="#{c.address}"/></f:facet>
+                    <f:facet name="input">
+                        <p:inputText value="#{c.address}" style="width:100%;"/>
+                    </f:facet>
+                </p:cellEditor>
+            </p:column>
+
+            <p:column headerText="Actions" style="width:100px;" exportable="false">
+                <p:rowEditor editTitle="Edit" saveTitle="Save" cancelTitle="Cancel"/>
+                <p:commandButton icon="pi pi-trash" title="Delete"
+                                 action="#{customerAdminBean.deleteCustomer(c.id)}"
+                                 update="customersForm"
+                                 styleClass="ui-button-danger"
+                                 onclick="return confirm('Delete customer #{c.fullName}?');"
+                                 style="margin-left:4px;"/>
+            </p:column>
+
+            <p:ajax event="rowEdit" listener="#{customerAdminBean.setSelected(event.object)}"
+                    oncomplete="#{customerAdminBean.saveSelected()}"
+                    update="customersForm"/>
+            <p:ajax event="rowEditInit" listener="#{customerAdminBean.setSelected(event.object)}"/>
+        </p:dataTable>
+    </h:form>
+
+    <!-- Create Dialog -->
+    <p:dialog id="createDialog" header="Create New Customer" widgetVar="createCustomerDlg"
+              modal="true" resizable="false" style="width:400px;">
+        <h:form id="createCustomerForm">
+            <p:panelGrid columns="2" style="width:100%;">
+                <p:outputLabel for="newName" value="Full Name *"/>
+                <p:inputText id="newName" value="#{customerAdminBean.newCustomer.fullName}"
+                             required="true" style="width:100%;"/>
+
+                <p:outputLabel for="newPhone" value="Phone *"/>
+                <p:inputText id="newPhone" value="#{customerAdminBean.newCustomer.phone}"
+                             required="true" style="width:100%;"/>
+
+                <p:outputLabel for="newEmail" value="Email"/>
+                <p:inputText id="newEmail" value="#{customerAdminBean.newCustomer.email}"
+                             style="width:100%;"/>
+
+                <p:outputLabel for="newAddress" value="Address"/>
+                <p:inputText id="newAddress" value="#{customerAdminBean.newCustomer.address}"
+                             style="width:100%;"/>
+            </p:panelGrid>
+            <div style="margin-top:12px;text-align:right;">
+                <p:commandButton value="Save"
+                                 action="#{customerAdminBean.saveNew}"
+                                 icon="pi pi-save"
+                                 update="customersForm createDialog createCustomerForm"
+                                 oncomplete="if (!args.validationFailed) PF('createCustomerDlg').hide();"/>
+                <p:commandButton value="Cancel"
+                                 onclick="PF('createCustomerDlg').hide(); return false;"
+                                 type="button"
+                                 styleClass="ui-button-secondary"
+                                 style="margin-left:6px;"/>
+            </div>
+        </h:form>
+    </p:dialog>
+
+</ui:define>
+</ui:composition>
+</h:body>
+</html>

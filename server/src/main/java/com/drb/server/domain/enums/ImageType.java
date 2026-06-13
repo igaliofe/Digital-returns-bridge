@@ -1,0 +1,12 @@
+package com.drb.server.domain.enums;
+
+public enum ImageType {
+    SERVICE_GENERAL_IMAGE,
+    SERVICE_DEFECT_IMAGE,
+    SERVICE_REP_SIGNATURE,
+    DRIVER_PRODUCT_IMAGE,
+    DRIVER_DISTANT_IMAGE,
+    DRIVER_DEFECT_IMAGE,
+    DRIVER_SIGNATURE,
+    WAREHOUSE_IMAGE
+}

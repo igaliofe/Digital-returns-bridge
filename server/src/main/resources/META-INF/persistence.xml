@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence">
+  <persistence-unit name="drbPU" transaction-type="JTA">
+    <jta-data-source>java:/jdbc/DrbDS</jta-data-source>
+    <properties>
+      <property name="hibernate.hbm2ddl.auto" value="validate"/>
+      <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+      <property name="hibernate.jpa.compliance.query" value="false"/>
+    </properties>
+  </persistence-unit>
+</persistence>

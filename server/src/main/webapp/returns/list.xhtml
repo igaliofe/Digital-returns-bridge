@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+<h:head><title>Returns List — Digital Returns Bridge</title></h:head>
+<h:body>
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+<ui:define name="content">
+
+    <h2 style="margin-bottom:16px;">Return Requests</h2>
+
+    <h:form id="filterForm">
+        <p:panel header="Filters" style="margin-bottom:16px;" toggleable="true" collapsed="false">
+            <p:panelGrid columns="4">
+                <p:outputLabel for="statusFilter" value="Status:"/>
+                <p:selectOneMenu id="statusFilter" value="#{returnListBean.filterStatus}">
+                    <f:selectItem itemLabel="— All Statuses —" itemValue=""/>
+                    <f:selectItems value="#{returnListBean.statuses}" var="s"
+                                   itemLabel="#{s.name()}" itemValue="#{s.name()}"/>
+                </p:selectOneMenu>
+
+                <p:outputLabel for="noBarcodeFilter" value="No Barcode Only:"/>
+                <p:selectBooleanCheckbox id="noBarcodeFilter"
+                                         value="#{returnListBean.filterHasNoBarcode}"
+                                         style="vertical-align:middle;"/>
+            </p:panelGrid>
+            <p:commandButton value="Apply Filters" icon="pi pi-search"
+                             action="#{returnListBean.load}"
+                             update="returnsTable filterForm"
+                             style="margin-top:8px;"/>
+        </p:panel>
+
+        <p:dataTable id="returnsTable" value="#{returnListBean.returns}" var="r"
+                     paginator="true" rows="20"
+                     paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                     rowsPerPageTemplate="10,20,50"
+                     emptyMessage="No return requests found."
+                     sortMode="multiple"
+                     style="width:100%;">
+
+            <p:column headerText="ID" sortBy="#{r.id}" style="width:60px;">
+                <h:outputText value="#{r.id}"/>
+            </p:column>
+
+            <p:column headerText="Barcode" sortBy="#{r.barcode}" filterBy="#{r.barcode}">
+                <h:outputText value="#{r.barcode}" rendered="#{not empty r.barcode}"/>
+                <h:outputText value="Not assigned"
+                              rendered="#{empty r.barcode}"
+                              style="color:#F44336;font-style:italic;"/>
+            </p:column>
+
+            <p:column headerText="Customer" sortBy="#{r.customer.fullName}" filterBy="#{r.customer.fullName}">
+                <h:outputText value="#{r.customer.fullName}"/>
+            </p:column>
+
+            <p:column headerText="Product" sortBy="#{r.product.name}" filterBy="#{r.product.name}">
+                <h:outputText value="#{r.product.name}"/>
+            </p:column>
+
+            <p:column headerText="Status" sortBy="#{r.status}">
+                <h:outputText value="#{r.status.name()}"/>
+            </p:column>
+
+            <p:column headerText="Driver">
+                <h:outputText value="#{r.driver != null ? r.driver.user.fullName : '—'}"/>
+            </p:column>
+
+            <p:column headerText="Priority" sortBy="#{r.priority}">
+                <h:outputText value="#{r.priority}"/>
+            </p:column>
+
+            <p:column headerText="Created At" sortBy="#{r.createdAt}">
+                <h:outputText value="#{r.createdAt}">
+                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm" type="localDateTime"/>
+                </h:outputText>
+            </p:column>
+
+            <p:column headerText="Actions" style="width:80px;" exportable="false">
+                <p:button icon="pi pi-eye" title="View"
+                          href="#{request.contextPath}/returns/details.xhtml?id=#{r.id}"/>
+            </p:column>
+        </p:dataTable>
+    </h:form>
+
+</ui:define>
+</ui:composition>
+</h:body>
+</html>

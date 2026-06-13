@@ -1,0 +1,54 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-drb}
+      POSTGRES_USER: ${POSTGRES_USER:-drb}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-drb_secret}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Path is relative to THIS compose file (infra/). The Makefile runs
+      # `docker compose -f infra/docker-compose.yml` without --project-directory,
+      # so Compose resolves relative paths against infra/, hence the `../`.
+      # initdb scripts run alphabetically; V003 sorts last and applies last.
+      - ../database/migrations:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-drb} -d ${POSTGRES_DB:-drb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  server:
+    build:
+      # Context must be the repo root (Dockerfile COPYs pom.xml, server/, infra/).
+      # Relative to infra/, that is `..`.
+      context: ..
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "9990:9990"
+    environment:
+      JDBC_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-drb}
+      POSTGRES_USER: ${POSTGRES_USER:-drb}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-drb_secret}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-placeholder}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-placeholder}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-placeholder}
+      WILDFLY_ADMIN_USER: ${WILDFLY_ADMIN_USER:-admin}
+      WILDFLY_ADMIN_PASSWORD: ${WILDFLY_ADMIN_PASSWORD:-admin123}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - wildfly_logs:/opt/jboss/wildfly/standalone/log
+
+volumes:
+  postgres_data:
+  wildfly_logs:

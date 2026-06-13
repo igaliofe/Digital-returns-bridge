@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+<h:head><title>Warehouse Receiving — Digital Returns Bridge</title></h:head>
+<h:body>
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+<ui:define name="content">
+
+    <h2 style="margin-bottom:16px;">Warehouse Receiving</h2>
+
+    <!-- Barcode Search -->
+    <h:form id="searchForm">
+        <p:panel header="Scan / Enter Barcode" style="margin-bottom:16px;max-width:600px;">
+            <p:panelGrid columns="2">
+                <p:outputLabel for="barcodeInput" value="Barcode:"/>
+                <p:inputText id="barcodeInput"
+                             value="#{warehouseReceivingBean.barcodeInput}"
+                             placeholder="Scan or type barcode..."
+                             style="width:300px;"
+                             required="true"/>
+            </p:panelGrid>
+            <p:commandButton value="Search"
+                             action="#{warehouseReceivingBean.searchByBarcode}"
+                             icon="pi pi-search"
+                             update="searchForm digitalFile inspectionForm"
+                             style="margin-top:8px;"/>
+            <p:messages id="searchMessages" showDetail="true" closable="true" style="margin-top:8px;"/>
+        </p:panel>
+    </h:form>
+
+    <!-- Digital File -->
+    <h:form id="digitalFile">
+    <ui:fragment rendered="#{warehouseReceivingBean.foundReturn != null}">
+        <p:panel header="Digital Return File — ##{warehouseReceivingBean.foundReturn.id}"
+                 style="margin-bottom:16px;">
+
+            <!-- Catalog image + price -->
+            <div style="display:flex;gap:24px;align-items:flex-start;margin-bottom:16px;">
+                <p:graphicImage value="#{warehouseReceivingBean.foundReturn.product.imageUrl}"
+                                rendered="#{not empty warehouseReceivingBean.foundReturn.product.imageUrl}"
+                                style="max-width:200px;border:1px solid #ddd;border-radius:6px;"/>
+                <div>
+                    <h3 style="margin:0;">#{warehouseReceivingBean.foundReturn.product.name}</h3>
+                    <p style="margin:4px 0;color:#666;">SKU: #{warehouseReceivingBean.foundReturn.product.sku}</p>
+                    <p style="margin:4px 0;font-size:18px;font-weight:bold;">
+                        <h:outputText value="#{warehouseReceivingBean.foundReturn.product.price}">
+                            <f:convertNumber type="currency" currencySymbol="₪"/>
+                        </h:outputText>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Core info -->
+            <p:panelGrid columns="4" style="width:100%;">
+                <p:outputLabel value="Customer"/>
+                <h:outputText value="#{warehouseReceivingBean.foundReturn.customer.fullName}"/>
+                <p:outputLabel value="Phone"/>
+                <h:outputText value="#{warehouseReceivingBean.foundReturn.customer.phone}"/>
+
+                <p:outputLabel value="Order Number"/>
+                <h:outputText value="#{warehouseReceivingBean.foundReturn.orderNumber}"/>
+                <p:outputLabel value="Quantity"/>
+                <h:outputText value="#{warehouseReceivingBean.foundReturn.quantity}"/>
+
+                <p:outputLabel value="Original Delivery Date"/>
+                <h:outputText value="#{warehouseReceivingBean.foundReturn.originalDeliveryDate}">
+                    <f:convertDateTime pattern="dd/MM/yyyy" type="localDate"/>
+                </h:outputText>
+                <p:outputLabel value="Return Date"/>
+                <h:outputText value="#{warehouseReceivingBean.foundReturn.createdAt}">
+                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm" type="localDateTime"/>
+                </h:outputText>
+
+                <p:outputLabel value="Under Warranty"/>
+                <h:outputText value="#{warehouseReceivingBean.foundReturn.underWarranty}"/>
+                <p:outputLabel value="Was Used"/>
+                <h:outputText value="#{warehouseReceivingBean.foundReturn.wasUsed}"/>
+
+                <p:outputLabel value="Priority"/>
+                <h:outputText value="#{warehouseReceivingBean.foundReturn.priority}"/>
+                <p:outputLabel value="Status"/>
+                <h:outputText value="#{warehouseReceivingBean.foundReturn.status.name()}"/>
+
+                <p:outputLabel value="Barcode"/>
+                <h:outputText value="#{warehouseReceivingBean.foundReturn.barcode}"
+                              style="font-family:monospace;font-weight:bold;"/>
+                <p:outputLabel value="Driver"/>
+                <h:outputText value="#{warehouseReceivingBean.foundReturn.driver != null ? warehouseReceivingBean.foundReturn.driver.user.fullName : '—'}"/>
+            </p:panelGrid>
+
+            <!-- Service-rep defect detail -->
+            <p:fieldset legend="Service Defect Detail" style="margin-top:16px;">
+                <p:panelGrid columns="4" style="width:100%;">
+                    <p:outputLabel value="Return Reason"/>
+                    <h:outputText value="#{warehouseReceivingBean.foundReturn.returnReason != null ? warehouseReceivingBean.foundReturn.returnReason.name() : '—'}"/>
+                    <p:outputLabel value="Defect Type"/>
+                    <h:outputText value="#{warehouseReceivingBean.foundReturn.defectType != null ? warehouseReceivingBean.foundReturn.defectType.name() : '—'}"/>
+
+                    <p:outputLabel value="Defect Stage"/>
+                    <h:outputText value="#{warehouseReceivingBean.foundReturn.defectStage != null ? warehouseReceivingBean.foundReturn.defectStage.name() : '—'}"/>
+                    <p:outputLabel value="Defect Location"/>
+                    <h:outputText value="#{warehouseReceivingBean.foundReturn.defectLocationText}"/>
+
+                    <p:outputLabel value="Reason Notes"/>
+                    <h:outputText value="#{warehouseReceivingBean.foundReturn.reason}" style="white-space:pre-wrap;"/>
+                    <p:outputLabel value="Defect Description"/>
+                    <h:outputText value="#{warehouseReceivingBean.foundReturn.defectDescription}" style="white-space:pre-wrap;"/>
+                </p:panelGrid>
+            </p:fieldset>
+
+            <!-- Photos (service + driver) -->
+            <p:fieldset legend="Photos" style="margin-top:16px;"
+                        rendered="#{not empty warehouseReceivingBean.galleryImages}">
+                <p:galleria value="#{warehouseReceivingBean.galleryImages}" var="img"
+                            numVisible="5" style="max-width:640px;" showThumbnails="true">
+                    <f:facet name="item">
+                        <p:graphicImage value="#{img.imageUrl}" style="max-width:100%;"/>
+                    </f:facet>
+                    <f:facet name="thumbnail">
+                        <p:graphicImage value="#{img.imageUrl}" style="width:60px;height:60px;object-fit:cover;"/>
+                    </f:facet>
+                </p:galleria>
+            </p:fieldset>
+
+            <!-- Driver pickup assessment -->
+            <p:fieldset legend="Driver Pickup Assessment" style="margin-top:16px;"
+                        rendered="#{not empty warehouseReceivingBean.pickupUpdates}">
+                <p:dataTable value="#{warehouseReceivingBean.pickupUpdates}" var="pu" style="width:100%;">
+                    <p:column headerText="Item Condition">
+                        <h:outputText value="#{pu.itemCondition != null ? pu.itemCondition.name() : '—'}"/>
+                    </p:column>
+                    <p:column headerText="Defect Type">
+                        <h:outputText value="#{pu.defectType != null ? pu.defectType.name() : '—'}"/>
+                    </p:column>
+                    <p:column headerText="Defect Location">
+                        <h:outputText value="#{pu.defectLocation != null ? pu.defectLocation.name() : '—'}#{not empty pu.defectLocationOther ? ' ('.concat(pu.defectLocationOther).concat(')') : ''}"/>
+                    </p:column>
+                    <p:column headerText="Collected">
+                        <h:outputText value="#{pu.itemCollected ? 'Yes' : 'No'}"/>
+                    </p:column>
+                    <p:column headerText="Notes">
+                        <h:outputText value="#{pu.driverNotes}"/>
+                    </p:column>
+                </p:dataTable>
+            </p:fieldset>
+
+            <!-- Signatures -->
+            <div style="display:flex;gap:32px;margin-top:16px;flex-wrap:wrap;">
+                <h:panelGroup layout="block" rendered="#{not empty warehouseReceivingBean.serviceSignatureUrl}">
+                    <p:outputLabel value="Service Rep Signature"/><br/>
+                    <p:graphicImage value="#{warehouseReceivingBean.serviceSignatureUrl}"
+                                    style="max-width:240px;border:1px solid #ddd;"/>
+                </h:panelGroup>
+                <h:panelGroup layout="block" rendered="#{not empty warehouseReceivingBean.driverSignatureUrl}">
+                    <p:outputLabel value="Driver Signature"/><br/>
+                    <p:graphicImage value="#{warehouseReceivingBean.driverSignatureUrl}"
+                                    style="max-width:240px;border:1px solid #ddd;"/>
+                </h:panelGroup>
+            </div>
+
+            <!-- Actions -->
+            <div style="margin-top:16px;">
+                <p:commandButton value="Mark as Arrived"
+                                 action="#{warehouseReceivingBean.markArrived}"
+                                 icon="pi pi-check"
+                                 styleClass="ui-button-success"
+                                 update="searchForm digitalFile inspectionForm"
+                                 rendered="#{warehouseReceivingBean.foundReturn.status.name() == 'PICKED_UP'}"
+                                 onclick="return confirm('Mark this return as arrived at warehouse?');"/>
+                <p:commandButton value="Request More Info"
+                                 action="#{warehouseReceivingBean.requestMoreInfo}"
+                                 icon="pi pi-question-circle"
+                                 styleClass="ui-button-warning"
+                                 update="searchForm digitalFile inspectionForm"
+                                 rendered="#{warehouseReceivingBean.foundReturn.status.name() == 'ARRIVED_TO_WAREHOUSE'}"
+                                 style="margin-left:8px;"
+                                 onclick="return confirm('Send this return back for more info?');"/>
+            </div>
+        </p:panel>
+    </ui:fragment>
+    </h:form>
+
+    <!-- Inspection Form -->
+    <h:form id="inspectionForm">
+    <ui:fragment rendered="#{warehouseReceivingBean.foundReturn != null and
+                             (warehouseReceivingBean.foundReturn.status.name() == 'ARRIVED_TO_WAREHOUSE' or
+                              warehouseReceivingBean.foundReturn.status.name() == 'INSPECTED')}">
+        <p:panel header="Create Warehouse Inspection" style="margin-bottom:16px;max-width:600px;">
+            <p:messages showDetail="true" closable="true"/>
+
+            <p:panelGrid columns="2" style="width:100%;">
+                <p:outputLabel for="itemCondition" value="Item Condition *"/>
+                <p:selectOneMenu id="itemCondition" value="#{warehouseReceivingBean.itemCondition}"
+                                 required="true">
+                    <f:selectItem itemLabel="— Select Condition —" itemValue=""/>
+                    <f:selectItems value="#{warehouseReceivingBean.itemConditions}" var="ic"
+                                   itemLabel="#{ic.name()}" itemValue="#{ic.name()}"/>
+                </p:selectOneMenu>
+
+                <p:outputLabel for="decision" value="Decision (routing) *"/>
+                <p:selectOneMenu id="decision" value="#{warehouseReceivingBean.warehouseDecision}"
+                                 required="true">
+                    <f:selectItem itemLabel="— Select Decision —" itemValue=""/>
+                    <f:selectItems value="#{warehouseReceivingBean.decisions}" var="d"
+                                   itemLabel="#{d.name()}" itemValue="#{d.name()}"/>
+                </p:selectOneMenu>
+
+                <p:outputLabel for="callFullyHandled" value="Call Fully Handled"/>
+                <p:selectBooleanCheckbox id="callFullyHandled" value="#{warehouseReceivingBean.callFullyHandled}"/>
+
+                <p:outputLabel for="notes" value="Notes"/>
+                <p:inputTextarea id="notes" value="#{warehouseReceivingBean.warehouseNotes}"
+                                 rows="4" style="width:100%;"/>
+            </p:panelGrid>
+
+            <p:commandButton value="Save Inspection"
+                             action="#{warehouseReceivingBean.createInspection}"
+                             icon="pi pi-save"
+                             styleClass="ui-button-primary"
+                             update="inspectionForm"
+                             style="margin-top:8px;"/>
+        </p:panel>
+    </ui:fragment>
+    </h:form>
+
+</ui:define>
+</ui:composition>
+</h:body>
+</html>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+<h:head><title>Users Admin — Digital Returns Bridge</title></h:head>
+<h:body>
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+<ui:define name="content">
+
+    <h2 style="margin-bottom:16px;">User Management</h2>
+
+    <h:form id="usersForm">
+        <p:messages showDetail="true" closable="true"/>
+
+        <p:toolbar style="margin-bottom:8px;">
+            <p:toolbarGroup>
+                <p:commandButton value="New User" icon="pi pi-plus"
+                                 action="#{userAdminBean.prepareCreate}"
+                                 update="usersForm createDialog"
+                                 oncomplete="PF('createUserDlg').show();"/>
+            </p:toolbarGroup>
+        </p:toolbar>
+
+        <p:dataTable id="usersTable" value="#{userAdminBean.users}" var="u"
+                     editable="true" editMode="row"
+                     paginator="true" rows="20"
+                     emptyMessage="No users found."
+                     style="width:100%;">
+
+            <f:facet name="header">Users</f:facet>
+
+            <p:column headerText="ID" style="width:60px;">
+                <h:outputText value="#{u.id}"/>
+            </p:column>
+
+            <p:column headerText="Full Name">
+                <p:cellEditor>
+                    <f:facet name="output"><h:outputText value="#{u.fullName}"/></f:facet>
+                    <f:facet name="input">
+                        <p:inputText value="#{u.fullName}" style="width:100%;"/>
+                    </f:facet>
+                </p:cellEditor>
+            </p:column>
+
+            <p:column headerText="Phone">
+                <p:cellEditor>
+                    <f:facet name="output"><h:outputText value="#{u.phoneNumber}"/></f:facet>
+                    <f:facet name="input">
+                        <p:inputText value="#{u.phoneNumber}" style="width:100%;"/>
+                    </f:facet>
+                </p:cellEditor>
+            </p:column>
+
+            <p:column headerText="Role">
+                <p:cellEditor>
+                    <f:facet name="output"><h:outputText value="#{u.role.name()}"/></f:facet>
+                    <f:facet name="input">
+                        <p:selectOneMenu value="#{u.role}">
+                            <f:selectItems value="#{userAdminBean.roles}" var="r"
+                                           itemLabel="#{r.name()}" itemValue="#{r}"/>
+                        </p:selectOneMenu>
+                    </f:facet>
+                </p:cellEditor>
+            </p:column>
+
+            <p:column headerText="Active" style="width:80px;">
+                <p:cellEditor>
+                    <f:facet name="output">
+                        <h:outputText value="#{u.active ? 'Yes' : 'No'}"/>
+                    </f:facet>
+                    <f:facet name="input">
+                        <p:selectBooleanCheckbox value="#{u.active}"/>
+                    </f:facet>
+                </p:cellEditor>
+            </p:column>
+
+            <p:column headerText="Actions" style="width:100px;" exportable="false">
+                <p:rowEditor editTitle="Edit" saveTitle="Save" cancelTitle="Cancel"/>
+                <p:commandButton icon="pi pi-trash" title="Delete"
+                                 action="#{userAdminBean.deleteUser(u.id)}"
+                                 update="usersForm"
+                                 styleClass="ui-button-danger"
+                                 onclick="return confirm('Delete user #{u.fullName}?');"
+                                 style="margin-left:4px;"/>
+            </p:column>
+
+            <p:ajax event="rowEdit" listener="#{userAdminBean.setSelected(event.object)}"
+                    oncomplete="#{userAdminBean.saveSelected()}"
+                    update="usersForm"/>
+            <p:ajax event="rowEditInit" listener="#{userAdminBean.setSelected(event.object)}"/>
+        </p:dataTable>
+    </h:form>
+
+    <!-- Create Dialog -->
+    <p:dialog id="createDialog" header="Create New User" widgetVar="createUserDlg"
+              modal="true" resizable="false" style="width:400px;">
+        <h:form id="createUserForm">
+            <p:panelGrid columns="2" style="width:100%;">
+                <p:outputLabel for="newFullName" value="Full Name *"/>
+                <p:inputText id="newFullName" value="#{userAdminBean.newUser.fullName}"
+                             required="true" style="width:100%;"/>
+
+                <p:outputLabel for="newPhone" value="Phone *"/>
+                <p:inputText id="newPhone" value="#{userAdminBean.newUser.phoneNumber}"
+                             required="true" style="width:100%;"/>
+
+                <p:outputLabel for="newRole" value="Role *"/>
+                <p:selectOneMenu id="newRole" value="#{userAdminBean.newUser.role}" required="true">
+                    <f:selectItem itemLabel="— Select Role —" itemValue="#{null}"/>
+                    <f:selectItems value="#{userAdminBean.roles}" var="r"
+                                   itemLabel="#{r.name()}" itemValue="#{r}"/>
+                </p:selectOneMenu>
+
+                <p:outputLabel for="newActive" value="Active"/>
+                <p:selectBooleanCheckbox id="newActive" value="#{userAdminBean.newUser.active}"/>
+            </p:panelGrid>
+            <div style="margin-top:12px;text-align:right;">
+                <p:commandButton value="Save"
+                                 action="#{userAdminBean.saveNew}"
+                                 icon="pi pi-save"
+                                 update="usersForm createDialog createUserForm"
+                                 oncomplete="if (!args.validationFailed) PF('createUserDlg').hide();"/>
+                <p:commandButton value="Cancel"
+                                 onclick="PF('createUserDlg').hide(); return false;"
+                                 type="button"
+                                 styleClass="ui-button-secondary"
+                                 style="margin-left:6px;"/>
+            </div>
+        </h:form>
+    </p:dialog>
+
+</ui:define>
+</ui:composition>
+</h:body>
+</html>

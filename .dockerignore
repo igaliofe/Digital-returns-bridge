@@ -1,0 +1,8 @@
+android-driver-app/
+docs/
+database/seed.sql
+.git/
+**/.DS_Store
+**/target/
+**/*.class
+infra/.env

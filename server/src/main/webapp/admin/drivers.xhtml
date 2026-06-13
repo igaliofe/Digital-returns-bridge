@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+<h:head><title>Drivers Admin — Digital Returns Bridge</title></h:head>
+<h:body>
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+<ui:define name="content">
+
+    <h2 style="margin-bottom:16px;">Driver Management</h2>
+
+    <h:form id="driversForm">
+        <p:messages showDetail="true" closable="true"/>
+
+        <p:toolbar style="margin-bottom:8px;">
+            <p:toolbarGroup>
+                <p:commandButton value="New Driver" icon="pi pi-plus"
+                                 action="#{driverAdminBean.prepareCreate}"
+                                 update="driversForm createDialog"
+                                 oncomplete="PF('createDriverDlg').show();"/>
+            </p:toolbarGroup>
+        </p:toolbar>
+
+        <p:dataTable id="driversTable" value="#{driverAdminBean.drivers}" var="d"
+                     editable="true" editMode="row"
+                     paginator="true" rows="20"
+                     emptyMessage="No drivers found."
+                     style="width:100%;">
+
+            <p:column headerText="ID" style="width:60px;">
+                <h:outputText value="#{d.id}"/>
+            </p:column>
+
+            <p:column headerText="Full Name">
+                <h:outputText value="#{d.user != null ? d.user.fullName : '—'}"/>
+            </p:column>
+
+            <p:column headerText="Phone">
+                <p:cellEditor>
+                    <f:facet name="output"><h:outputText value="#{d.phone}"/></f:facet>
+                    <f:facet name="input">
+                        <p:inputText value="#{d.phone}" style="width:100%;"/>
+                    </f:facet>
+                </p:cellEditor>
+            </p:column>
+
+            <p:column headerText="Vehicle Number">
+                <p:cellEditor>
+                    <f:facet name="output"><h:outputText value="#{d.vehicleNumber}"/></f:facet>
+                    <f:facet name="input">
+                        <p:inputText value="#{d.vehicleNumber}" style="width:100%;"/>
+                    </f:facet>
+                </p:cellEditor>
+            </p:column>
+
+            <p:column headerText="Active" style="width:80px;">
+                <p:cellEditor>
+                    <f:facet name="output">
+                        <h:outputText value="#{d.active ? 'Yes' : 'No'}"/>
+                    </f:facet>
+                    <f:facet name="input">
+                        <p:selectBooleanCheckbox value="#{d.active}"/>
+                    </f:facet>
+                </p:cellEditor>
+            </p:column>
+
+            <p:column headerText="Actions" style="width:100px;" exportable="false">
+                <p:rowEditor editTitle="Edit" saveTitle="Save" cancelTitle="Cancel"/>
+                <p:commandButton icon="pi pi-trash" title="Delete"
+                                 action="#{driverAdminBean.deleteDriver(d.id)}"
+                                 update="driversForm"
+                                 styleClass="ui-button-danger"
+                                 onclick="return confirm('Delete this driver?');"
+                                 style="margin-left:4px;"/>
+            </p:column>
+
+            <p:ajax event="rowEdit" listener="#{driverAdminBean.setSelected(event.object)}"
+                    oncomplete="#{driverAdminBean.saveSelected()}"
+                    update="driversForm"/>
+            <p:ajax event="rowEditInit" listener="#{driverAdminBean.setSelected(event.object)}"/>
+        </p:dataTable>
+    </h:form>
+
+    <!-- Create Dialog -->
+    <p:dialog id="createDialog" header="Create New Driver" widgetVar="createDriverDlg"
+              modal="true" resizable="false" style="width:400px;">
+        <h:form id="createDriverForm">
+            <p:panelGrid columns="2" style="width:100%;">
+                <p:outputLabel for="newUser" value="User Account *"/>
+                <p:selectOneMenu id="newUser" value="#{driverAdminBean.newDriver.user}"
+                                 required="true">
+                    <f:selectItem itemLabel="— Select User —" itemValue="#{null}"/>
+                    <f:selectItems value="#{driverAdminBean.users}" var="u"
+                                   itemLabel="#{u.fullName} (#{u.phoneNumber})" itemValue="#{u}"/>
+                </p:selectOneMenu>
+
+                <p:outputLabel for="newPhone" value="Phone *"/>
+                <p:inputText id="newPhone" value="#{driverAdminBean.newDriver.phone}"
+                             required="true" style="width:100%;"/>
+
+                <p:outputLabel for="newVehicle" value="Vehicle Number"/>
+                <p:inputText id="newVehicle" value="#{driverAdminBean.newDriver.vehicleNumber}"
+                             style="width:100%;"/>
+
+                <p:outputLabel for="newActive" value="Active"/>
+                <p:selectBooleanCheckbox id="newActive" value="#{driverAdminBean.newDriver.active}"/>
+            </p:panelGrid>
+            <div style="margin-top:12px;text-align:right;">
+                <p:commandButton value="Save"
+                                 action="#{driverAdminBean.saveNew}"
+                                 icon="pi pi-save"
+                                 update="driversForm createDialog createDriverForm"
+                                 oncomplete="if (!args.validationFailed) PF('createDriverDlg').hide();"/>
+                <p:commandButton value="Cancel"
+                                 onclick="PF('createDriverDlg').hide(); return false;"
+                                 type="button"
+                                 styleClass="ui-button-secondary"
+                                 style="margin-left:6px;"/>
+            </div>
+        </h:form>
+    </p:dialog>
+
+</ui:define>
+</ui:composition>
+</h:body>
+</html>

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+<h:head><title>Products Admin — Digital Returns Bridge</title></h:head>
+<h:body>
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+<ui:define name="content">
+
+    <h2 style="margin-bottom:16px;">Product Management</h2>
+
+    <h:form id="productsForm">
+        <p:messages showDetail="true" closable="true"/>
+
+        <p:toolbar style="margin-bottom:8px;">
+            <p:toolbarGroup>
+                <p:commandButton value="New Product" icon="pi pi-plus"
+                                 action="#{productAdminBean.prepareCreate}"
+                                 update="productsForm createDialog"
+                                 oncomplete="PF('createProductDlg').show();"/>
+            </p:toolbarGroup>
+        </p:toolbar>
+
+        <p:dataTable id="productsTable" value="#{productAdminBean.products}" var="prod"
+                     editable="true" editMode="row"
+                     paginator="true" rows="20"
+                     emptyMessage="No products found."
+                     style="width:100%;">
+
+            <p:column headerText="ID" style="width:60px;">
+                <h:outputText value="#{prod.id}"/>
+            </p:column>
+
+            <p:column headerText="Image" style="width:80px;">
+                <p:graphicImage value="#{prod.imageUrl}"
+                                rendered="#{not empty prod.imageUrl}"
+                                style="width:56px;height:56px;object-fit:cover;border-radius:4px;"/>
+            </p:column>
+
+            <p:column headerText="Image URL">
+                <p:cellEditor>
+                    <f:facet name="output"><h:outputText value="#{prod.imageUrl}"/></f:facet>
+                    <f:facet name="input">
+                        <p:inputText value="#{prod.imageUrl}" style="width:100%;"/>
+                    </f:facet>
+                </p:cellEditor>
+            </p:column>
+
+            <p:column headerText="SKU">
+                <p:cellEditor>
+                    <f:facet name="output"><h:outputText value="#{prod.sku}"/></f:facet>
+                    <f:facet name="input">
+                        <p:inputText value="#{prod.sku}" style="width:100%;"/>
+                    </f:facet>
+                </p:cellEditor>
+            </p:column>
+
+            <p:column headerText="Name">
+                <p:cellEditor>
+                    <f:facet name="output"><h:outputText value="#{prod.name}"/></f:facet>
+                    <f:facet name="input">
+                        <p:inputText value="#{prod.name}" style="width:100%;"/>
+                    </f:facet>
+                </p:cellEditor>
+            </p:column>
+
+            <p:column headerText="Category">
+                <p:cellEditor>
+                    <f:facet name="output"><h:outputText value="#{prod.category}"/></f:facet>
+                    <f:facet name="input">
+                        <p:inputText value="#{prod.category}" style="width:100%;"/>
+                    </f:facet>
+                </p:cellEditor>
+            </p:column>
+
+            <p:column headerText="Price">
+                <p:cellEditor>
+                    <f:facet name="output">
+                        <h:outputText value="#{prod.price}">
+                            <f:convertNumber type="currency" currencySymbol="₪"/>
+                        </h:outputText>
+                    </f:facet>
+                    <f:facet name="input">
+                        <p:inputText value="#{prod.price}" style="width:100%;"/>
+                    </f:facet>
+                </p:cellEditor>
+            </p:column>
+
+            <p:column headerText="Actions" style="width:100px;" exportable="false">
+                <p:rowEditor editTitle="Edit" saveTitle="Save" cancelTitle="Cancel"/>
+                <p:commandButton icon="pi pi-trash" title="Delete"
+                                 action="#{productAdminBean.deleteProduct(prod.id)}"
+                                 update="productsForm"
+                                 styleClass="ui-button-danger"
+                                 onclick="return confirm('Delete product #{prod.name}?');"
+                                 style="margin-left:4px;"/>
+            </p:column>
+
+            <p:ajax event="rowEdit" listener="#{productAdminBean.setSelected(event.object)}"
+                    oncomplete="#{productAdminBean.saveSelected()}"
+                    update="productsForm"/>
+            <p:ajax event="rowEditInit" listener="#{productAdminBean.setSelected(event.object)}"/>
+        </p:dataTable>
+    </h:form>
+
+    <!-- Create Dialog -->
+    <p:dialog id="createDialog" header="Create New Product" widgetVar="createProductDlg"
+              modal="true" resizable="false" style="width:400px;">
+        <h:form id="createProductForm" enctype="multipart/form-data">
+            <p:panelGrid columns="2" style="width:100%;">
+                <p:outputLabel for="newSku" value="SKU *"/>
+                <p:inputText id="newSku" value="#{productAdminBean.newProduct.sku}"
+                             required="true" style="width:100%;"/>
+
+                <p:outputLabel for="newName" value="Name *"/>
+                <p:inputText id="newName" value="#{productAdminBean.newProduct.name}"
+                             required="true" style="width:100%;"/>
+
+                <p:outputLabel for="newCategory" value="Category"/>
+                <p:inputText id="newCategory" value="#{productAdminBean.newProduct.category}"
+                             style="width:100%;"/>
+
+                <p:outputLabel for="newDesc" value="Description"/>
+                <p:inputTextarea id="newDesc" value="#{productAdminBean.newProduct.description}"
+                                 rows="3" style="width:100%;"/>
+
+                <p:outputLabel for="newPrice" value="Price"/>
+                <p:inputText id="newPrice" value="#{productAdminBean.newProduct.price}"
+                             style="width:100%;"/>
+
+                <p:outputLabel for="newImageUrl" value="Image URL"/>
+                <p:inputText id="newImageUrl" value="#{productAdminBean.newProduct.imageUrl}"
+                             placeholder="https://..." style="width:100%;"/>
+
+                <p:outputLabel for="newImageFile" value="Or Upload Image"/>
+                <h:inputFile id="newImageFile" value="#{productAdminBean.uploadedImage}"
+                             accept="image/*" style="width:100%;"/>
+            </p:panelGrid>
+            <div style="margin-top:12px;text-align:right;">
+                <p:commandButton value="Save"
+                                 action="#{productAdminBean.saveNew}"
+                                 icon="pi pi-save"
+                                 update="productsForm createDialog createProductForm"
+                                 oncomplete="if (!args.validationFailed) PF('createProductDlg').hide();"/>
+                <p:commandButton value="Cancel"
+                                 onclick="PF('createProductDlg').hide(); return false;"
+                                 type="button"
+                                 styleClass="ui-button-secondary"
+                                 style="margin-left:6px;"/>
+            </div>
+        </h:form>
+    </p:dialog>
+
+</ui:define>
+</ui:composition>
+</h:body>
+</html>

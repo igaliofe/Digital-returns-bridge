@@ -1,0 +1,60 @@
+package com.drb.driver.api;
+
+import com.drb.driver.model.AssignBarcodeRequest;
+import com.drb.driver.model.LoginRequest;
+import com.drb.driver.model.LoginResponse;
+import com.drb.driver.model.PickupConfirmationRequest;
+import com.drb.driver.model.ReturnImageModel;
+import com.drb.driver.model.ReturnRequestModel;
+import com.drb.driver.model.TimelineEntry;
+import com.drb.driver.model.UserModel;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.http.Body;
+import retrofit2.http.GET;
+import retrofit2.http.Multipart;
+import retrofit2.http.PATCH;
+import retrofit2.http.POST;
+import retrofit2.http.Part;
+import retrofit2.http.Path;
+
+import java.util.List;
+
+public interface DrbApi {
+
+    @POST("auth/login")
+    Call<LoginResponse> login(@Body LoginRequest request);
+
+    @GET("auth/me")
+    Call<UserModel> me();
+
+    @POST("auth/logout")
+    Call<Void> logout();
+
+    @GET("drivers/{driverId}/pickups")
+    Call<List<ReturnRequestModel>> myPickups(@Path("driverId") Long driverId);
+
+    @GET("returns/{returnId}")
+    Call<ReturnRequestModel> returnDetails(@Path("returnId") Long returnId);
+
+    @GET("returns/{returnId}/timeline")
+    Call<List<TimelineEntry>> getTimeline(@Path("returnId") Long returnId);
+
+    @PATCH("returns/{returnId}/assign-barcode")
+    Call<ReturnRequestModel> assignBarcode(
+        @Path("returnId") Long returnId,
+        @Body AssignBarcodeRequest request);
+
+    @POST("returns/{returnId}/pickup-confirmation")
+    Call<ReturnRequestModel> pickupConfirmation(
+        @Path("returnId") Long returnId,
+        @Body PickupConfirmationRequest request);
+
+    @Multipart
+    @POST("returns/{returnId}/images")
+    Call<ReturnImageModel> uploadImage(
+        @Path("returnId") Long returnId,
+        @Part MultipartBody.Part file,
+        @Part("imageType") RequestBody imageType);
+}

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+<h:head><title>Reports — Digital Returns Bridge</title></h:head>
+<h:body>
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+<ui:define name="content">
+
+    <h2 style="margin-bottom:16px;">Reports &amp; KPIs</h2>
+
+    <!-- KPI Summary -->
+    <p:panel header="Status Overview" style="margin-bottom:16px;">
+        <p:panelGrid columns="4" style="width:100%;">
+            <p:outputLabel value="Open"/>
+            <h:outputText value="#{reportsBean.getDashboardValue('totalOpen')}"
+                          style="font-size:20px;font-weight:bold;color:#2196F3;"/>
+            <p:outputLabel value="Waiting Pickup"/>
+            <h:outputText value="#{reportsBean.getDashboardValue('totalWaitingPickup')}"
+                          style="font-size:20px;font-weight:bold;color:#FF9800;"/>
+
+            <p:outputLabel value="Barcode Assigned"/>
+            <h:outputText value="#{reportsBean.getDashboardValue('totalBarcodeAssigned')}"
+                          style="font-size:20px;font-weight:bold;"/>
+            <p:outputLabel value="Picked Up"/>
+            <h:outputText value="#{reportsBean.getDashboardValue('totalPickedUp')}"
+                          style="font-size:20px;font-weight:bold;"/>
+
+            <p:outputLabel value="In Warehouse"/>
+            <h:outputText value="#{reportsBean.getDashboardValue('totalInWarehouse')}"
+                          style="font-size:20px;font-weight:bold;"/>
+            <p:outputLabel value="Inspected"/>
+            <h:outputText value="#{reportsBean.getDashboardValue('totalInspected')}"
+                          style="font-size:20px;font-weight:bold;"/>
+
+            <p:outputLabel value="Closed"/>
+            <h:outputText value="#{reportsBean.getDashboardValue('totalClosed')}"
+                          style="font-size:20px;font-weight:bold;color:#4CAF50;"/>
+            <p:outputLabel value="Needs More Info"/>
+            <h:outputText value="#{reportsBean.getDashboardValue('totalNeedsMoreInfo')}"
+                          style="font-size:20px;font-weight:bold;color:#FF5722;"/>
+
+            <p:outputLabel value="No Barcode Assigned" style="font-weight:bold;"/>
+            <h:outputText value="#{reportsBean.getDashboardValue('noBarcode')}"
+                          style="font-size:20px;font-weight:bold;color:#F44336;"/>
+            <p:outputLabel value=""/>
+            <h:outputText value=""/>
+        </p:panelGrid>
+    </p:panel>
+
+    <!-- Top Return Reasons -->
+    <p:panel header="Top Return Reasons" style="margin-bottom:16px;"
+             rendered="#{not empty reportsBean.topReturnReasons}">
+        <p:dataTable value="#{reportsBean.topReturnReasons.entrySet().toArray()}" var="entry"
+                     style="width:100%;" emptyMessage="No data.">
+            <p:column headerText="Reason">
+                <h:outputText value="#{entry.key}"/>
+            </p:column>
+            <p:column headerText="Count">
+                <h:outputText value="#{entry.value}"/>
+            </p:column>
+        </p:dataTable>
+    </p:panel>
+
+    <!-- Returns by Driver -->
+    <p:panel header="Returns by Driver" style="margin-bottom:16px;"
+             rendered="#{not empty reportsBean.returnsByDriver}">
+        <p:dataTable value="#{reportsBean.returnsByDriver}" var="row"
+                     style="width:100%;" emptyMessage="No data.">
+            <p:column headerText="Driver">
+                <h:outputText value="#{row['driver']}"/>
+            </p:column>
+            <p:column headerText="Total Returns">
+                <h:outputText value="#{row['count']}"/>
+            </p:column>
+        </p:dataTable>
+    </p:panel>
+
+    <!-- Returns by Customer -->
+    <p:panel header="Returns by Customer" style="margin-bottom:16px;"
+             rendered="#{not empty reportsBean.returnsByCustomer}">
+        <p:dataTable value="#{reportsBean.returnsByCustomer}" var="row"
+                     style="width:100%;" emptyMessage="No data.">
+            <p:column headerText="Customer">
+                <h:outputText value="#{row['customer']}"/>
+            </p:column>
+            <p:column headerText="Total Returns">
+                <h:outputText value="#{row['count']}"/>
+            </p:column>
+        </p:dataTable>
+    </p:panel>
+
+    <!-- Monthly Volume -->
+    <p:panel header="Monthly Volume" style="margin-bottom:16px;"
+             rendered="#{not empty reportsBean.monthlyVolume}">
+        <p:dataTable value="#{reportsBean.monthlyVolume}" var="row"
+                     style="width:100%;" emptyMessage="No data.">
+            <p:column headerText="Month">
+                <h:outputText value="#{row['month']}"/>
+            </p:column>
+            <p:column headerText="Total Returns">
+                <h:outputText value="#{row['count']}"/>
+            </p:column>
+        </p:dataTable>
+    </p:panel>
+
+</ui:define>
+</ui:composition>
+</h:body>
+</html>

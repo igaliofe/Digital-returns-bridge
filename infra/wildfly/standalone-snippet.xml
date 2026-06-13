@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  WildFly PostgreSQL JDBC Module descriptor.
+  Place this at: $JBOSS_HOME/modules/org/postgresql/main/module.xml
+-->
+<module xmlns="urn:jboss:module:1.9" name="org.postgresql">
+    <resources>
+        <resource-root path="postgresql-42.7.1.jar"/>
+    </resources>
+    <dependencies>
+        <module name="java.sql"/>
+        <module name="java.naming"/>
+        <module name="java.logging"/>
+        <module name="java.management"/>
+        <module name="java.security.jgss"/>
+        <module name="java.security.sasl"/>
+        <module name="java.xml"/>
+        <module name="jakarta.transaction.api"/>
+    </dependencies>
+</module>

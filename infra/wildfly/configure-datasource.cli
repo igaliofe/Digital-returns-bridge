@@ -1,0 +1,25 @@
+# WildFly JBoss CLI script to configure the PostgreSQL datasource.
+# Runs offline at image build time via an embedded server:
+#   $JBOSS_HOME/bin/jboss-cli.sh --file=configure-datasource.cli
+# (Use embed-server so the commands apply without a running controller.)
+
+embed-server --server-config=standalone.xml --std-out=echo
+
+# Register the JDBC driver (module installed at org/postgresql/main)
+/subsystem=datasources/jdbc-driver=postgresql:add(driver-name=postgresql,driver-module-name=org.postgresql,driver-xa-datasource-class-name=org.postgresql.xa.PGXADataSource)
+
+# Create the datasource. Expressions (${env.*}) are stored as-is and resolved at
+# runtime from the container environment (set in docker-compose.yml).
+data-source add \
+  --name=DrbDS \
+  --driver-name=postgresql \
+  --jndi-name=java:/jdbc/DrbDS \
+  --connection-url=${env.JDBC_URL:jdbc:postgresql://localhost:5432/drb} \
+  --user-name=${env.POSTGRES_USER:drb} \
+  --password=${env.POSTGRES_PASSWORD:drb} \
+  --min-pool-size=5 \
+  --max-pool-size=20 \
+  --valid-connection-checker-class-name=org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker \
+  --exception-sorter-class-name=org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter
+
+stop-embedded-server
