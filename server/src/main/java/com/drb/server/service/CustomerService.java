@@ -29,6 +29,11 @@ public class CustomerService {
         return c;
     }
 
+    public Customer findByPhone(String phone) {
+        return customerRepo.findByPhone(phone)
+            .orElseThrow(() -> new NotFoundException("Customer", "phone=" + phone));
+    }
+
     @Transactional
     public Customer create(Customer customer) {
         return customerRepo.save(customer);

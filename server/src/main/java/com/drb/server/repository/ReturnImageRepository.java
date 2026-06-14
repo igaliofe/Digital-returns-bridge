@@ -33,10 +33,6 @@ public class ReturnImageRepository {
                 .getResultList();
     }
 
-    public void delete(ReturnImage returnImage) {
-        em.remove(em.contains(returnImage) ? returnImage : em.merge(returnImage));
-    }
-
     public void delete(Long id) {
         ReturnImage image = em.find(ReturnImage.class, id);
         if (image != null) {

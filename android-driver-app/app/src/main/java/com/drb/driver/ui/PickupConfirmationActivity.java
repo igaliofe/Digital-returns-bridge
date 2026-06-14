@@ -157,8 +157,18 @@ public class PickupConfirmationActivity extends AppCompatActivity {
         }
 
         btnConfirm.setEnabled(false);
-        // Upload the drawn signature first, then submit the confirmation.
-        uploadSignature(signatureFile);
+        DriverIdResolver.resolve(this, sessionManager, new DriverIdResolver.DriverIdCallback() {
+            @Override
+            public void onResolved(Long driverId) {
+                uploadSignature(signatureFile, driverId);
+            }
+
+            @Override
+            public void onFailure(String message) {
+                btnConfirm.setEnabled(true);
+                DriverIdResolver.toastFailure(PickupConfirmationActivity.this, message);
+            }
+        });
     }
 
     private File saveSignatureToFile() {
@@ -175,7 +185,7 @@ public class PickupConfirmationActivity extends AppCompatActivity {
         }
     }
 
-    private void uploadSignature(File signatureFile) {
+    private void uploadSignature(File signatureFile, Long driverId) {
         RequestBody fileBody = RequestBody.create(MediaType.parse("image/png"), signatureFile);
         MultipartBody.Part filePart = MultipartBody.Part.createFormData("file", signatureFile.getName(), fileBody);
         RequestBody imageType = RequestBody.create(MediaType.parse("text/plain"), "DRIVER_SIGNATURE");
@@ -184,7 +194,7 @@ public class PickupConfirmationActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ReturnImageModel> call, Response<ReturnImageModel> response) {
                 if (response.isSuccessful()) {
-                    submitConfirmation();
+                    submitConfirmation(driverId);
                 } else {
                     btnConfirm.setEnabled(true);
                     Toast.makeText(PickupConfirmationActivity.this,
@@ -200,9 +210,9 @@ public class PickupConfirmationActivity extends AppCompatActivity {
         });
     }
 
-    private void submitConfirmation() {
+    private void submitConfirmation(Long driverId) {
         PickupConfirmationRequest req = new PickupConfirmationRequest();
-        req.driverId = sessionManager.getDriverId();
+        req.driverId = driverId;
         req.itemCondition = (String) spinnerCondition.getSelectedItem();
         req.itemCollected = cbItemCollected.isChecked();
         req.driverNotes = etNotes.getText() != null ? etNotes.getText().toString().trim() : "";

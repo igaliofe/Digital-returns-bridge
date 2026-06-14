@@ -11,6 +11,7 @@ public class UserDto {
     public Role role;
     public boolean active;
     public LocalDateTime createdAt;
+    public LocalDateTime updatedAt;
 
     public static UserDto from(User u) {
         UserDto d = new UserDto();
@@ -20,6 +21,7 @@ public class UserDto {
         d.role = u.getRole();
         d.active = u.isActive();
         d.createdAt = u.getCreatedAt();
+        d.updatedAt = u.getUpdatedAt();
         return d;
     }
 }

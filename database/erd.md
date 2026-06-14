@@ -16,6 +16,7 @@ erDiagram
         VARCHAR(32) role
         BOOLEAN     active
         TIMESTAMP   created_at
+        TIMESTAMP   updated_at
     }
 
     customers {
@@ -25,6 +26,7 @@ erDiagram
         VARCHAR(255) email
         TEXT         address
         TIMESTAMP    created_at
+        TIMESTAMP    updated_at
     }
 
     products {
@@ -36,6 +38,20 @@ erDiagram
         NUMERIC      price
         VARCHAR(500) image_url
         TIMESTAMP    created_at
+        TIMESTAMP    updated_at
+    }
+
+    customer_purchases {
+        BIGSERIAL    id                      PK
+        BIGINT       customer_id             FK
+        BIGINT       product_id              FK
+        VARCHAR(60)  order_number
+        INT          quantity
+        DATE         original_delivery_date
+        BOOLEAN      under_warranty
+        BOOLEAN      handled
+        TIMESTAMP    created_at
+        TIMESTAMP    updated_at
     }
 
     drivers {
@@ -44,6 +60,8 @@ erDiagram
         VARCHAR(64) vehicle_number
         VARCHAR(32) phone
         BOOLEAN     active
+        TIMESTAMP   created_at
+        TIMESTAMP   updated_at
     }
 
     return_requests {
@@ -53,6 +71,7 @@ erDiagram
         BIGINT       barcode_assigned_by_driver_id FK
         BIGINT       customer_id                   FK
         BIGINT       product_id                    FK
+        BIGINT       purchase_id                   FK
         BIGINT       driver_id                     FK
         BIGINT       opened_by_user_id             FK
         VARCHAR(128) order_number
@@ -80,6 +99,7 @@ erDiagram
         TEXT         image_url
         VARCHAR(32)  image_type
         TIMESTAMP    created_at
+        TIMESTAMP    updated_at
     }
 
     pickup_updates {
@@ -94,6 +114,7 @@ erDiagram
         BOOLEAN     item_collected
         TEXT        driver_notes
         TIMESTAMP   created_at
+        TIMESTAMP   updated_at
     }
 
     warehouse_inspections {
@@ -105,6 +126,7 @@ erDiagram
         BOOLEAN     call_fully_handled
         TEXT        warehouse_notes
         TIMESTAMP   created_at
+        TIMESTAMP   updated_at
     }
 
     status_history {
@@ -113,12 +135,16 @@ erDiagram
         BIGINT      changed_by_user_id FK
         VARCHAR(32) old_status
         VARCHAR(32) new_status
-        TIMESTAMP   changed_at
+        TIMESTAMP   created_at
+        TIMESTAMP   updated_at
         TEXT        comment
     }
 
     users             ||--o{ drivers              : "has"
     users             ||--o{ return_requests       : "opens"
+    customers         ||--o{ customer_purchases    : "has"
+    products          ||--o{ customer_purchases    : "includes"
+    customer_purchases ||--o| return_requests      : "linked on create"
     customers         ||--o{ return_requests       : "has"
     products          ||--o{ return_requests       : "is returned via"
     drivers           ||--o{ return_requests       : "picks up"
@@ -139,9 +165,10 @@ erDiagram
 | id           | BIGSERIAL PK | Auto-generated primary key                       |
 | phone_number | VARCHAR(64)  | Unique login identifier                          |
 | full_name    | VARCHAR(255) | Display name                                     |
-| role         | VARCHAR(32)  | Enum: SERVICE_REP, DRIVER, WAREHOUSE, MANAGER    |
+| role         | VARCHAR(32)  | Enum: SERVICE_REP, DRIVER, WAREHOUSE, MANAGER (WAREHOUSE = "Storekeeper") |
 | active       | BOOLEAN      | Whether the account is active (default TRUE)     |
 | created_at   | TIMESTAMP    | Row creation timestamp                           |
+| updated_at   | TIMESTAMP    | Last modification timestamp                       |
 
 ---
 
@@ -154,6 +181,7 @@ erDiagram
 | email      | VARCHAR(255) | Contact email (nullable)     |
 | address    | TEXT         | Delivery/pickup address      |
 | created_at | TIMESTAMP    | Row creation timestamp       |
+| updated_at | TIMESTAMP    | Last modification timestamp  |
 
 ---
 
@@ -168,6 +196,25 @@ erDiagram
 | price       | NUMERIC(10,2) | Unit price (nullable)             |
 | image_url   | VARCHAR(500)  | Catalog image URL (nullable)      |
 | created_at  | TIMESTAMP     | Row creation timestamp            |
+| updated_at  | TIMESTAMP     | Last modification timestamp       |
+
+---
+
+### `customer_purchases`
+| Column                 | Type         | Description                                              |
+|------------------------|--------------|----------------------------------------------------------|
+| id                     | BIGSERIAL PK | Auto-generated primary key                               |
+| customer_id            | BIGINT FK    | References `customers(id)` — NOT NULL                    |
+| product_id             | BIGINT FK    | References `products(id)` — NOT NULL                     |
+| order_number           | VARCHAR(60)  | Original order reference (nullable)                      |
+| quantity               | INT          | Units purchased (nullable)                               |
+| original_delivery_date | DATE         | When the product was originally delivered (nullable)    |
+| under_warranty         | BOOLEAN      | Whether the item is still under warranty (nullable)     |
+| handled                | BOOLEAN      | Whether a return was opened from this purchase row (default FALSE) |
+| created_at             | TIMESTAMP    | Row creation timestamp                                   |
+| updated_at             | TIMESTAMP    | Last modification timestamp                              |
+
+When a return is created via the Create Return wizard with a selected purchase row, `handled` is set to `TRUE` in the same transaction and `return_requests.purchase_id` links back to this row.
 
 ---
 
@@ -179,6 +226,8 @@ erDiagram
 | vehicle_number | VARCHAR(64) | Vehicle plate / identifier (nullable)        |
 | phone          | VARCHAR(32) | Driver contact phone (nullable)              |
 | active         | BOOLEAN     | Whether driver is currently active           |
+| created_at     | TIMESTAMP   | Row creation timestamp                       |
+| updated_at     | TIMESTAMP   | Last modification timestamp                  |
 
 ---
 
@@ -191,6 +240,7 @@ erDiagram
 | barcode_assigned_by_driver_id | BIGINT FK    | References `drivers(id)` — who scanned the barcode (nullable)    |
 | customer_id                   | BIGINT FK    | References `customers(id)` — NOT NULL                            |
 | product_id                    | BIGINT FK    | References `products(id)` — NOT NULL                             |
+| purchase_id                   | BIGINT FK    | References `customer_purchases(id)` — set when created from wizard (nullable) |
 | driver_id                     | BIGINT FK    | References `drivers(id)` — assigned pickup driver (nullable)     |
 | opened_by_user_id             | BIGINT FK    | References `users(id)` — service rep who opened the request      |
 | order_number                  | VARCHAR(128) | Original order reference (nullable)                              |
@@ -221,6 +271,7 @@ erDiagram
 | image_url            | TEXT         | Full Cloudinary delivery URL (nullable)               |
 | image_type           | VARCHAR(32)  | Enum: ImageType — service/driver photos & signatures |
 | created_at           | TIMESTAMP    | Row creation timestamp                                |
+| updated_at           | TIMESTAMP    | Last modification timestamp                           |
 
 ---
 
@@ -238,6 +289,7 @@ erDiagram
 | item_collected        | BOOLEAN      | Whether driver physically collected the item         |
 | driver_notes          | TEXT         | Free-text notes from driver                          |
 | created_at            | TIMESTAMP    | Row creation timestamp                               |
+| updated_at            | TIMESTAMP    | Last modification timestamp                          |
 
 ---
 
@@ -252,6 +304,7 @@ erDiagram
 | call_fully_handled   | BOOLEAN     | Whether the customer call was fully handled (nullable)  |
 | warehouse_notes      | TEXT        | Free-text inspection notes                               |
 | created_at           | TIMESTAMP   | Row creation timestamp                                   |
+| updated_at           | TIMESTAMP   | Last modification timestamp                              |
 
 ---
 
@@ -263,7 +316,8 @@ erDiagram
 | changed_by_user_id | BIGINT FK   | References `users(id)` (nullable)                     |
 | old_status         | VARCHAR(32) | Status before transition (nullable for initial entry) |
 | new_status         | VARCHAR(32) | Status after transition                               |
-| changed_at         | TIMESTAMP   | When the transition occurred                          |
+| created_at         | TIMESTAMP   | When the transition occurred (row creation timestamp) |
+| updated_at         | TIMESTAMP   | Last modification timestamp                           |
 | comment            | TEXT        | Optional note about the reason for the change         |
 
 ---
@@ -272,6 +326,10 @@ erDiagram
 
 | Index Name                                    | Table                  | Column(s)         | Notes                       |
 |-----------------------------------------------|------------------------|-------------------|-----------------------------|
+| idx_customer_purchases_customer_id            | customer_purchases     | customer_id       |                             |
+| idx_customer_purchases_product_id             | customer_purchases     | product_id        |                             |
+| idx_customer_purchases_handled                | customer_purchases     | handled           |                             |
+| idx_return_requests_purchase_id               | return_requests        | purchase_id       |                             |
 | idx_return_requests_barcode                   | return_requests        | barcode           | Partial: WHERE barcode IS NOT NULL |
 | idx_return_requests_status                    | return_requests        | status            |                             |
 | idx_return_requests_driver_id                 | return_requests        | driver_id         |                             |
@@ -290,7 +348,7 @@ erDiagram
 |-------------|--------------------------------------|
 | SERVICE_REP | Customer-facing service representative |
 | DRIVER      | Field driver who collects returns    |
-| WAREHOUSE   | Warehouse staff who inspect items    |
+| WAREHOUSE   | Warehouse staff ("Storekeeper") who inspect items. Served by both the JSF web `warehouse/receiving.xhtml` screen and the Android app (mobile storekeeper flow); both reuse this same role — no separate enum value exists or is needed. |
 | MANAGER     | Management / admin access            |
 
 ### `return_requests.status`

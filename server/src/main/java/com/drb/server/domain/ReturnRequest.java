@@ -33,6 +33,10 @@ public class ReturnRequest {
     private Product product;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "purchase_id")
+    private CustomerPurchase purchase;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "driver_id")
     private Driver driver;
 
@@ -110,6 +114,8 @@ public class ReturnRequest {
     public void setCustomer(Customer customer) { this.customer = customer; }
     public Product getProduct() { return product; }
     public void setProduct(Product product) { this.product = product; }
+    public CustomerPurchase getPurchase() { return purchase; }
+    public void setPurchase(CustomerPurchase purchase) { this.purchase = purchase; }
     public Driver getDriver() { return driver; }
     public void setDriver(Driver driver) { this.driver = driver; }
     public User getOpenedByUser() { return openedByUser; }

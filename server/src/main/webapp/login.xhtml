@@ -6,32 +6,41 @@
       xmlns:p="http://primefaces.org/ui">
 <h:head>
     <title>Login — Digital Returns Bridge</title>
-    <style>
-        body { background: #f4f6f9; }
-        .login-container { max-width: 420px; margin: 80px auto; padding: 32px; }
-    </style>
+    <h:outputStylesheet name="css/drb.css"/>
 </h:head>
 <h:body>
-    <div class="login-container">
-        <h:form id="loginForm">
-            <p:panel header="Digital Returns Bridge — Sign In">
-                <p:messages id="msgs" showDetail="true" showSummary="false" closable="true"/>
-                <div style="margin-bottom: 12px;">
-                    <p:outputLabel for="phone" value="Phone Number" style="display:block;margin-bottom:4px;"/>
-                    <p:inputText id="phone" value="#{loginBean.phoneNumber}"
-                                 placeholder="e.g. 0501234567" required="true"
-                                 requiredMessage="Phone number is required"
-                                 style="width:100%;"/>
-                    <p:message for="phone" display="text"/>
+    <div class="drb-login-page">
+        <div class="drb-login-card">
+            <div class="drb-login-brand">
+                <div class="drb-login-logo">DRB</div>
+                <div>
+                    <p class="drb-login-app-name">Digital Returns Bridge</p>
+                    <p class="drb-login-app-tag">Reverse logistics platform</p>
                 </div>
+            </div>
+
+            <h:form id="loginForm">
+                <h2 class="drb-login-heading">Sign In</h2>
+                <p class="drb-login-subheading">Service &amp; Manager Portal access</p>
+
+                <p:messages id="msgs" showDetail="true" showSummary="false" closable="true"/>
+
+                <label class="drb-field-label" for="phone">Phone Number</label>
+                <p:inputText id="phone" value="#{loginBean.phoneNumber}"
+                             placeholder="e.g. 0501234567" required="true"
+                             requiredMessage="Phone number is required"
+                             style="width:100%;margin-bottom:18px;"/>
+                <p:message for="phone" display="text"/>
+
                 <p:commandButton value="Sign In"
                                  action="#{loginBean.login}"
-                                 icon="pi pi-sign-in"
-                                 styleClass="ui-button-primary"
-                                 style="width:100%;margin-top:8px;"
+                                 styleClass="drb-btn-primary"
+                                 style="width:100%;"
                                  update="msgs"/>
-            </p:panel>
-        </h:form>
+
+                <p class="drb-login-hint">Enter your registered phone number to receive portal access.</p>
+            </h:form>
+        </div>
     </div>
 </h:body>
 </html>

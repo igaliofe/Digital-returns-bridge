@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/drb_cream_bg"
+    android:padding="@dimen/drb_spacing_xl">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/wh_scan_title"
+        style="@style/DrbText.Title"
+        android:layout_marginBottom="@dimen/drb_spacing_lg"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/wh_scan_instruction"
+        style="@style/DrbText.Body"
+        android:layout_marginBottom="@dimen/drb_spacing_xl"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/wh_barcode_hint"
+        style="@style/DrbTextInputLayout"
+        android:layout_marginBottom="@dimen/drb_spacing_lg">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etBarcode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/btnScan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/scan_barcode"
+        style="@style/DrbButton.Outlined"
+        android:layout_marginBottom="@dimen/drb_spacing_sm"/>
+
+    <Button
+        android:id="@+id/btnLookup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/wh_lookup"
+        style="@style/DrbButton.Primary"/>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/drb_spacing_lg"
+        android:visibility="gone"/>
+
+</LinearLayout>

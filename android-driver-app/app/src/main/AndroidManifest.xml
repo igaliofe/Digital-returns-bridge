@@ -27,6 +27,12 @@
         <activity android:name=".ui.ImageCaptureActivity" android:exported="false"/>
         <activity android:name=".ui.PickupConfirmationActivity" android:exported="false"/>
 
+        <!-- Storekeeper (WAREHOUSE role) flow -->
+        <activity android:name=".ui.StorekeeperHomeActivity" android:exported="false"/>
+        <activity android:name=".ui.WarehouseScanActivity" android:exported="false"/>
+        <activity android:name=".ui.WarehouseReturnDetailsActivity" android:exported="false"/>
+        <activity android:name=".ui.WarehouseInspectionActivity" android:exported="false"/>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -38,3 +44,5 @@
         </provider>
     </application>
 </manifest>
+
+

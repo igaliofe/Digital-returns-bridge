@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+<f:metadata>
+    <f:viewAction action="#{createReturnWizardBean.ensureStep3}"/>
+</f:metadata>
+<h:head><title>New Return Request — Digital Returns Bridge</title></h:head>
+<h:body class="drb-wizard-page">
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+<ui:define name="content">
+
+    <div class="drb-wizard-center">
+        <div class="drb-wizard-card drb-wizard-card-wide">
+            <p class="drb-wizard-step">STEP 3 OF 3</p>
+            <h2 class="drb-wizard-title">New Return Request</h2>
+            <p class="drb-wizard-desc">Complete the return checklist, attach photos, and capture the service rep signature.</p>
+
+    <h:form id="createForm" enctype="multipart/form-data">
+        <p:panel header="Return Details" styleClass="drb-panel">
+            <p:messages showDetail="true" closable="true"/>
+
+            <p:fieldset legend="Selected Item" style="margin-bottom:16px;">
+                <p:panelGrid columns="4" style="width:100%;">
+                    <p:outputLabel value="Customer"/>
+                    <h:outputText value="#{createReturnWizardBean.customer.fullName}"/>
+                    <p:outputLabel value="Phone"/>
+                    <h:outputText value="#{createReturnWizardBean.customer.phone}"/>
+
+                    <p:outputLabel value="Product"/>
+                    <h:outputText value="#{createReturnWizardBean.selectedProductName}"/>
+                    <p:outputLabel value="SKU"/>
+                    <h:outputText value="#{createReturnWizardBean.selectedProductSku}"/>
+                </p:panelGrid>
+            </p:fieldset>
+
+            <p:panelGrid columns="2" style="width:100%;"
+                         columnClasses="ui-panelgrid-col,ui-panelgrid-col">
+
+                <p:outputLabel for="orderNumber" value="Order Number"/>
+                <p:inputText id="orderNumber" value="#{createReturnWizardBean.orderNumber}"
+                             placeholder="e.g. ORD-12345" style="width:100%;"/>
+
+                <p:outputLabel for="originalDeliveryDate" value="Original Delivery Date"/>
+                <p:datePicker id="originalDeliveryDate" value="#{createReturnWizardBean.originalDeliveryDate}"
+                              pattern="dd/MM/yyyy" showIcon="true"/>
+
+                <p:outputLabel for="quantity" value="Quantity"/>
+                <p:inputNumber id="quantity" value="#{createReturnWizardBean.quantity}"
+                               decimalPlaces="0" minValue="1" style="width:100%;"/>
+
+                <p:outputLabel for="underWarranty" value="Under Warranty"/>
+                <p:selectBooleanCheckbox id="underWarranty" value="#{createReturnWizardBean.underWarranty}"/>
+
+                <p:outputLabel for="wasUsed" value="Was Used"/>
+                <p:selectBooleanCheckbox id="wasUsed" value="#{createReturnWizardBean.wasUsed}"/>
+
+                <p:outputLabel for="returnReason" value="Return Reason (category) *"/>
+                <p:selectOneMenu id="returnReason" value="#{createReturnWizardBean.returnReason}"
+                                 required="true" requiredMessage="Please select a return reason">
+                    <f:selectItem itemLabel="— Select Reason —" itemValue="#{null}"/>
+                    <f:selectItems value="#{createReturnWizardBean.returnReasons}" var="rr"
+                                   itemLabel="#{rr.name()}" itemValue="#{rr.name()}"/>
+                </p:selectOneMenu>
+
+                <p:outputLabel for="defectStage" value="Defect Stage"/>
+                <p:selectOneMenu id="defectStage" value="#{createReturnWizardBean.defectStage}">
+                    <f:selectItem itemLabel="— None —" itemValue="#{null}"/>
+                    <f:selectItems value="#{createReturnWizardBean.defectStages}" var="ds"
+                                   itemLabel="#{ds.name()}" itemValue="#{ds.name()}"/>
+                </p:selectOneMenu>
+
+                <p:outputLabel for="defectType" value="Defect Type"/>
+                <p:selectOneMenu id="defectType" value="#{createReturnWizardBean.defectType}">
+                    <f:selectItem itemLabel="— None —" itemValue="#{null}"/>
+                    <f:selectItems value="#{createReturnWizardBean.defectTypes}" var="dt"
+                                   itemLabel="#{dt.name()}" itemValue="#{dt.name()}"/>
+                </p:selectOneMenu>
+
+                <p:outputLabel for="defectLocationText" value="Defect Location"/>
+                <p:inputText id="defectLocationText" value="#{createReturnWizardBean.defectLocationText}"
+                             placeholder="e.g. front-left leg" style="width:100%;"/>
+
+                <p:outputLabel for="reason" value="Free-text Notes *"/>
+                <p:inputTextarea id="reason" value="#{createReturnWizardBean.reason}"
+                                 rows="3" style="width:100%;"
+                                 required="true" requiredMessage="Please provide a reason"/>
+
+                <p:outputLabel for="defect" value="Defect Description"/>
+                <p:inputTextarea id="defect" value="#{createReturnWizardBean.defectDescription}"
+                                 rows="3" style="width:100%;"/>
+
+                <p:outputLabel for="priority" value="Priority"/>
+                <p:selectOneMenu id="priority" value="#{createReturnWizardBean.priority}">
+                    <f:selectItem itemLabel="Normal" itemValue="NORMAL"/>
+                    <f:selectItem itemLabel="High" itemValue="HIGH"/>
+                    <f:selectItem itemLabel="Urgent" itemValue="URGENT"/>
+                </p:selectOneMenu>
+
+                <p:outputLabel for="driver" value="Assign Driver"/>
+                <p:selectOneMenu id="driver" value="#{createReturnWizardBean.driverId}">
+                    <f:selectItem itemLabel="— No Driver —" itemValue="#{null}"/>
+                    <f:selectItems value="#{createReturnWizardBean.drivers}" var="d"
+                                   itemLabel="#{d.user.fullName} (#{d.vehicleNumber})" itemValue="#{d.id}"/>
+                </p:selectOneMenu>
+
+                <p:outputLabel for="generalImages" value="General Photos"/>
+                <h:inputFile id="generalImages" value="#{createReturnWizardBean.generalImages}"
+                             multiple="true" accept="image/*" style="width:100%;"/>
+
+                <p:outputLabel for="defectImages" value="Focused Defect Photos"/>
+                <h:inputFile id="defectImages" value="#{createReturnWizardBean.defectImages}"
+                             multiple="true" accept="image/*" style="width:100%;"/>
+
+            </p:panelGrid>
+
+            <p:fieldset legend="Photo Checklist" style="margin-top:16px;">
+                <p:selectBooleanCheckbox id="clearPhotos" value="#{createReturnWizardBean.clearPhotosReceived}"
+                                         itemLabel="Clear photos received"/>
+                <br/>
+                <p:selectBooleanCheckbox id="generalPhotoExists" value="#{createReturnWizardBean.generalPhotoExists}"
+                                         itemLabel="General photo exists"/>
+                <br/>
+                <p:selectBooleanCheckbox id="focusedDefectPhotoExists" value="#{createReturnWizardBean.focusedDefectPhotoExists}"
+                                         itemLabel="Focused defect photo exists"/>
+            </p:fieldset>
+
+            <p:fieldset legend="Service Rep Signature" style="margin-top:16px;">
+                <p:signature widgetVar="sigPad" value="#{createReturnWizardBean.signatureData}"
+                             base64Value="#{createReturnWizardBean.signatureData}"
+                             style="width:400px;height:200px;"/>
+                <br/>
+                <p:commandButton value="Clear Signature" type="button"
+                                 onclick="PF('sigPad').clear();"
+                                 styleClass="ui-button-secondary" style="margin-top:8px;"/>
+            </p:fieldset>
+
+            <div class="drb-btn-row" style="margin-top:16px;">
+                <p:commandButton value="Create Return Request"
+                                 action="#{createReturnWizardBean.create}"
+                                 icon="pi pi-save"
+                                 styleClass="drb-btn-primary"/>
+                <p:commandButton value="Back"
+                                 action="#{createReturnWizardBean.backToStep2}"
+                                 icon="pi pi-arrow-left"
+                                 styleClass="drb-btn-secondary"/>
+                <p:button value="Cancel"
+                          href="#{request.contextPath}/returns/list.xhtml"
+                          styleClass="drb-btn-secondary"/>
+            </div>
+        </p:panel>
+    </h:form>
+        </div>
+    </div>
+
+</ui:define>
+</ui:composition>
+</h:body>
+</html>

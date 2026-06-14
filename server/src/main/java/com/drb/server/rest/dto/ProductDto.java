@@ -13,6 +13,7 @@ public class ProductDto {
     public BigDecimal price;
     public String imageUrl;
     public LocalDateTime createdAt;
+    public LocalDateTime updatedAt;
 
     public static ProductDto from(Product p) {
         ProductDto d = new ProductDto();
@@ -24,6 +25,7 @@ public class ProductDto {
         d.price = p.getPrice();
         d.imageUrl = p.getImageUrl();
         d.createdAt = p.getCreatedAt();
+        d.updatedAt = p.getUpdatedAt();
         return d;
     }
 }

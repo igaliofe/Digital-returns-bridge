@@ -20,6 +20,9 @@ public class AuthFilter implements ContainerRequestFilter {
     @Inject
     private TokenStore tokenStore;
 
+    @Inject
+    private AuthenticatedUser authenticatedUser;
+
     @Override
     public void filter(ContainerRequestContext ctx) throws IOException {
         String path = ctx.getUriInfo().getPath();
@@ -56,5 +59,6 @@ public class AuthFilter implements ContainerRequestFilter {
             public String getAuthenticationScheme() { return "Bearer"; }
         });
         ctx.setProperty("authenticatedUser", user);
+        authenticatedUser.set(user);
     }
 }

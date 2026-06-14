@@ -26,8 +26,4 @@ public class TokenStore {
     public void invalidate(String token) {
         if (token != null) store.remove(token);
     }
-
-    public void revoke(String token) {
-        invalidate(token);
-    }
 }

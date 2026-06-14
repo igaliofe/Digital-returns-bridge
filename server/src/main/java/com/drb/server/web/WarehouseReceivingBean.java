@@ -3,6 +3,7 @@ package com.drb.server.web;
 import com.drb.server.domain.PickupUpdate;
 import com.drb.server.domain.ReturnImage;
 import com.drb.server.domain.ReturnRequest;
+import com.drb.server.domain.User;
 import com.drb.server.domain.WarehouseInspection;
 import com.drb.server.domain.enums.ImageType;
 import com.drb.server.domain.enums.ItemCondition;
@@ -17,6 +18,7 @@ import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.servlet.http.HttpSession;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -83,9 +85,15 @@ public class WarehouseReceivingBean implements Serializable {
         }
     }
 
+    private User getLoggedInUser() {
+        HttpSession session = (HttpSession) getFacesContext()
+            .getExternalContext().getSession(false);
+        return session != null ? (User) session.getAttribute("loggedInUser") : null;
+    }
+
     public void markArrived() {
         try {
-            foundReturn = warehouseService.markArrived(foundReturn.getBarcode());
+            foundReturn = warehouseService.markArrived(foundReturn.getBarcode(), getLoggedInUser());
             loadDigitalFile();
             getFacesContext().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_INFO, "Marked as arrived", null));
@@ -116,6 +124,7 @@ public class WarehouseReceivingBean implements Serializable {
                 ? ItemCondition.valueOf(itemCondition) : null);
             inspection.setCallFullyHandled(callFullyHandled);
             inspection.setWarehouseNotes(warehouseNotes);
+            inspection.setInspectedByUser(getLoggedInUser());
             warehouseService.createInspection(foundReturn.getId(), inspection);
             getFacesContext().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_INFO, "Inspection saved", null));

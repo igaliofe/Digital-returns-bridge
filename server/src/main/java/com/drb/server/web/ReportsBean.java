@@ -31,7 +31,6 @@ public class ReportsBean {
         monthlyVolume     = reportsService.getMonthlyVolume();
     }
 
-    public DashboardDto getDashboard()                           { return dashboard; }
     public Map<String, Long> getTopReturnReasons()               { return topReturnReasons; }
     public List<Map<String, Object>> getReturnsByDriver()        { return returnsByDriver; }
     public List<Map<String, Object>> getReturnsByCustomer()      { return returnsByCustomer; }

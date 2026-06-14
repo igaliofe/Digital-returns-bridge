@@ -2,12 +2,16 @@ package com.drb.server.service;
 
 import com.drb.server.domain.*;
 import com.drb.server.domain.enums.ReturnStatus;
+import com.drb.server.repository.CustomerPurchaseRepository;
+import com.drb.server.repository.CustomerRepository;
 import com.drb.server.repository.DriverRepository;
 import com.drb.server.repository.PickupUpdateRepository;
+import com.drb.server.repository.ProductRepository;
 import com.drb.server.repository.ReturnImageRepository;
 import com.drb.server.repository.ReturnRequestRepository;
 import com.drb.server.repository.StatusHistoryRepository;
 import com.drb.server.repository.WarehouseInspectionRepository;
+import com.drb.server.rest.dto.CreateReturnRequest;
 import com.drb.server.rest.dto.PickupConfirmationRequest;
 import com.drb.server.rest.dto.WarehouseInspectionRequest;
 import com.drb.server.service.exception.IllegalStatusTransitionException;
@@ -15,6 +19,7 @@ import com.drb.server.service.exception.NotFoundException;
 import com.drb.server.service.exception.ValidationException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -40,6 +45,15 @@ public class ReturnRequestService {
     private ReturnRequestRepository returnRepo;
 
     @Inject
+    private CustomerRepository customerRepo;
+
+    @Inject
+    private ProductRepository productRepo;
+
+    @Inject
+    private CustomerPurchaseRepository purchaseRepo;
+
+    @Inject
     private DriverRepository driverRepo;
 
     @Inject
@@ -60,15 +74,15 @@ public class ReturnRequestService {
 
     public List<ReturnRequest> findAll(String status, Long driverId, Long customerId) {
         if (status != null && !status.isBlank()) {
-            return returnRepo.findByStatus(ReturnStatus.valueOf(status));
+            return returnRepo.findByStatusWithRefs(ReturnStatus.valueOf(status));
         }
         if (driverId != null) {
-            return returnRepo.findByDriverId(driverId);
+            return returnRepo.findByDriverIdWithRefs(driverId);
         }
         if (customerId != null) {
-            return returnRepo.findByCustomerId(customerId);
+            return returnRepo.findByCustomerIdWithRefs(customerId);
         }
-        return returnRepo.findAll();
+        return returnRepo.findAllWithRefs();
     }
 
     public List<ReturnRequest> findByStatus(ReturnStatus status) {
@@ -76,11 +90,11 @@ public class ReturnRequestService {
     }
 
     public List<ReturnRequest> findByDriverId(Long driverId) {
-        return returnRepo.findByDriverId(driverId);
+        return returnRepo.findByDriverIdWithRefs(driverId);
     }
 
     public ReturnRequest findByBarcode(String barcode) {
-        return returnRepo.findByBarcode(barcode)
+        return returnRepo.findByBarcodeWithRefs(barcode)
             .orElseThrow(() -> new NotFoundException("ReturnRequest", "barcode=" + barcode));
     }
 
@@ -89,20 +103,90 @@ public class ReturnRequestService {
             .orElseThrow(() -> new NotFoundException("ReturnRequest", id));
     }
 
+    private ReturnRequest reload(ReturnRequest saved) {
+        if (saved.getId() == null) {
+            return saved;
+        }
+        return returnRepo.findByIdWithRefs(saved.getId()).orElse(saved);
+    }
+
     public ReturnRequest getById(Long id) {
         return findById(id);
     }
 
-    public ReturnRequest create(ReturnRequest rr) {
-        return createReturnRequest(rr);
+    public ReturnRequest createReturnRequest(ReturnRequest rr) {
+        return createReturnRequest(rr, null, null);
     }
 
-    public ReturnRequest createReturnRequest(ReturnRequest rr) {
+    @Transactional
+    public ReturnRequest createReturnRequest(ReturnRequest rr, CreateReturnRequest req, User openedByUser) {
         rr.setBarcode(null);
         rr.setBarcodeAssignedAt(null);
         rr.setBarcodeAssignedByDriver(null);
         rr.setStatus(ReturnStatus.OPEN);
-        return returnRepo.save(rr);
+
+        if (req != null) {
+            if (req.customerId != null) {
+                Customer customer = customerRepo.findById(req.customerId);
+                if (customer == null) {
+                    throw new NotFoundException("Customer", req.customerId);
+                }
+                rr.setCustomer(customer);
+            }
+            if (req.productId != null) {
+                Product product = productRepo.findById(req.productId);
+                if (product == null) {
+                    throw new NotFoundException("Product", req.productId);
+                }
+                rr.setProduct(product);
+            }
+            if (req.driverId != null) {
+                Driver driver = driverRepo.findById(req.driverId)
+                    .orElseThrow(() -> new NotFoundException("Driver", req.driverId));
+                rr.setDriver(driver);
+            }
+        }
+
+        if (openedByUser != null) {
+            rr.setOpenedByUser(openedByUser);
+        }
+
+        if (req != null && req.purchaseId != null) {
+            CustomerPurchase purchase = purchaseRepo.findByIdWithRefs(req.purchaseId)
+                .orElseThrow(() -> new NotFoundException("CustomerPurchase", req.purchaseId));
+            if (rr.getCustomer() != null && !purchase.getCustomer().getId().equals(rr.getCustomer().getId())) {
+                throw new ValidationException("PURCHASE_CUSTOMER_MISMATCH",
+                    "Purchase does not belong to the specified customer");
+            }
+            if (rr.getProduct() != null && !purchase.getProduct().getId().equals(rr.getProduct().getId())) {
+                throw new ValidationException("PURCHASE_PRODUCT_MISMATCH",
+                    "Purchase does not belong to the specified product");
+            }
+            if (rr.getCustomer() == null) {
+                rr.setCustomer(purchase.getCustomer());
+            }
+            if (rr.getProduct() == null) {
+                rr.setProduct(purchase.getProduct());
+            }
+            rr.setPurchase(purchase);
+            if (rr.getOrderNumber() == null || rr.getOrderNumber().isBlank()) {
+                rr.setOrderNumber(purchase.getOrderNumber());
+            }
+            if (rr.getOriginalDeliveryDate() == null) {
+                rr.setOriginalDeliveryDate(purchase.getOriginalDeliveryDate());
+            }
+            if (rr.getQuantity() == null) {
+                rr.setQuantity(purchase.getQuantity());
+            }
+            if (rr.getUnderWarranty() == null) {
+                rr.setUnderWarranty(purchase.getUnderWarranty());
+            }
+            purchase.setHandled(true);
+            purchaseRepo.save(purchase);
+        }
+
+        ReturnRequest saved = returnRepo.save(rr);
+        return reload(saved);
     }
 
     public ReturnRequest update(Long id, ReturnRequest rr) {
@@ -119,21 +203,24 @@ public class ReturnRequestService {
         existing.setDefectType(rr.getDefectType());
         existing.setDefectStage(rr.getDefectStage());
         existing.setDefectLocationText(rr.getDefectLocationText());
-        return returnRepo.save(existing);
+        return reload(returnRepo.save(existing));
     }
 
+    @Transactional
     public ReturnRequest assignDriver(Long returnId, Long driverId) {
-        ReturnRequest rr = findById(returnId);
+        ReturnRequest rr = returnRepo.findById(returnId)
+            .orElseThrow(() -> new NotFoundException("ReturnRequest", returnId));
         Driver driver = driverRepo.findById(driverId)
             .orElseThrow(() -> new NotFoundException("Driver", driverId));
         rr.setDriver(driver);
-        return returnRepo.save(rr);
+        ReturnRequest saved = returnRepo.save(rr);
+        if (saved.getStatus() == ReturnStatus.OPEN) {
+            return transitionStatus(returnId, ReturnStatus.WAITING_FOR_PICKUP, null, "Driver assigned");
+        }
+        return reload(saved);
     }
 
-    public ReturnRequest assignDriver(Long returnId, Long driverId, Long assignedByUserId) {
-        return assignDriver(returnId, driverId);
-    }
-
+    @Transactional
     public ReturnRequest assignBarcode(Long returnId, String barcode, Long driverId) {
         ReturnRequest rr = returnRepo.findById(returnId)
             .orElseThrow(() -> new NotFoundException("ReturnRequest", returnId));
@@ -165,14 +252,16 @@ public class ReturnRequestService {
         history.setChangedByUser(driver.getUser());
         statusHistoryRepo.save(history);
 
-        return saved;
+        return reload(saved);
     }
 
+    @Transactional
     public ReturnRequest changeStatus(Long returnId, String status, String comment, User user) {
         ReturnStatus newStatus = ReturnStatus.valueOf(status);
         return transitionStatus(returnId, newStatus, user, comment);
     }
 
+    @Transactional
     public ReturnRequest transitionStatus(Long returnId, ReturnStatus newStatus, User user, String comment) {
         ReturnRequest rr = returnRepo.findById(returnId)
             .orElseThrow(() -> new NotFoundException("ReturnRequest", returnId));
@@ -194,13 +283,14 @@ public class ReturnRequestService {
         history.setComment(comment);
         statusHistoryRepo.save(history);
 
-        return saved;
+        return reload(saved);
     }
 
     public ReturnRequest changePriority(Long returnId, String priority) {
-        ReturnRequest rr = findById(returnId);
+        ReturnRequest rr = returnRepo.findById(returnId)
+            .orElseThrow(() -> new NotFoundException("ReturnRequest", returnId));
         rr.setPriority(priority);
-        return returnRepo.save(rr);
+        return reload(returnRepo.save(rr));
     }
 
     public List<StatusHistory> getStatusHistory(Long returnId) {
@@ -215,6 +305,7 @@ public class ReturnRequestService {
         return pickupUpdateRepo.findByReturnRequestId(returnId);
     }
 
+    @Transactional
     public PickupUpdate createPickupUpdate(Long returnId, PickupConfirmationRequest req, User user) {
         ReturnRequest rr = findById(returnId);
         PickupUpdate pu = new PickupUpdate();
@@ -235,6 +326,7 @@ public class ReturnRequestService {
         return pickupUpdateRepo.save(pu);
     }
 
+    @Transactional
     public ReturnRequest confirmPickup(Long returnId, PickupConfirmationRequest req, User user) {
         ReturnRequest rr = findById(returnId);
         createPickupUpdate(returnId, req, user);
@@ -255,6 +347,7 @@ public class ReturnRequestService {
         return inspectionRepo.findByReturnRequestId(returnId);
     }
 
+    @Transactional
     public WarehouseInspection createWarehouseInspection(Long returnId, WarehouseInspectionRequest req, User user) {
         ReturnRequest rr = findById(returnId);
         WarehouseInspection inspection = new WarehouseInspection();
@@ -268,6 +361,8 @@ public class ReturnRequestService {
         }
         inspection.setCallFullyHandled(req.callFullyHandled);
         inspection.setWarehouseNotes(req.warehouseNotes);
-        return inspectionRepo.save(inspection);
+        WarehouseInspection saved = inspectionRepo.save(inspection);
+        transitionStatus(returnId, ReturnStatus.INSPECTED, user, "Warehouse inspection completed");
+        return saved;
     }
 }

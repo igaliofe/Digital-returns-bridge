@@ -6,6 +6,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
 import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 public class CustomerRepository {
@@ -36,5 +37,14 @@ public class CustomerRepository {
                 Customer.class)
                 .setParameter("pattern", pattern)
                 .getResultList();
+    }
+
+    public Optional<Customer> findByPhone(String phone) {
+        List<Customer> results = em.createQuery(
+                "SELECT c FROM Customer c WHERE c.phone = :phone",
+                Customer.class)
+            .setParameter("phone", phone)
+            .getResultList();
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
     }
 }

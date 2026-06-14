@@ -26,14 +26,23 @@ public class StatusHistory {
     @Column(name = "new_status")
     private ReturnStatus newStatus;
 
-    @Column(name = "changed_at", nullable = false, updatable = false)
-    private LocalDateTime changedAt;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @Column
     private String comment;
 
     @PrePersist
-    void prePersist() { this.changedAt = LocalDateTime.now(); }
+    void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    void preUpdate() { this.updatedAt = LocalDateTime.now(); }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -45,9 +54,10 @@ public class StatusHistory {
     public void setOldStatus(ReturnStatus oldStatus) { this.oldStatus = oldStatus; }
     public ReturnStatus getNewStatus() { return newStatus; }
     public void setNewStatus(ReturnStatus newStatus) { this.newStatus = newStatus; }
-    public LocalDateTime getChangedAt() { return changedAt; }
-    public void setChangedAt(LocalDateTime changedAt) { this.changedAt = changedAt; }
-    public LocalDateTime getCreatedAt() { return changedAt; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
     public String getComment() { return comment; }
     public void setComment(String comment) { this.comment = comment; }
 }

@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="utf-8">
+<title>תכנון ראשוני - Digital Returns Bridge</title>
+<style>
+  @page { size: A4; margin: 2cm; }
+  html { direction: rtl; }
+  body {
+    font-family: "Arial Hebrew", "Arial", "David", "Times New Roman", sans-serif;
+    direction: rtl;
+    text-align: right;
+    line-height: 1.6;
+    color: #1a1a1a;
+    font-size: 12pt;
+  }
+  h1 { font-size: 20pt; text-align: center; margin-bottom: 0.2em; }
+  h1 .subtitle { display: block; font-size: 13pt; font-weight: normal; margin-top: 0.4em; color: #444; }
+  h2 { font-size: 16pt; border-bottom: 2px solid #ccc; padding-bottom: 4px; margin-top: 1.4em; }
+  h3 { font-size: 13pt; margin-top: 1.1em; color: #222; }
+  ul { margin: 0.3em 0 0.8em 0; padding-inline-start: 1.4em; }
+  li { margin: 2px 0; }
+  code, .en { direction: ltr; unicode-bidi: embed; font-family: "Courier New", monospace; }
+  table { border-collapse: collapse; width: 100%; margin: 0.6em 0; }
+  th, td { border: 1px solid #bbb; padding: 5px 8px; text-align: right; vertical-align: top; font-size: 11pt; }
+  th { background: #f0f0f0; }
+  .endpoint { direction: ltr; unicode-bidi: embed; font-family: "Courier New", monospace; text-align: left; }
+  .diagram-wrap {
+    direction: ltr;
+    text-align: center;
+    margin: 1em 0;
+    padding: 0.8em;
+    border: 1px solid #ccc;
+    background: #fafafa;
+    overflow-x: auto;
+    page-break-inside: avoid;
+  }
+  .diagram-wrap .mermaid { display: inline-block; min-width: 100%; }
+  .note { background: #fff8e1; border-inline-start: 4px solid #f0ad4e; padding: 8px 12px; margin: 0.6em 0; font-size: 11pt; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "default",
+    flowchart: { curve: "linear" }
+  });
+</script>
+</head>
+<body>
+
+<h1>תכנון ראשוני לפרויקט בסדנה בתכנות מתקדם ב-<span class="en">JAVA</span>
+  <span class="subtitle"><span class="en">Digital Returns Bridge</span> &mdash; מערכת לניהול החזרות מוצרים במרלו"ג</span>
+</h1>
+
+<p class="note">עיצוב המסכים מבוסס על קובץ <span class="en">Figma</span>: <a target="_blank" href="https://www.figma.com/design/QLMlsSFt51XHxZAyUNeI2U/Digital-Returns-Bridge-%E2%80%94-Screen-Designs">Digital Returns Bridge &mdash; Screen Designs</a> (24 מסכים).</p>
+
+<h2>1. תיאור המערכת מבחינה פונקציונלית</h2>
+<p>המערכת המוצעת היא מערכת לניהול תהליך החזרות מוצרים במרכז לוגיסטי. מטרת המערכת היא ליצור תהליך דיגיטלי רציף בין מחלקת השירות, הנהגים בשטח, צוות המחסן והניהול הלוגיסטי.</p>
+<p>המערכת תאפשר פתיחת קריאת החזרה דיגיטלית באמצעות <strong>אשף שלוש שלבים</strong> (זיהוי לקוח &rarr; בחירת פריט מהיסטוריית רכישות &rarr; פרטי החזרה), הקצאת הקריאה לנהג, העלאת תמונות וחתימות, ועדכון מצב האיסוף על ידי הנהג. בזמן האיסוף, הנהג ידביק על המוצר מדבקה עם ברקוד פנוי שאינו משויך, יסרוק את הברקוד באפליקציית <span class="en">Android</span>, והמערכת תשייך את הברקוד לקריאת ההחזרה. בעת הגעת המוצר למחסן, המחסנאי יסרוק או יזין את הברקוד &mdash; בממשק <span class="en">Web</span> או באפליקציית <span class="en">Android</span> &mdash; ויקבל את תיק ההחזרה הדיגיטלי המלא.</p>
+<p>המערכת אינה מנהלת מאגר ברקודים או <span class="en">pool</span> של ברקודים. הברקודים קיימים כמדבקות פיזיות אצל הנהג, והמערכת מכירה ברקוד רק לאחר שהנהג סורק אותו ומשייך אותו לקריאת החזרה קיימת.</p>
+<p>במערכת יהיו ארבעה סוגי משתמשים:</p>
+<ul>
+  <li>נציג שירות</li>
+  <li>נהג / מוביל</li>
+  <li>מחסנאי / עובד מרלו"ג</li>
+  <li>מנהל מערכת / מנהל לוגיסטי</li>
+</ul>
+
+<h3>1.1 נציג שירות</h3>
+<p>נציג השירות ישתמש בממשק <span class="en">Web</span> מבוסס <span class="en">JSF</span>, מעוצב לפי <span class="en">Figma</span>.</p>
+<p>הפעולות המרכזיות של נציג השירות במערכת:</p>
+<ul>
+  <li>התחברות למערכת באמצעות מספר טלפון.</li>
+  <li>יצירת קריאת החזרה חדשה באמצעות אשף שלוש שלבים:
+    <ul>
+      <li><strong>שלב 1 &mdash; זיהוי לקוח:</strong> חיפוש לקוח לפי מספר טלפון.</li>
+      <li><strong>שלב 2 &mdash; בחירת פריט:</strong> בחירת פריט מתוך היסטוריית רכישות הלקוח. פריטים שכבר טופלו (נפתחה עבורם קריאת החזרה) יוצגו כלא-נבחרים.</li>
+      <li><strong>שלב 3 &mdash; קריאה חדשה:</strong> השלמת פרטי ההחזרה &mdash; צ'קליסט (תאריך מסירה, כמות, אחריות, שימוש, סיבת החזרה, פרטי פגם), הערות, עדיפות, שיוך נהג, תמונות כלליות ופגם, וחתימת נציג שירות.</li>
+    </ul>
+  </li>
+  <li>שמירת הקריאה בסטטוס <span class="en">WAITING_FOR_PICKUP</span>.</li>
+  <li>צפייה ברשימת קריאות, בפרטי קריאה ובדשבורד.</li>
+  <li>צפייה בברקוד המשויך לקריאה לאחר שהנהג סרק אותו בשטח.</li>
+  <li>צפייה בהיסטוריית הטיפול בקריאה.</li>
+</ul>
+
+<h3>1.2 נהג / מוביל</h3>
+<p>הנהג ישתמש באפליקציית <span class="en">Android</span> בזמן האיסוף מהלקוח.</p>
+<p>הפעולות המרכזיות של הנהג במערכת:</p>
+<ul>
+  <li>התחברות לאפליקציה באמצעות מספר טלפון.</li>
+  <li>צפייה ברשימת האיסופים שהוקצו לו (שם לקוח, כתובת, מוצר, סטטוס איסוף וסטטוס ברקוד).</li>
+  <li>צפייה בפרטי איסוף: פרטי לקוח, כתובת, מוצר, תמונת קטלוג, סיבת החזרה וציר זמן.</li>
+  <li>הדבקת מדבקה עם ברקוד פנוי על המוצר בבית הלקוח.</li>
+  <li>סריקת הברקוד (מצלמה או הזנה ידנית) ושיוכו לקריאת ההחזרה.</li>
+  <li>צילום הפריט (תמונת מוצר, תמונה ממרחק, תמונת פגם &mdash; תמונת פגם חובה).</li>
+  <li>אישור איסוף: סימון מצב הפריט, פרטי פגם, הערות נהג וחתימת נהג.</li>
+  <li>שליחת הנתונים, הברקוד, התמונות והחתימה לשרת.</li>
+</ul>
+
+<h3>1.3 מחסנאי / עובד מרלו"ג</h3>
+<p>המחסנאי ישתמש ב<strong>שני ערוצים</strong>: ממשק <span class="en">Web</span> מבוסס <span class="en">JSF</span> ואפליקציית <span class="en">Android</span> בעת קליטת המוצרים במחסן. אותה אפליקציית מובייל תשרת גם נהגים וגם מחסנאים, ולאחר ההתחברות המערכת תנתב את המשתמש למסכים המתאימים לתפקידו.</p>
+<p>הפעולות המרכזיות של המחסנאי במערכת:</p>
+<ul>
+  <li>התחברות למערכת באמצעות מספר טלפון.</li>
+  <li>צפייה בתור עבודה של פריטים שנאספו (<span class="en">PICKED_UP</span>) ושל פריטים שהגיעו למחסן (<span class="en">ARRIVED_TO_WAREHOUSE</span>).</li>
+  <li>סריקה (באמצעות מצלמת האפליקציה) או הזנה ידנית של הברקוד המודבק על המוצר.</li>
+  <li>שליפת תיק ההחזרה הדיגיטלי לפי הברקוד.</li>
+  <li>צפייה בפרטי הלקוח והמוצר, מק"ט, תיאור, תמונת קטלוג ומחיר.</li>
+  <li>צפייה בסיבת ההחזרה, בפרטי הפגם ובתמונות שהועלו על ידי נציג השירות והנהג.</li>
+  <li>צפייה במצב הפריט, בפרטי הפגם ובהערות הנהג.</li>
+  <li>סימון פריט כהגיע למחסן (קליטת מחסן).</li>
+  <li>בקשת מידע נוסף מהנהג / השירות כאשר המידע אינו מספיק (סטטוס <span class="en">NEEDS_MORE_INFO</span>).</li>
+  <li>בדיקת מחסן: סיווג מצב הפריט, קביעת אופן הטיפול בו, והחלטה האם הקריאה טופלה במלואה.</li>
+  <li>הוספת הערות מחסן.</li>
+  <li>סימון "טופל במלואו" לסגירת הקריאה (סטטוס <span class="en">CLOSED</span>).</li>
+  <li>צפייה בהיסטוריית הטיפול בקריאה.</li>
+</ul>
+
+<h3>1.4 מנהל מערכת / מנהל לוגיסטי</h3>
+<p>המנהל ישתמש בממשק <span class="en">Web</span> מבוסס <span class="en">JSF</span>.</p>
+<p>הפעולות המרכזיות של המנהל במערכת:</p>
+<ul>
+  <li>התחברות למערכת באמצעות מספר טלפון.</li>
+  <li>צפייה בכל קריאות ההחזרה, עם אפשרות סינון לפי סטטוס, נהג, לקוח או תאריך.</li>
+  <li>צפייה בדשבורד עם מדדי ביצוע (<span class="en">KPI</span>): קריאות פתוחות, ממתינות לאיסוף, עם ברקוד משויך, שנאספו, במחסן, נסגרו, ועם מידע חסר.</li>
+  <li>צפייה בדוחות מפורטים (כולל פריטים שנבדקו במחסן).</li>
+  <li>ניהול משתמשים, לקוחות, מוצרים ונהגים.</li>
+</ul>
+
+<h2>2. טכנולוגיות שבהן המערכת תמומש</h2>
+<table>
+  <tr><th>טכנולוגיה</th><th>שימוש במערכת</th></tr>
+  <tr><td class="en">JSF - JavaServer Faces</td><td>מימוש ממשק <span class="en">Web</span> עבור נציג השירות, המחסנאי והמנהל.</td></tr>
+  <tr><td class="en">Android</td><td>מימוש אפליקציית מובייל רב-תפקידית: נהגים (רשימת איסופים, סריקת ברקוד, צילום תמונות ואישור איסוף) ומחסנאים (תור עבודה, סריקה, קליטת מחסן ובדיקת מחסן).</td></tr>
+  <tr><td class="en">JPA - Java Persistence API</td><td>מיפוי מחלקות <span class="en">Java</span> לטבלאות בבסיס הנתונים וניהול קשרים בין ישויות.</td></tr>
+  <tr><td class="en">REST Web Services</td><td>חשיפת פעולות השרת עבור אפליקציית <span class="en">Android</span> ועבור פעולות המערכת.</td></tr>
+  <tr><td class="en">Cloudinary</td><td>אחסון תמונות (קטלוג, תיעוד, חתימות) מחוץ לבסיס הנתונים.</td></tr>
+</table>
+
+<h3>2.1 <span class="en">JSF - JavaServer Faces</span></h3>
+<p><span class="en">JSF</span> ישמש לבניית ממשק ה-<span class="en">Web</span> של המערכת. המסכים המתוכננים:</p>
+<ul>
+  <li>מסך התחברות.</li>
+  <li><span class="en">Dashboard</span>.</li>
+  <li>אשף פתיחת קריאת החזרה (3 שלבים: זיהוי לקוח, בחירת פריט, קריאה חדשה).</li>
+  <li>מסך רשימת קריאות החזרה.</li>
+  <li>מסך פרטי קריאת החזרה.</li>
+  <li>מסך קליטת מחסן.</li>
+  <li>מסך דוחות.</li>
+  <li>מסכי ניהול נתוני מערכת (משתמשים, לקוחות, מוצרים, נהגים).</li>
+</ul>
+
+<h3>2.2 <span class="en">Android</span></h3>
+<p>אפליקציית ה-<span class="en">Android</span> היא אפליקציה רב-תפקידית המשרתת גם נהגים וגם מחסנאים. לאחר ההתחברות, האפליקציה תבדוק את תפקיד המשתמש ותנתב אותו למסכים המתאימים.</p>
+<p><strong>זרימת נהג:</strong> התחברות &rarr; רשימת איסופים &rarr; פרטי איסוף &rarr; שיוך ברקוד &rarr; צילום תמונות &rarr; אישור איסוף (כולל חתימה).</p>
+<p><strong>זרימת מחסנאי:</strong> התחברות &rarr; תור עבודה &rarr; סריקת ברקוד &rarr; תיק החזרה &rarr; בדיקת מחסן והחלטה.</p>
+
+<h3>2.3 <span class="en">JPA - Java Persistence API</span></h3>
+<p><span class="en">JPA</span> ישמש למיפוי מחלקות <span class="en">Java</span> לטבלאות בבסיס הנתונים. הישויות המתוכננות:</p>
+<ul>
+  <li class="en">User</li>
+  <li class="en">Customer</li>
+  <li class="en">CustomerPurchase</li>
+  <li class="en">Product</li>
+  <li class="en">Driver</li>
+  <li class="en">ReturnRequest</li>
+  <li class="en">ReturnImage</li>
+  <li class="en">PickupUpdate</li>
+  <li class="en">WarehouseInspection</li>
+  <li class="en">StatusHistory</li>
+</ul>
+
+<h3>2.4 <span class="en">REST Web Services</span></h3>
+<p><span class="en">REST Web Services</span> ישמשו לחשיפת פעולות השרת עבור אפליקציית <span class="en">Android</span> ועבור פעולות המערכת. השרת יחשוף קריאות לניהול התחברות, משתמשים, לקוחות (כולל היסטוריית רכישות), מוצרים, נהגים, קריאות החזרה, שיוך ברקוד, העלאת תמונות, עדכוני איסוף, קליטת מחסן ודוחות.</p>
+
+<h3>2.5 <span class="en">Cloudinary</span></h3>
+<p><span class="en">Cloudinary</span> ישמש לשמירת תמונות המועלות למערכת מממשק ה-<span class="en">JSF</span> (נציג שירות) ומאפליקציית <span class="en">Android</span> (נהג). בבסיס הנתונים יישמרו פרטי התמונה: כתובת, מזהה ב-<span class="en">Cloudinary</span>, סוג התמונה, המשתמש שהעלה, קריאת ההחזרה המשויכת ותאריך העלאה.</p>
+
+<h2>3. ארכיטקטורה ורכיבי המערכת העיקריים</h2>
+<p>המערכת תיבנה בארכיטקטורת שכבות, כאשר יש שני סוגי לקוחות: ממשק <span class="en">Web</span> פנימי מבוסס <span class="en">JSF</span> עבור נציג השירות, המחסנאי והמנהל, ואפליקציית <span class="en">Android</span> רב-תפקידית עבור הנהגים והמחסנאים בשטח.</p>
+<p>אפליקציית ה-<span class="en">Android</span> אינה ניגשת ישירות לבסיס הנתונים, אלא מתקשרת עם השרת באמצעות <span class="en">REST API</span>. בצד השרת תהיה שכבת לוגיקה עסקית משותפת, שכבת גישה לנתונים (<span class="en">Repository</span>) ורכיב ייעודי להעלאת תמונות ל-<span class="en">Cloudinary</span>.</p>
+
+<table>
+  <tr><th>רכיב</th><th>תיאור</th></tr>
+  <tr><td class="en">JSF Web Interface</td><td>ממשק <span class="en">Web</span> עבור המשתמשים הפנימיים: נציג שירות, מחסנאי ומנהל.</td></tr>
+  <tr><td class="en">Android App (multi-role)</td><td>אפליקציית מובייל רב-תפקידית עבור נהגים ומחסנאים בשטח.</td></tr>
+  <tr><td class="en">REST API</td><td>שכבת <span class="en">API</span> שתחשוף את פעולות השרת.</td></tr>
+  <tr><td class="en">Service Layer</td><td>שכבת הלוגיקה העסקית של המערכת.</td></tr>
+  <tr><td class="en">Repository Layer</td><td>שכבת גישה לבסיס הנתונים באמצעות <span class="en">JPA</span>.</td></tr>
+  <tr><td class="en">Cloudinary Image Service</td><td>רכיב שאחראי על העלאת תמונות ושמירת פרטיהן.</td></tr>
+  <tr><td class="en">Relational Database</td><td>בסיס נתונים רלציוני (<span class="en">PostgreSQL</span>) שישמור את נתוני המערכת.</td></tr>
+</table>
+
+<h3>3.1 רכיבי <span class="en">REST</span> / <span class="en">Service</span> / <span class="en">Repository</span></h3>
+<p>להלן מיפוי קצר של הרכיבים העיקריים בצד השרת (חבילת <span class="en">com.drb.server</span>):</p>
+
+<h4>שכבת <span class="en">REST</span> (<span class="en">JAX-RS Resources</span>)</h4>
+<table>
+  <tr><th>Resource</th><th>אחריות</th></tr>
+  <tr><td class="en">AuthResource</td><td>התחברות, שליפת משתמש מחובר, יציאה.</td></tr>
+  <tr><td class="en">UserResource</td><td>ניהול משתמשים (מנהל).</td></tr>
+  <tr><td class="en">CustomerResource</td><td>לקוחות, חיפוש לפי טלפון, היסטוריית רכישות.</td></tr>
+  <tr><td class="en">ProductResource</td><td>מוצרים ותמונות קטלוג.</td></tr>
+  <tr><td class="en">DriverResource</td><td>נהגים ורשימת איסופים שהוקצו.</td></tr>
+  <tr><td class="en">ReturnResource</td><td>קריאות החזרה, שיוך ברקוד/נהג, סטטוס, ציר זמן, בדיקות מחסן.</td></tr>
+  <tr><td class="en">ImageResource</td><td>העלאת תמונות וחתימות ל-<span class="en">Cloudinary</span>.</td></tr>
+  <tr><td class="en">PickupUpdateResource</td><td>עדכוני איסוף ואישור איסוף.</td></tr>
+  <tr><td class="en">WarehouseResource</td><td>שליפת תיק מחסן לפי ברקוד, קליטת הגעה.</td></tr>
+  <tr><td class="en">WarehouseInspectionResource</td><td>עדכון בדיקת מחסן קיימת.</td></tr>
+  <tr><td class="en">ReportsResource</td><td>דשבורד, דוחות ו-<span class="en">KPI</span>.</td></tr>
+</table>
+<p>אבטחה: <span class="en">AuthFilter</span> (אימות <span class="en">Bearer token</span>), <span class="en">TokenStore</span> (אחסון טוקנים בזיכרון).</p>
+<p class="note">בסביבת פיתוח הטוקנים נשמרים בזיכרון השרת (<span class="en">ConcurrentHashMap</span>) ואובדים בעת הפעלה מחדש. בסביבת <span class="en">Production</span> ניתן להחליף לרכיב מתמיד (Redis, DB) או ל-<span class="en">JWT</span> חתום.</p>
+
+<h4>שכבת <span class="en">Service</span> (לוגיקה עסקית)</h4>
+<table>
+  <tr><th>Service</th><th>אחריות</th></tr>
+  <tr><td class="en">AuthService</td><td>אימות לפי טלפון, הנפקת טוקן.</td></tr>
+  <tr><td class="en">UserService</td><td>ניהול משתמשים.</td></tr>
+  <tr><td class="en">CustomerService</td><td>לקוחות וחיפוש.</td></tr>
+  <tr><td class="en">CustomerPurchaseService</td><td>היסטוריית רכישות, דגל <span class="en">handled</span>.</td></tr>
+  <tr><td class="en">ProductService</td><td>מוצרים.</td></tr>
+  <tr><td class="en">DriverService</td><td>נהגים ואיסופים.</td></tr>
+  <tr><td class="en">ReturnRequestService</td><td>יצירת קריאה, מעברי סטטוס, שיוך ברקוד, ציר זמן.</td></tr>
+  <tr><td class="en">PickupUpdateService</td><td>עדכוני איסוף ואישור איסוף.</td></tr>
+  <tr><td class="en">WarehouseService</td><td>קליטת מחסן, בקשת מידע נוסף.</td></tr>
+  <tr><td class="en">CloudinaryImageService</td><td>העלאת תמונות וחתימות.</td></tr>
+  <tr><td class="en">ReportsService</td><td>דוחות ו-<span class="en">KPI</span>.</td></tr>
+</table>
+
+<h4>שכבת <span class="en">Repository</span> (<span class="en">JPA</span>)</h4>
+<table>
+  <tr><th>Repository</th><th>ישות</th></tr>
+  <tr><td class="en">UserRepository</td><td><span class="en">User</span></td></tr>
+  <tr><td class="en">CustomerRepository</td><td><span class="en">Customer</span></td></tr>
+  <tr><td class="en">CustomerPurchaseRepository</td><td><span class="en">CustomerPurchase</span></td></tr>
+  <tr><td class="en">ProductRepository</td><td><span class="en">Product</span></td></tr>
+  <tr><td class="en">DriverRepository</td><td><span class="en">Driver</span></td></tr>
+  <tr><td class="en">ReturnRequestRepository</td><td><span class="en">ReturnRequest</span></td></tr>
+  <tr><td class="en">ReturnImageRepository</td><td><span class="en">ReturnImage</span></td></tr>
+  <tr><td class="en">PickupUpdateRepository</td><td><span class="en">PickupUpdate</span></td></tr>
+  <tr><td class="en">WarehouseInspectionRepository</td><td><span class="en">WarehouseInspection</span></td></tr>
+  <tr><td class="en">StatusHistoryRepository</td><td><span class="en">StatusHistory</span></td></tr>
+</table>
+
+<h2>4. רשימת קריאות השרת &mdash; <span class="en">Server Endpoints</span></h2>
+<p>להלן רשימת הקריאות שייחשפו על ידי השרת וישמשו את אפליקציית <span class="en">Android</span> ואת פעולות המערכת.</p>
+
+<h3>4.1 <span class="en">Authentication</span></h3>
+<table>
+  <tr><th>תיאור</th><th>Endpoint</th><th>Method</th></tr>
+  <tr><td>התחברות לפי מספר טלפון</td><td class="endpoint">/api/auth/login</td><td>POST</td></tr>
+  <tr><td>שליפת פרטי המשתמש המחובר</td><td class="endpoint">/api/auth/me</td><td>GET</td></tr>
+  <tr><td>יציאה מהמערכת</td><td class="endpoint">/api/auth/logout</td><td>POST</td></tr>
+</table>
+
+<h3>4.2 <span class="en">Users</span></h3>
+<table>
+  <tr><th>תיאור</th><th>Endpoint</th><th>Method</th></tr>
+  <tr><td>שליפת כל המשתמשים</td><td class="endpoint">/api/users</td><td>GET</td></tr>
+  <tr><td>שליפת משתמש לפי מזהה</td><td class="endpoint">/api/users/{userId}</td><td>GET</td></tr>
+  <tr><td>יצירת משתמש חדש</td><td class="endpoint">/api/users</td><td>POST</td></tr>
+  <tr><td>עדכון פרטי משתמש</td><td class="endpoint">/api/users/{userId}</td><td>PUT</td></tr>
+  <tr><td>הפעלה או השבתה של משתמש</td><td class="endpoint">/api/users/{userId}/active</td><td>PATCH</td></tr>
+</table>
+
+<h3>4.3 <span class="en">Customers</span> (כולל היסטוריית רכישות)</h3>
+<table>
+  <tr><th>תיאור</th><th>Endpoint</th><th>Method</th></tr>
+  <tr><td>שליפת כל הלקוחות / חיפוש</td><td class="endpoint">/api/customers?search={text}</td><td>GET</td></tr>
+  <tr><td>שליפת לקוח לפי מזהה</td><td class="endpoint">/api/customers/{customerId}</td><td>GET</td></tr>
+  <tr><td>שליפת לקוח לפי טלפון (שלב 1 באשף)</td><td class="endpoint">/api/customers/by-phone/{phone}</td><td>GET</td></tr>
+  <tr><td>שליפת היסטוריית רכישות (שלב 2 באשף)</td><td class="endpoint">/api/customers/{customerId}/purchases</td><td>GET</td></tr>
+  <tr><td>יצירת לקוח חדש</td><td class="endpoint">/api/customers</td><td>POST</td></tr>
+  <tr><td>עדכון פרטי לקוח</td><td class="endpoint">/api/customers/{customerId}</td><td>PUT</td></tr>
+</table>
+
+<h3>4.4 <span class="en">Products</span></h3>
+<table>
+  <tr><th>תיאור</th><th>Endpoint</th><th>Method</th></tr>
+  <tr><td>שליפת כל המוצרים / חיפוש</td><td class="endpoint">/api/products?search={text}</td><td>GET</td></tr>
+  <tr><td>שליפת מוצר לפי מזהה</td><td class="endpoint">/api/products/{productId}</td><td>GET</td></tr>
+  <tr><td>יצירת מוצר חדש</td><td class="endpoint">/api/products</td><td>POST</td></tr>
+  <tr><td>עדכון פרטי מוצר</td><td class="endpoint">/api/products/{productId}</td><td>PUT</td></tr>
+</table>
+
+<h3>4.5 <span class="en">Drivers</span></h3>
+<table>
+  <tr><th>תיאור</th><th>Endpoint</th><th>Method</th></tr>
+  <tr><td>שליפת כל הנהגים</td><td class="endpoint">/api/drivers</td><td>GET</td></tr>
+  <tr><td>שליפת נהג לפי מזהה</td><td class="endpoint">/api/drivers/{driverId}</td><td>GET</td></tr>
+  <tr><td>שליפת איסופים שהוקצו לנהג</td><td class="endpoint">/api/drivers/{driverId}/pickups</td><td>GET</td></tr>
+</table>
+
+<h3>4.6 <span class="en">Return Requests / Barcode</span></h3>
+<table>
+  <tr><th>תיאור</th><th>Endpoint</th><th>Method</th></tr>
+  <tr><td>שליפת / סינון קריאות החזרה</td><td class="endpoint">/api/returns?status=&amp;driverId=&amp;customerId=</td><td>GET</td></tr>
+  <tr><td>שליפת קריאה לפי מזהה</td><td class="endpoint">/api/returns/{returnId}</td><td>GET</td></tr>
+  <tr><td>שליפת קריאה לפי ברקוד</td><td class="endpoint">/api/returns/by-barcode/{barcode}</td><td>GET</td></tr>
+  <tr><td>יצירת קריאת החזרה (כולל <span class="en">purchaseId</span>)</td><td class="endpoint">/api/returns</td><td>POST</td></tr>
+  <tr><td>שיוך נהג לקריאה</td><td class="endpoint">/api/returns/{returnId}/assign-driver</td><td>PATCH</td></tr>
+  <tr><td>שיוך ברקוד לקריאה לאחר סריקה בשטח</td><td class="endpoint">/api/returns/{returnId}/assign-barcode</td><td>PATCH</td></tr>
+  <tr><td>עדכון סטטוס קריאה</td><td class="endpoint">/api/returns/{returnId}/status</td><td>PATCH</td></tr>
+  <tr><td>עדכון עדיפות</td><td class="endpoint">/api/returns/{returnId}/priority</td><td>PATCH</td></tr>
+</table>
+<p>ראו גם: אישור איסוף (4.8), ציר זמן והיסטוריית סטטוס (4.10), בדיקות מחסן (4.9).</p>
+
+<h3>4.7 <span class="en">Images / Cloudinary</span></h3>
+<table>
+  <tr><th>תיאור</th><th>Endpoint</th><th>Method</th></tr>
+  <tr><td>העלאת תמונה לקריאת החזרה</td><td class="endpoint">/api/returns/{returnId}/images</td><td>POST</td></tr>
+  <tr><td>שליפת כל התמונות של קריאה</td><td class="endpoint">/api/returns/{returnId}/images</td><td>GET</td></tr>
+  <tr><td>שליפת / מחיקת תמונה</td><td class="endpoint">/api/images/{imageId}</td><td>GET / DELETE</td></tr>
+</table>
+
+<h3>4.8 <span class="en">Pickup Updates</span> (עדכוני איסוף)</h3>
+<table>
+  <tr><th>תיאור</th><th>Endpoint</th><th>Method</th></tr>
+  <tr><td>שליפת עדכוני איסוף לקריאה</td><td class="endpoint">/api/returns/{returnId}/pickup-updates</td><td>GET</td></tr>
+  <tr><td>רישום עדכון איסוף (ללא שינוי סטטוס)</td><td class="endpoint">/api/returns/{returnId}/pickup-updates</td><td>POST</td></tr>
+  <tr><td>אישור איסוף על ידי הנהג (מעבר ל-<span class="en">PICKED_UP</span>)</td><td class="endpoint">/api/returns/{returnId}/pickup-confirmation</td><td>POST</td></tr>
+  <tr><td>עדכון רשומת איסוף קיימת</td><td class="endpoint">/api/pickup-updates/{pickupUpdateId}</td><td>PUT</td></tr>
+</table>
+
+<h3>4.9 <span class="en">Warehouse</span> (מחסן)</h3>
+<table>
+  <tr><th>תיאור</th><th>Endpoint</th><th>Method</th></tr>
+  <tr><td>שליפת תיק מחסן לפי ברקוד</td><td class="endpoint">/api/warehouse/returns/{barcode}</td><td>GET</td></tr>
+  <tr><td>סימון פריט כהגיע למחסן</td><td class="endpoint">/api/warehouse/arrivals/{barcode}</td><td>POST</td></tr>
+  <tr><td>שליפת בדיקות מחסן לקריאה</td><td class="endpoint">/api/returns/{returnId}/warehouse-inspections</td><td>GET</td></tr>
+  <tr><td>יצירת בדיקת מחסן</td><td class="endpoint">/api/returns/{returnId}/warehouse-inspections</td><td>POST</td></tr>
+  <tr><td>עדכון בדיקת מחסן קיימת</td><td class="endpoint">/api/warehouse-inspections/{inspectionId}</td><td>PUT</td></tr>
+</table>
+
+<h3>4.10 <span class="en">Status History</span> (היסטוריית סטטוסים)</h3>
+<table>
+  <tr><th>תיאור</th><th>Endpoint</th><th>Method</th></tr>
+  <tr><td>שליפת היסטוריית שינויי סטטוס</td><td class="endpoint">/api/returns/{returnId}/status-history</td><td>GET</td></tr>
+  <tr><td>הוספת רשומת היסטוריה (עקיפת מנהל)</td><td class="endpoint">/api/returns/{returnId}/status-history</td><td>POST</td></tr>
+  <tr><td>ציר זמן מאוחד (מסכי Android ופרטי קריאה)</td><td class="endpoint">/api/returns/{returnId}/timeline</td><td>GET</td></tr>
+</table>
+
+<h3>4.11 <span class="en">Reports / KPI</span></h3>
+<table>
+  <tr><th>תיאור</th><th>Endpoint</th><th>Method</th></tr>
+  <tr><td>נתוני <span class="en">Dashboard</span></td><td class="endpoint">/api/reports/dashboard</td><td>GET</td></tr>
+  <tr><td>קריאות לפי סטטוס / החלטות מחסן / מידע חסר / ביצועי נהגים / החזרות יומיות</td><td class="endpoint">/api/reports/*</td><td>GET</td></tr>
+</table>
+
+<h2>5. תיאור המסכים</h2>
+<p>המערכת תכלול 24 מסכים, מעוצבים לפי <span class="en">Figma</span>: 13 מסכי <span class="en">Web</span> (כולל אשף 3 שלבים ו-4 מסכי ניהול) ו-11 מסכי <span class="en">Android</span> (6 נהג + 5 מחסנאי, כולל 2 עיצובי התחברות).</p>
+
+<h3>5.0 רשימת 24 המסכים</h3>
+<table>
+  <tr><th>#</th><th>שם מסך</th><th>פלטפורמה</th><th>תפקיד</th><th>נתיב / Activity</th></tr>
+  <tr><td>1</td><td>התחברות</td><td><span class="en">Web</span></td><td>כולם</td><td class="en">/login.xhtml</td></tr>
+  <tr><td>2</td><td>דשבורד</td><td><span class="en">Web</span></td><td>נציג, מחסנאי, מנהל</td><td class="en">/dashboard.xhtml</td></tr>
+  <tr><td>3</td><td>זיהוי לקוח (אשף שלב 1)</td><td><span class="en">Web</span></td><td>נציג שירות</td><td class="en">/returns/create/identify-customer.xhtml</td></tr>
+  <tr><td>4</td><td>בחירת פריט (אשף שלב 2)</td><td><span class="en">Web</span></td><td>נציג שירות</td><td class="en">/returns/create/select-item.xhtml</td></tr>
+  <tr><td>5</td><td>קריאה חדשה (אשף שלב 3)</td><td><span class="en">Web</span></td><td>נציג שירות</td><td class="en">/returns/create/new-return.xhtml</td></tr>
+  <tr><td>6</td><td>רשימת קריאות</td><td><span class="en">Web</span></td><td>נציג, מחסנאי, מנהל</td><td class="en">/returns/list.xhtml</td></tr>
+  <tr><td>7</td><td>פרטי קריאה</td><td><span class="en">Web</span></td><td>נציג, מחסנאי, מנהל</td><td class="en">/returns/details.xhtml</td></tr>
+  <tr><td>8</td><td>קליטת מחסן</td><td><span class="en">Web</span></td><td>מחסנאי</td><td class="en">/warehouse/receiving.xhtml</td></tr>
+  <tr><td>9</td><td>דוחות ו-<span class="en">KPI</span></td><td><span class="en">Web</span></td><td>מנהל</td><td class="en">/reports.xhtml</td></tr>
+  <tr><td>10</td><td>ניהול משתמשים</td><td><span class="en">Web</span></td><td>מנהל</td><td class="en">/admin/users.xhtml</td></tr>
+  <tr><td>11</td><td>ניהול לקוחות</td><td><span class="en">Web</span></td><td>מנהל</td><td class="en">/admin/customers.xhtml</td></tr>
+  <tr><td>12</td><td>ניהול מוצרים</td><td><span class="en">Web</span></td><td>מנהל</td><td class="en">/admin/products.xhtml</td></tr>
+  <tr><td>13</td><td>ניהול נהגים</td><td><span class="en">Web</span></td><td>מנהל</td><td class="en">/admin/drivers.xhtml</td></tr>
+  <tr><td>14</td><td>התחברות (נהג)</td><td><span class="en">Android</span></td><td>נהג</td><td class="en">LoginActivity</td></tr>
+  <tr><td>15</td><td>רשימת איסופים</td><td><span class="en">Android</span></td><td>נהג</td><td class="en">PickupListActivity</td></tr>
+  <tr><td>16</td><td>פרטי איסוף</td><td><span class="en">Android</span></td><td>נהג</td><td class="en">PickupDetailsActivity</td></tr>
+  <tr><td>17</td><td>שיוך ברקוד</td><td><span class="en">Android</span></td><td>נהג</td><td class="en">BarcodeAssignmentActivity</td></tr>
+  <tr><td>18</td><td>צילום תמונות</td><td><span class="en">Android</span></td><td>נהג</td><td class="en">ImageCaptureActivity</td></tr>
+  <tr><td>19</td><td>אישור איסוף</td><td><span class="en">Android</span></td><td>נהג</td><td class="en">PickupConfirmationActivity</td></tr>
+  <tr><td>20</td><td>התחברות (מחסנאי)</td><td><span class="en">Android</span></td><td>מחסנאי</td><td class="en">LoginActivity</td></tr>
+  <tr><td>21</td><td>תור עבודה</td><td><span class="en">Android</span></td><td>מחסנאי</td><td class="en">StorekeeperHomeActivity</td></tr>
+  <tr><td>22</td><td>סריקת ברקוד</td><td><span class="en">Android</span></td><td>מחסנאי</td><td class="en">WarehouseScanActivity</td></tr>
+  <tr><td>23</td><td>תיק החזרה</td><td><span class="en">Android</span></td><td>מחסנאי</td><td class="en">WarehouseReturnDetailsActivity</td></tr>
+  <tr><td>24</td><td>בדיקת מחסן</td><td><span class="en">Android</span></td><td>מחסנאי</td><td class="en">WarehouseInspectionActivity</td></tr>
+</table>
+
+<h3>5.1 מסך התחברות</h3>
+<p>מסך התחברות משותף למשתמשי ה-<span class="en">Web</span> וה-<span class="en">Android</span>. ההתחברות תתבצע באמצעות מספר טלפון בלבד. לאחר ההתחברות, המערכת תנתב את המשתמש למסך המתאים לפי תפקידו.</p>
+
+<h3>5.2 <span class="en">Dashboard</span></h3>
+<p>מסך ראשי עבור נציג שירות, מחסנאי ומנהל. יציג 8 כרטיסי <span class="en">KPI</span>: קריאות פתוחות, ממתינות לאיסוף, עם ברקוד משויך, שנאספו, במחסן, נסגרו, עם מידע חסר, וללא ברקוד. פעולות: מעבר לרשימת קריאות, פתיחת קריאה חדשה, מעבר לדוחות.</p>
+
+<h3>5.3 אשף פתיחת קריאת החזרה (3 שלבים)</h3>
+<p>מסך עבור נציג שירות.</p>
+<p><strong>שלב 1 &mdash; זיהוי לקוח:</strong> חיפוש לקוח לפי מספר טלפון.</p>
+<p><strong>שלב 2 &mdash; בחירת פריט:</strong> טבלת היסטוריית רכישות (מוצר, מספר הזמנה, כמות, תאריך מסירה, אחריות). פריטים שכבר טופלו מסומנים ואינם ניתנים לבחירה.</p>
+<p><strong>שלב 3 &mdash; קריאה חדשה:</strong> פרטים ממולאים מראש מהרכישה. שדות: שימוש בפריט, סיבת החזרה, פרטי פגם, הערות, עדיפות, שיוך נהג, תמונות, וחתימת נציג שירות. שמירה תיצור קריאה ללא ברקוד ותסמן את הרכישה כ"טופלה".</p>
+
+<h3>5.4 מסך רשימת קריאות החזרה</h3>
+<p>מסך עבור נציג שירות, מחסנאי ומנהל. מציג: ברקוד (אם שויך), שם לקוח, מוצר, סטטוס, נהג, תאריך פתיחה, עדיפות. אפשרות סינון לפי סטטוס, נהג, לקוח וחיפוש לפי ברקוד.</p>
+
+<h3>5.5 מסך פרטי קריאת החזרה</h3>
+<p>מציג את כל פרטי הקריאה: לקוח ומוצר (כולל תמונת קטלוג), ברקוד, תמונות (כולל חתימות), פרטי איסוף נהג, מצב פריט, הערות, סטטוס, היסטוריה וציר זמן.</p>
+
+<h3>5.6 מסכי <span class="en">Android</span> &mdash; נהג</h3>
+<p><strong>רשימת איסופים:</strong> שם לקוח, כתובת, מוצר &times; כמות, צ'יפ סטטוס, צ'יפ ברקוד.</p>
+<p><strong>פרטי איסוף:</strong> פרטי לקוח, כתובת, מוצר, תמונת קטלוג, ברקוד, ציר זמן. פעולות: שיוך ברקוד, צילום, אישור איסוף.</p>
+<p><strong>שיוך ברקוד:</strong> סריקה (מצלמה) או הזנה ידנית.</p>
+<p><strong>צילום תמונות:</strong> תמונת מוצר, תמונה ממרחק, תמונת פגם (חובה).</p>
+<p><strong>אישור איסוף:</strong> מצב פריט, פרטי פגם, הערות, חתימת נהג.</p>
+
+<h3>5.7 מסך קליטת מחסן (<span class="en">Web</span>)</h3>
+<p>מסך עבור המחסנאי בממשק ה-<span class="en">Web</span>. סריקה/הזנת ברקוד, שליפת תיק החזרה, סימון "הגיע למחסן", בקשת מידע נוסף, וביצוע בדיקת מחסן.</p>
+
+<h3>5.8 מסכי <span class="en">Android</span> &mdash; מחסנאי</h3>
+<p><strong>תור עבודה:</strong> פריטים ב-<span class="en">PICKED_UP</span> ו-<span class="en">ARRIVED_TO_WAREHOUSE</span>, כפתור סריקה.</p>
+<p><strong>סריקת ברקוד:</strong> סריקה באמצעות מצלמת המכשיר, שליפת תיק ההחזרה.</p>
+<p><strong>תיק החזרה:</strong> פרטי ההחזרה המלאים, סימון "הגיע למחסן", כניסה לבדיקת מחסן.</p>
+<p><strong>בדיקת מחסן:</strong> תצוגת מידע לקריאה בלבד (פרטי מוצר, תמונות, פרטי פגם). שאלה "מספיק מידע?" &mdash; אם לא, בקשת מידע נוסף; אם כן, סיווג מצב הפריט, החלטת מחסן (מלאי / סיווג / תיקון / השמדה), וסימון "טופל במלואו" לסגירת הקריאה.</p>
+
+<h3>5.9 מסך דוחות / <span class="en">KPI</span></h3>
+<p>מסך עבור מנהל. 9 כרטיסי <span class="en">KPI</span> (כולל פריטים שנבדקו), טבלאות וגרפים: החזרות לפי סטטוס, החלטות מחסן, מידע חסר, ביצועי נהגים, החזרות יומיות.</p>
+
+<h3>5.10 מסכי ניהול נתוני מערכת</h3>
+<p>מסכים עבור מנהל: ניהול משתמשים, לקוחות, מוצרים (כולל תמונת קטלוג) ונהגים. משתמשים, לקוחות ומוצרים &mdash; דרך <span class="en">REST API</span> (או backing beans). <strong>נהגים</strong> &mdash; מסך ייעודי (<span class="en">DriverAdminBean</span>): יצירת רשומת נהג על ידי שיוך <span class="en">User</span> קיים (<span class="en">role=DRIVER</span>) + פרטי רכב/טלפון; עדכון ומחיקה דרך שכבת השירות, לא דרך <span class="en">REST</span>.</p>
+
+<h3>5.11 מיפוי מסכים לקריאות שרת</h3>
+<p>להלן מיפוי עיקרי בין מסכים לקריאות <span class="en">REST</span> שהם משתמשים בהן:</p>
+
+<h4>מסכי <span class="en">Web</span> (<span class="en">JSF</span>)</h4>
+<table>
+  <tr><th>מסך</th><th>קריאות שרת עיקריות</th></tr>
+  <tr><td>התחברות</td><td class="endpoint">POST /api/auth/login</td></tr>
+  <tr><td>דשבורד</td><td class="endpoint">GET /api/reports/dashboard</td></tr>
+  <tr><td>אשף &mdash; זיהוי לקוח</td><td class="endpoint">GET /api/customers/by-phone/{phone}</td></tr>
+  <tr><td>אשף &mdash; בחירת פריט</td><td class="endpoint">GET /api/customers/{customerId}/purchases</td></tr>
+  <tr><td>אשף &mdash; קריאה חדשה</td><td class="endpoint">POST /api/returns, POST .../images, PATCH .../assign-driver</td></tr>
+  <tr><td>רשימת קריאות</td><td class="endpoint">GET /api/returns?status=&amp;driverId=&amp;customerId=</td></tr>
+  <tr><td>פרטי קריאה</td><td class="endpoint">GET /api/returns/{returnId}, GET .../timeline, GET .../images, GET .../pickup-updates</td></tr>
+  <tr><td>קליטת מחסן</td><td class="endpoint">GET /api/warehouse/returns/{barcode}, POST /api/warehouse/arrivals/{barcode}, PATCH .../status, POST .../warehouse-inspections</td></tr>
+  <tr><td>דוחות</td><td class="endpoint">GET /api/reports/*</td></tr>
+  <tr><td>ניהול משתמשים</td><td class="endpoint">GET/POST/PUT /api/users, PATCH .../active</td></tr>
+  <tr><td>ניהול לקוחות</td><td class="endpoint">GET/POST/PUT /api/customers</td></tr>
+  <tr><td>ניהול מוצרים</td><td class="endpoint">GET/POST/PUT /api/products</td></tr>
+  <tr><td>ניהול נהגים</td><td><span class="en">DriverAdminBean</span> + <span class="en">DriverService</span> (לא <span class="en">REST</span>); <span class="en">GET /api/drivers</span> לשליפה בלבד</td></tr>
+</table>
+
+<h4>מסכי <span class="en">Android</span></h4>
+<table>
+  <tr><th>מסך</th><th>קריאות שרת עיקריות</th></tr>
+  <tr><td>התחברות</td><td class="endpoint">POST /api/auth/login, GET /api/auth/me</td></tr>
+  <tr><td>רשימת איסופים</td><td class="endpoint">GET /api/drivers/{driverId}/pickups</td></tr>
+  <tr><td>פרטי איסוף</td><td class="endpoint">GET /api/returns/{returnId}, GET .../timeline</td></tr>
+  <tr><td>שיוך ברקוד</td><td class="endpoint">PATCH /api/returns/{returnId}/assign-barcode</td></tr>
+  <tr><td>צילום תמונות</td><td class="endpoint">POST /api/returns/{returnId}/images</td></tr>
+  <tr><td>אישור איסוף</td><td class="endpoint">POST .../images (DRIVER_SIGNATURE), POST .../pickup-confirmation</td></tr>
+  <tr><td>תור עבודה (מחסנאי)</td><td class="endpoint">GET /api/returns?status=PICKED_UP, GET ...?status=ARRIVED_TO_WAREHOUSE</td></tr>
+  <tr><td>סריקת ברקוד</td><td class="endpoint">GET /api/warehouse/returns/{barcode}</td></tr>
+  <tr><td>תיק החזרה</td><td class="endpoint">POST /api/warehouse/arrivals/{barcode}, GET /api/returns/{returnId}</td></tr>
+  <tr><td>בדיקת מחסן</td><td class="endpoint">PATCH .../status (NEEDS_MORE_INFO / CLOSED), POST .../warehouse-inspections</td></tr>
+</table>
+
+<h2>6. תיאור בסיס הנתונים</h2>
+<p>בסיס הנתונים יהיה בסיס נתונים רלציוני (<span class="en">PostgreSQL</span>). הגישה אליו תתבצע באמצעות <span class="en">JPA</span>. המערכת אינה כוללת טבלת ברקודים &mdash; הברקוד נשמר כשדה בקריאת ההחזרה, ורק לאחר סריקה בשטח.</p>
+
+<h3>6.1 טבלאות עיקריות</h3>
+<ul>
+  <li><span class="en">users</span> &mdash; משתמשי המערכת (טלפון, שם, תפקיד, פעיל).</li>
+  <li><span class="en">customers</span> &mdash; לקוחות (שם, טלפון, כתובת, דוא"ל).</li>
+  <li><span class="en">customer_purchases</span> &mdash; היסטוריית רכישות (לקוח, מוצר, מספר הזמנה, כמות, תאריך מסירה, אחריות, דגל "טופל").</li>
+  <li><span class="en">products</span> &mdash; מוצרים (מק"ט, שם, קטגוריה, מחיר, תמונת קטלוג).</li>
+  <li><span class="en">drivers</span> &mdash; נהגים (משתמש, מספר רכב, טלפון).</li>
+  <li><span class="en">return_requests</span> &mdash; קריאות החזרה (לקוח, מוצר, רכישה, נהג, ברקוד, צ'קליסט, סטטוס, עדיפות).</li>
+  <li><span class="en">return_images</span> &mdash; תמונות (כתובת, סוג, מעלה, קריאה).</li>
+  <li><span class="en">pickup_updates</span> &mdash; עדכוני איסוף (מצב פריט, פרטי פגם, חתימת נהג, הערות).</li>
+  <li><span class="en">warehouse_inspections</span> &mdash; בדיקות מחסן (מצב פריט, החלטת מחסן, "טופל במלואו", הערות).</li>
+  <li><span class="en">status_history</span> &mdash; היסטוריית שינויי סטטוס.</li>
+</ul>
+
+<h3>6.2 דיאגרמת <span class="en">ERD</span> (תמצית)</h3>
+<p>אין טבלת ברקודים &mdash; הברקוד הוא שדה ב-<span class="en">return_requests</span>, nullable עד לסריקה בשטח.</p>
+
+
+<h3>6.3 פירוט שדות &mdash; טבלאות מרכזיות</h3>
+
+<h4><span class="en">users</span></h4>
+<table>
+  <tr><th>שדה</th><th>סוג</th><th>אילוצים</th></tr>
+  <tr><td class="en">id</td><td><span class="en">BIGSERIAL</span></td><td><span class="en">PK</span></td></tr>
+  <tr><td class="en">phone_number</td><td><span class="en">VARCHAR(30)</span></td><td><span class="en">NOT NULL UNIQUE</span></td></tr>
+  <tr><td class="en">full_name</td><td><span class="en">VARCHAR(120)</span></td><td><span class="en">NOT NULL</span></td></tr>
+  <tr><td class="en">role</td><td><span class="en">VARCHAR(30)</span></td><td><span class="en">SERVICE_REP | DRIVER | WAREHOUSE | MANAGER</span></td></tr>
+  <tr><td class="en">active</td><td><span class="en">BOOLEAN</span></td><td>ברירת מחדל <span class="en">TRUE</span></td></tr>
+  <tr><td class="en">created_at, updated_at</td><td><span class="en">TIMESTAMP</span></td><td>ניהול אוטומטי (<span class="en">JPA</span>)</td></tr>
+</table>
+
+<h4><span class="en">customer_purchases</span></h4>
+<table>
+  <tr><th>שדה</th><th>סוג</th><th>אילוצים</th></tr>
+  <tr><td class="en">id</td><td><span class="en">BIGSERIAL</span></td><td><span class="en">PK</span></td></tr>
+  <tr><td class="en">customer_id</td><td><span class="en">BIGINT</span></td><td><span class="en">FK → customers</span></td></tr>
+  <tr><td class="en">product_id</td><td><span class="en">BIGINT</span></td><td><span class="en">FK → products</span></td></tr>
+  <tr><td class="en">order_number</td><td><span class="en">VARCHAR(60)</span></td><td></td></tr>
+  <tr><td class="en">quantity</td><td><span class="en">INT</span></td><td></td></tr>
+  <tr><td class="en">original_delivery_date</td><td><span class="en">DATE</span></td><td></td></tr>
+  <tr><td class="en">under_warranty</td><td><span class="en">BOOLEAN</span></td><td></td></tr>
+  <tr><td class="en">handled</td><td><span class="en">BOOLEAN</span></td><td>ברירת מחדל <span class="en">FALSE</span>; מסומן <span class="en">TRUE</span> בעת יצירת קריאה</td></tr>
+</table>
+
+<h4><span class="en">return_requests</span></h4>
+<table>
+  <tr><th>שדה</th><th>סוג</th><th>אילוצים</th></tr>
+  <tr><td class="en">id</td><td><span class="en">BIGSERIAL</span></td><td><span class="en">PK</span></td></tr>
+  <tr><td class="en">barcode</td><td><span class="en">VARCHAR(60)</span></td><td><span class="en">UNIQUE</span>, nullable &mdash; משויך על ידי הנהג בשטח</td></tr>
+  <tr><td class="en">customer_id, product_id</td><td><span class="en">BIGINT</span></td><td><span class="en">FK NOT NULL</span></td></tr>
+  <tr><td class="en">purchase_id</td><td><span class="en">BIGINT</span></td><td><span class="en">FK → customer_purchases</span>, nullable</td></tr>
+  <tr><td class="en">driver_id</td><td><span class="en">BIGINT</span></td><td><span class="en">FK → drivers</span></td></tr>
+  <tr><td class="en">opened_by_user_id</td><td><span class="en">BIGINT</span></td><td><span class="en">FK → users NOT NULL</span></td></tr>
+  <tr><td class="en">status</td><td><span class="en">VARCHAR(30)</span></td><td>מחזור חיים &mdash; ראו 6.4; ערכי enum &mdash; ראו 6.5 (<span class="en">ReturnStatus</span>)</td></tr>
+  <tr><td class="en">priority</td><td><span class="en">VARCHAR(20)</span></td><td></td></tr>
+  <tr><td class="en">reason, defect_description</td><td><span class="en">TEXT</span></td><td>טקסט חופשי (הערות / תיאור פגם)</td></tr>
+  <tr><td class="en">original_delivery_date, quantity, under_warranty, was_used</td><td>מעורב</td><td>צ'קליסט נציג שירות</td></tr>
+  <tr><td class="en">return_reason, defect_type, defect_stage</td><td><span class="en">VARCHAR</span></td><td>enum &mdash; ראו 6.5</td></tr>
+  <tr><td class="en">defect_location_text</td><td><span class="en">TEXT</span></td><td>מיקום פגם (טקסט חופשי)</td></tr>
+</table>
+
+<h4><span class="en">return_images</span></h4>
+<table>
+  <tr><th>שדה</th><th>סוג</th><th>אילוצים</th></tr>
+  <tr><td class="en">return_request_id</td><td><span class="en">BIGINT</span></td><td><span class="en">FK NOT NULL</span></td></tr>
+  <tr><td class="en">uploaded_by_user_id</td><td><span class="en">BIGINT</span></td><td><span class="en">FK → users</span></td></tr>
+  <tr><td class="en">cloudinary_public_id, image_url</td><td><span class="en">VARCHAR</span></td><td><span class="en">NOT NULL</span></td></tr>
+  <tr><td class="en">image_type</td><td><span class="en">VARCHAR(30)</span></td><td>enum <span class="en">ImageType</span> &mdash; ראו 6.5</td></tr>
+</table>
+
+<h4><span class="en">pickup_updates</span></h4>
+<table>
+  <tr><th>שדה</th><th>סוג</th><th>אילוצים</th></tr>
+  <tr><td class="en">return_request_id, driver_id</td><td><span class="en">BIGINT</span></td><td><span class="en">FK NOT NULL</span></td></tr>
+  <tr><td class="en">item_condition</td><td><span class="en">VARCHAR(40)</span></td><td>enum <span class="en">ItemCondition</span> &mdash; ראו 6.5</td></tr>
+  <tr><td class="en">defect_type, defect_location</td><td><span class="en">VARCHAR</span></td><td>enum, nullable &mdash; ראו 6.5</td></tr>
+  <tr><td class="en">defect_location_other</td><td><span class="en">TEXT</span></td><td>כאשר <span class="en">defect_location=OTHER</span></td></tr>
+  <tr><td class="en">signature_image_url</td><td><span class="en">VARCHAR(500)</span></td><td>כתובת חתימת נהג (<span class="en">Cloudinary</span>)</td></tr>
+  <tr><td class="en">item_collected</td><td><span class="en">BOOLEAN</span></td><td>האם הפריט נאסף פיזית</td></tr>
+  <tr><td class="en">driver_notes</td><td><span class="en">TEXT</span></td><td></td></tr>
+</table>
+
+<h4><span class="en">warehouse_inspections</span></h4>
+<table>
+  <tr><th>שדה</th><th>סוג</th><th>אילוצים</th></tr>
+  <tr><td class="en">return_request_id</td><td><span class="en">BIGINT</span></td><td><span class="en">FK NOT NULL</span></td></tr>
+  <tr><td class="en">inspected_by_user_id</td><td><span class="en">BIGINT</span></td><td><span class="en">FK → users</span>; נגזר מהטוקן בשרת</td></tr>
+  <tr><td class="en">item_condition</td><td><span class="en">VARCHAR(40)</span></td><td>enum <span class="en">ItemCondition</span> &mdash; ראו 6.5</td></tr>
+  <tr><td class="en">warehouse_decision</td><td><span class="en">VARCHAR(30)</span></td><td>enum <span class="en">WarehouseDecision</span> &mdash; ראו 6.5</td></tr>
+  <tr><td class="en">call_fully_handled</td><td><span class="en">BOOLEAN</span></td><td>האם הקריאה טופלה במלואה</td></tr>
+  <tr><td class="en">warehouse_notes</td><td><span class="en">TEXT</span></td><td></td></tr>
+</table>
+
+<h4><span class="en">status_history</span></h4>
+<table>
+  <tr><th>שדה</th><th>סוג</th><th>אילוצים</th></tr>
+  <tr><td class="en">return_request_id</td><td><span class="en">BIGINT</span></td><td><span class="en">FK NOT NULL</span></td></tr>
+  <tr><td class="en">changed_by_user_id</td><td><span class="en">BIGINT</span></td><td><span class="en">FK → users</span>, nullable</td></tr>
+  <tr><td class="en">old_status, new_status</td><td><span class="en">VARCHAR(30)</span></td><td>enum <span class="en">ReturnStatus</span> &mdash; ראו 6.5</td></tr>
+  <tr><td class="en">comment</td><td><span class="en">TEXT</span></td><td>הערת מעבר</td></tr>
+  <tr><td class="en">created_at</td><td><span class="en">TIMESTAMP</span></td><td>חותמת זמן המעבר</td></tr>
+</table>
+
+<h3>6.4 סטטוסים עיקריים</h3>
+<p>מחזור החיים של קריאת החזרה: <span class="en">OPEN</span> &rarr; <span class="en">WAITING_FOR_PICKUP</span> &rarr; <span class="en">BARCODE_ASSIGNED</span> &rarr; <span class="en">PICKED_UP</span> &rarr; <span class="en">ARRIVED_TO_WAREHOUSE</span> &rarr; <span class="en">INSPECTED</span> &rarr; <span class="en">CLOSED</span>. סטטוס מיוחד: <span class="en">NEEDS_MORE_INFO</span> (בקשת מידע נוסף מהמחסן).</p>
+
+<h3>6.5 ערכי <span class="en">Enum</span> מרכזיים</h3>
+<table>
+  <tr><th>Enum</th><th>ערכים</th></tr>
+  <tr><td class="en">ReturnStatus</td><td class="en">OPEN, WAITING_FOR_PICKUP, BARCODE_ASSIGNED, PICKED_UP, ARRIVED_TO_WAREHOUSE, INSPECTED, CLOSED, NEEDS_MORE_INFO</td></tr>
+  <tr><td class="en">ItemCondition</td><td class="en">LIKE_NEW_ORIGINAL_PACKAGING, LIKE_NEW_NO_PACKAGING, USED, USED_MINOR_DEFECT, SIGNIFICANTLY_DEFECTIVE</td></tr>
+  <tr><td class="en">ReturnReason</td><td class="en">NOT_AS_EXPECTED, DELIVERY_ERROR, SELLER_ERROR, SUPPLIER_ERROR, WAREHOUSE_ERROR, DRIVER_ERROR, CUSTOMER_NOT_HOME, PRODUCT_DEFECT</td></tr>
+  <tr><td class="en">DefectType</td><td class="en">TEAR, SCRATCH, BREAK, MISSING_PART, FADED_COLOR, RUST, DENT, REVERSED_SIDE, ELECTRONIC_FAULT</td></tr>
+  <tr><td class="en">DefectStage</td><td class="en">INITIAL_SHIPPING, AFTER_USE, MISSING_PART</td></tr>
+  <tr><td class="en">DefectLocation</td><td class="en">RIGHT_SEAT, LEFT_SEAT, SEAT, LEGS, BACK, OTHER</td></tr>
+  <tr><td class="en">WarehouseDecision</td><td class="en">STOCK_AS_NEW_114, CLASS_B, SHAPIIM_155, REDESIGN_208, FROZEN_FURTHER_HANDLING, REPAIR, DISPOSE</td></tr>
+  <tr><td class="en">ImageType</td><td class="en">SERVICE_GENERAL_IMAGE, SERVICE_DEFECT_IMAGE, SERVICE_REP_SIGNATURE, DRIVER_PRODUCT_IMAGE, DRIVER_DISTANT_IMAGE, DRIVER_DEFECT_IMAGE, DRIVER_SIGNATURE, WAREHOUSE_IMAGE</td></tr>
+</table>
+
+<h3>6.6 מבני בקשה (<span class="en">Payloads</span>) חשובים</h3>
+
+<h4>יצירת קריאת החזרה &mdash; <span class="en">POST /api/returns</span></h4>
+<pre class="en" style="direction:ltr;text-align:left;background:#f5f5f5;padding:8px;font-size:10pt;">{
+  "customerId": 1, "productId": 2, "purchaseId": 5, "driverId": 3,
+  "orderNumber": "ORD-2024-001",
+  "returnReason": "PRODUCT_DEFECT", "defectType": "ELECTRONIC_FAULT",
+  "defectStage": "AFTER_USE", "defectLocationText": "...",
+  "reason": "Customer complaint summary", "defectDescription": "Screen dead pixels",
+  "priority": "HIGH", "originalDeliveryDate": "2024-05-01",
+  "quantity": 1, "underWarranty": true, "wasUsed": true
+}</pre>
+<table>
+  <tr><th>שדה</th><th>סוג</th><th>הסבר</th></tr>
+  <tr><td class="en">returnReason</td><td>enum</td><td>סיבת החזרה מובנית (קטגוריה) &mdash; ראו 6.5</td></tr>
+  <tr><td class="en">reason</td><td>טקסט</td><td>הערה חופשית של נציג השירות (בממשק: שדה Notes)</td></tr>
+  <tr><td class="en">defectType</td><td>enum</td><td>סוג פגם מובנה &mdash; ראו 6.5</td></tr>
+  <tr><td class="en">defectDescription</td><td>טקסט</td><td>תיאור פגם חופשי (פרטים נוספים)</td></tr>
+  <tr><td class="en">purchaseId</td><td>מספר</td><td>אופציונלי; מקשר רכישה ומסמן <span class="en">handled=true</span></td></tr>
+</table>
+<p>שדות <span class="en">returnReason</span>/<span class="en">defectType</span> הם קטגוריות מובנות; <span class="en">reason</span>/<span class="en">defectDescription</span> הם טקסט חופשי &mdash; לא כפילות.</p>
+
+<h4>אישור איסוף &mdash; <span class="en">POST /api/returns/{returnId}/pickup-confirmation</span></h4>
+<pre class="en" style="direction:ltr;text-align:left;background:#f5f5f5;padding:8px;font-size:10pt;">{
+  "driverId": 3, "itemCondition": "USED_MINOR_DEFECT",
+  "defectType": "SCRATCH", "defectLocation": "OTHER",
+  "defectLocationOther": "USB-C port", "itemCollected": true,
+  "driverNotes": "All fine"
+}</pre>
+
+<h4>העלאת תמונה &mdash; <span class="en">POST /api/returns/{returnId}/images</span></h4>
+<p><span class="en">multipart/form-data</span>: חלק <span class="en">file</span> (בינארי) + חלק <span class="en">imageType</span> (מחרוזת enum &mdash; ראו 6.5). חתימות נציג/נהג מועלות כ-<span class="en">PNG</span> עם <span class="en">SERVICE_REP_SIGNATURE</span> / <span class="en">DRIVER_SIGNATURE</span>.</p>
+
+<h4>בדיקת מחסן &mdash; <span class="en">POST /api/returns/{returnId}/warehouse-inspections</span></h4>
+<pre class="en" style="direction:ltr;text-align:left;background:#f5f5f5;padding:8px;font-size:10pt;">{
+  "itemCondition": "LIKE_NEW_ORIGINAL_PACKAGING",
+  "warehouseDecision": "STOCK_AS_NEW_114",
+  "callFullyHandled": true, "warehouseNotes": "..."
+}</pre>
+<p><span class="en">inspectedByUserId</span> נגזר מהטוקן בשרת &mdash; הלקוח לא שולח אותו.</p>
+
+<h2>7. תשתית והפעלה (High Level)</h2>
+<p>המערכת תופעל בסביבת פיתוח ובדיקות באמצעות <span class="en">Docker Compose</span>. התשתית תכלול שני שירותים עיקריים:</p>
+<ul>
+  <li><strong>בסיס נתונים</strong> &mdash; <span class="en">PostgreSQL 15</span>, עם טעינה אוטומטית של סכמה ונתוני בדיקה בעת אתחול.</li>
+  <li><strong>שרת אפליקציה</strong> &mdash; <span class="en">WildFly 30+</span> שמארח את אפליקציית <span class="en">Jakarta EE 10</span> (ממשק <span class="en">JSF</span> + <span class="en">REST API</span> + <span class="en">JPA</span>).</li>
+</ul>
+<p>אפליקציית ה-<span class="en">Android</span> (נהגים ומחסנאים) <strong>אינה</strong> חלק מ-<span class="en">Docker</span> &mdash; היא רצה על מכשיר/אמולטור ומתקשרת עם השרת ב-<span class="en">REST API</span>. תמונות וחתימות יאוחסנו ב-<span class="en">Cloudinary</span> (שירות חיצוני, <strong>חובה</strong> להגדרת credentials אמיתיים).</p>
+
+<div class="diagram-wrap">
+<pre class="mermaid">
+flowchart LR
+    subgraph clients [Clients]
+        JSF[JSF Web UI]
+        AND[Android App]
+    end
+    subgraph docker [Docker Compose]
+        WF[WildFly Server]
+        PG[(PostgreSQL)]
+    end
+    CLD[Cloudinary]
+    JSF --> WF
+    AND --> WF
+    WF --> PG
+    WF --> CLD
+</pre>
+</div>
+
+
+</body>
+</html>

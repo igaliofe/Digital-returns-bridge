@@ -10,8 +10,12 @@ public class ReturnRequestModel {
     public String barcodeAssignedByDriverName;
     public Long customerId;
     public String customerName;
+    public String customerAddress;
+    public String customerPhone;
     public Long productId;
     public String productName;
+    public String productSku;
+    public String productDescription;
     public Long driverId;
     public String driverName;
     public String orderNumber;

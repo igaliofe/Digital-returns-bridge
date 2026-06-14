@@ -5,6 +5,7 @@ INSERT INTO users (phone_number, full_name, role, active) VALUES
     ('0501111111', 'Alice Cohen',    'SERVICE_REP', TRUE),
     ('0502222222', 'Bob Levi',       'DRIVER',      TRUE),
     ('0503333333', 'Carol Mizrahi',  'WAREHOUSE',   TRUE),
+    ('0505555555', 'Eli Bar-On',     'WAREHOUSE',   TRUE),
     ('0504444444', 'David Katz',     'MANAGER',     TRUE);
 
 -- Drivers (links Bob Levi as a driver)
@@ -24,6 +25,36 @@ INSERT INTO products (sku, name, category, description, price, image_url) VALUES
     ('SKU-003', 'USB-C Hub 7-port',  'Accessories', '7-port USB-C hub with PD',       149.00, 'https://res.cloudinary.com/demo/image/upload/sample-usbhub.jpg'),
     ('SKU-004', 'Monitor 27" 4K',    'Electronics', '27-inch 4K IPS monitor',        2499.00, 'https://res.cloudinary.com/demo/image/upload/sample-monitor.jpg'),
     ('SKU-005', 'Office Chair',      'Furniture',   'Ergonomic mesh office chair',   1299.00, 'https://res.cloudinary.com/demo/image/upload/sample-chair.jpg');
+
+-- Customer purchases (3–4 per customer for Item Selection wizard)
+INSERT INTO customer_purchases (customer_id, product_id, order_number, quantity, original_delivery_date, under_warranty, handled)
+VALUES
+    ((SELECT id FROM customers WHERE phone = '0521000001'), (SELECT id FROM products WHERE sku = 'SKU-001'),
+     'ORD-2024-001', 1, DATE '2024-05-01', TRUE, FALSE),
+    ((SELECT id FROM customers WHERE phone = '0521000001'), (SELECT id FROM products WHERE sku = 'SKU-004'),
+     'ORD-2024-004', 1, DATE '2024-05-20', FALSE, FALSE),
+    ((SELECT id FROM customers WHERE phone = '0521000001'), (SELECT id FROM products WHERE sku = 'SKU-002'),
+     'ORD-2024-010', 1, DATE '2024-06-01', TRUE, FALSE),
+    ((SELECT id FROM customers WHERE phone = '0521000001'), (SELECT id FROM products WHERE sku = 'SKU-005'),
+     'ORD-2024-011', 1, DATE '2024-06-10', TRUE, TRUE),
+
+    ((SELECT id FROM customers WHERE phone = '0521000002'), (SELECT id FROM products WHERE sku = 'SKU-002'),
+     'ORD-2024-002', 1, DATE '2024-05-10', FALSE, FALSE),
+    ((SELECT id FROM customers WHERE phone = '0521000002'), (SELECT id FROM products WHERE sku = 'SKU-003'),
+     'ORD-2024-012', 2, DATE '2024-05-18', TRUE, FALSE),
+    ((SELECT id FROM customers WHERE phone = '0521000002'), (SELECT id FROM products WHERE sku = 'SKU-001'),
+     'ORD-2024-013', 1, DATE '2024-06-05', TRUE, FALSE),
+    ((SELECT id FROM customers WHERE phone = '0521000002'), (SELECT id FROM products WHERE sku = 'SKU-005'),
+     'ORD-2024-014', 1, DATE '2024-06-12', FALSE, FALSE),
+
+    ((SELECT id FROM customers WHERE phone = '0521000003'), (SELECT id FROM products WHERE sku = 'SKU-003'),
+     'ORD-2024-003', 2, DATE '2024-05-15', TRUE, FALSE),
+    ((SELECT id FROM customers WHERE phone = '0521000003'), (SELECT id FROM products WHERE sku = 'SKU-004'),
+     'ORD-2024-015', 1, DATE '2024-05-22', TRUE, FALSE),
+    ((SELECT id FROM customers WHERE phone = '0521000003'), (SELECT id FROM products WHERE sku = 'SKU-001'),
+     'ORD-2024-016', 1, DATE '2024-06-08', TRUE, FALSE),
+    ((SELECT id FROM customers WHERE phone = '0521000003'), (SELECT id FROM products WHERE sku = 'SKU-002'),
+     'ORD-2024-017', 1, DATE '2024-06-14', FALSE, FALSE);
 
 -- Return requests (various statuses; barcodes assigned only where relevant)
 INSERT INTO return_requests
@@ -48,7 +79,7 @@ VALUES
         (SELECT id FROM products  WHERE sku  = 'SKU-002'),
         (SELECT id FROM drivers   WHERE phone = '0502222222'),
         (SELECT id FROM users     WHERE phone_number = '0501111111'),
-        'BC-10001', NOW() - INTERVAL '2 hours',
+        'RET-10001', NOW() - INTERVAL '2 hours',
         (SELECT id FROM drivers WHERE phone = '0502222222'),
         'ORD-2024-002', 'Wrong item', 'Received wrong keyboard layout', 'MEDIUM', 'BARCODE_ASSIGNED',
         DATE '2024-05-10', 1, FALSE, FALSE,
@@ -59,7 +90,7 @@ VALUES
         (SELECT id FROM products  WHERE sku  = 'SKU-003'),
         (SELECT id FROM drivers   WHERE phone = '0502222222'),
         (SELECT id FROM users     WHERE phone_number = '0501111111'),
-        'BC-10002', NOW() - INTERVAL '1 day',
+        'RET-10002', NOW() - INTERVAL '1 day',
         (SELECT id FROM drivers WHERE phone = '0502222222'),
         'ORD-2024-003', 'Damaged packaging', 'Hub ports not working', 'HIGH', 'ARRIVED_TO_WAREHOUSE',
         DATE '2024-05-15', 2, TRUE, TRUE,
@@ -86,7 +117,7 @@ INSERT INTO status_history (return_request_id, changed_by_user_id, old_status, n
 INSERT INTO status_history (return_request_id, changed_by_user_id, old_status, new_status, comment)
     SELECT rr.id,
            (SELECT id FROM users WHERE phone_number = '0502222222'),
-           'WAITING_FOR_PICKUP', 'BARCODE_ASSIGNED', 'Barcode BC-10002 scanned'
+           'WAITING_FOR_PICKUP', 'BARCODE_ASSIGNED', 'Barcode RET-10002 scanned'
     FROM return_requests rr WHERE rr.order_number = 'ORD-2024-003';
 
 INSERT INTO status_history (return_request_id, changed_by_user_id, old_status, new_status, comment)

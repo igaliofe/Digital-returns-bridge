@@ -3,39 +3,123 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center"
-    android:padding="32dp">
+    android:background="@color/drb_cream_bg">
 
-    <TextView
-        android:layout_width="wrap_content"
+  <include
+      android:id="@+id/loginHeader"
+      layout="@layout/include_drb_header"/>
+
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:orientation="vertical"
+      android:gravity="center_horizontal"
+      android:paddingStart="@dimen/drb_spacing_xxl"
+      android:paddingEnd="@dimen/drb_spacing_xxl"
+      android:paddingTop="64dp"
+      android:paddingBottom="120dp">
+
+    <!-- Driver login chrome (Agent 6 styles) -->
+    <LinearLayout
+        android:id="@+id/driverLoginChrome"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/login_title"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="32dp"/>
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:layout_marginBottom="@dimen/drb_spacing_xl">
+
+        <TextView
+            android:id="@+id/tvLoginLogo"
+            android:layout_width="@dimen/drb_logo_size"
+            android:layout_height="@dimen/drb_logo_size"
+            android:background="@drawable/bg_logo_square"
+            android:gravity="center"
+            android:text="DRB"
+            android:textColor="@color/white"
+            android:textSize="@dimen/drb_text_logo"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/tvDriverLoginTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/drb_spacing_lg"
+            android:text="@string/app_name"
+            style="@style/DrbText.Title"/>
+
+        <TextView
+            android:id="@+id/tvDriverLoginSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/drb_spacing_sm"
+            android:text="@string/login_driver_phone_hint"
+            style="@style/DrbText.Subtitle"/>
+    </LinearLayout>
+
+    <!-- Storekeeper login chrome (Agent 6 styles) -->
+    <LinearLayout
+        android:id="@+id/warehouseLoginChrome"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:layout_marginBottom="@dimen/drb_spacing_xl"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="@dimen/drb_logo_size"
+            android:layout_height="@dimen/drb_logo_size"
+            android:background="@drawable/bg_logo_square"
+            android:gravity="center"
+            android:text="DRB"
+            android:textColor="@color/white"
+            android:textSize="@dimen/drb_text_logo"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/tvWarehouseLoginTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/drb_spacing_lg"
+            android:text="@string/app_name"
+            style="@style/DrbText.Title"/>
+
+        <TextView
+            android:id="@+id/tvWarehouseLoginSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/drb_spacing_sm"
+            android:text="@string/login_driver_phone_hint"
+            style="@style/DrbText.Subtitle"/>
+    </LinearLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/phone_hint"
-        android:layout_marginBottom="16dp">
+        style="@style/DrbTextInputLayout"
+        android:layout_marginBottom="@dimen/drb_spacing_lg">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etPhone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="phone"/>
+            android:inputType="phone"
+            android:hint="05X-XXX-XXXX"
+            android:textColor="@color/drb_text_muted"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/btnLogin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/login_button"/>
+        android:text="@string/login_button"
+        style="@style/DrbButton.Primary"/>
 
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="@dimen/drb_spacing_lg"/>
+  </LinearLayout>
 </LinearLayout>

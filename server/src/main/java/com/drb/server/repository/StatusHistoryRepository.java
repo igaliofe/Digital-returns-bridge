@@ -23,7 +23,7 @@ public class StatusHistoryRepository {
 
     public List<StatusHistory> findByReturnRequestId(Long returnRequestId) {
         return em.createQuery(
-                "SELECT s FROM StatusHistory s WHERE s.returnRequest.id = :returnRequestId ORDER BY s.changedAt ASC",
+                "SELECT s FROM StatusHistory s WHERE s.returnRequest.id = :returnRequestId ORDER BY s.createdAt ASC",
                 StatusHistory.class)
                 .setParameter("returnRequestId", returnRequestId)
                 .getResultList();
@@ -33,7 +33,7 @@ public class StatusHistoryRepository {
         return em.createQuery(
                 "SELECT s FROM StatusHistory s " +
                 "LEFT JOIN FETCH s.changedByUser " +
-                "WHERE s.returnRequest.id = :returnRequestId ORDER BY s.changedAt ASC",
+                "WHERE s.returnRequest.id = :returnRequestId ORDER BY s.createdAt ASC",
                 StatusHistory.class)
                 .setParameter("returnRequestId", returnRequestId)
                 .getResultList();

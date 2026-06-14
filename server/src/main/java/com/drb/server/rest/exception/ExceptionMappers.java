@@ -7,9 +7,13 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Provider
 public class ExceptionMappers {
+
+    private static final Logger LOG = Logger.getLogger(ExceptionMappers.class.getName());
 
     @Provider
     public static class NotFoundMapper implements ExceptionMapper<NotFoundException> {
@@ -42,6 +46,7 @@ public class ExceptionMappers {
     public static class GenericMapper implements ExceptionMapper<Exception> {
         @Override
         public Response toResponse(Exception e) {
+            LOG.log(Level.SEVERE, "Unhandled REST exception", e);
             return Response.status(500).type(MediaType.APPLICATION_JSON)
                 .entity(new ErrorEnvelope("INTERNAL_ERROR", "An unexpected error occurred")).build();
         }

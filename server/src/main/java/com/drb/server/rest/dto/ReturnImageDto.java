@@ -10,6 +10,7 @@ public class ReturnImageDto {
     public String imageType;
     public Long uploadedByUserId;
     public LocalDateTime createdAt;
+    public LocalDateTime updatedAt;
 
     public static ReturnImageDto from(ReturnImage ri) {
         ReturnImageDto d = new ReturnImageDto();
@@ -19,6 +20,7 @@ public class ReturnImageDto {
         d.imageType = ri.getImageType() != null ? ri.getImageType().name() : null;
         if (ri.getUploadedByUser() != null) d.uploadedByUserId = ri.getUploadedByUser().getId();
         d.createdAt = ri.getCreatedAt();
+        d.updatedAt = ri.getUpdatedAt();
         return d;
     }
 }

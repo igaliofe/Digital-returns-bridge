@@ -17,121 +17,192 @@
 
     <ui:fragment rendered="#{returnDetailsBean.returnRequest != null}">
         <h:form>
+        <div class="drb-page-stack">
+        <div class="drb-details-header">
+            <h1 class="drb-page-title" style="margin:0;">
+                Return ##{returnDetailsBean.returnRequest.id}
+            </h1>
+            <h:panelGroup layout="span"
+                          styleClass="#{statusUi.chipClass(returnDetailsBean.returnRequest.status)}">
+                #{statusUi.label(returnDetailsBean.returnRequest.status)}
+            </h:panelGroup>
+        </div>
 
-        <h2 style="margin-bottom:16px;">
-            Return ##{returnDetailsBean.returnRequest.id}
-            <span style="font-size:14px;color:#666;margin-left:8px;">
-                Status: #{returnDetailsBean.returnRequest.status.name()}
-            </span>
-        </h2>
+        <!-- Return Information -->
+        <div class="drb-details-card">
+            <h2 class="drb-details-card-title">Return Information</h2>
+            <div class="drb-details-info-row">
+                <div class="drb-catalog-box">
+                    <p:graphicImage value="#{returnDetailsBean.returnRequest.product.imageUrl}"
+                                    rendered="#{not empty returnDetailsBean.returnRequest.product.imageUrl}"
+                                    style="width:100%;height:100%;object-fit:cover;"/>
+                    <span class="drb-catalog-placeholder"
+                          rendered="#{empty returnDetailsBean.returnRequest.product.imageUrl}">
+                        Catalog image
+                    </span>
+                </div>
+                <div class="drb-field-grid">
+                    <div class="drb-field">
+                        <span class="drb-field-label">Customer</span>
+                        <span class="drb-field-value">#{returnDetailsBean.returnRequest.customer.fullName}</span>
+                    </div>
+                    <div class="drb-field">
+                        <span class="drb-field-label">Phone</span>
+                        <span class="drb-field-value">#{returnDetailsBean.returnRequest.customer.phone}</span>
+                    </div>
+                    <div class="drb-field">
+                        <span class="drb-field-label">Product</span>
+                        <span class="drb-field-value">#{returnDetailsBean.returnRequest.product.name}</span>
+                    </div>
+                    <div class="drb-field">
+                        <span class="drb-field-label">SKU</span>
+                        <span class="drb-field-value">#{returnDetailsBean.returnRequest.product.sku}</span>
+                    </div>
+                    <div class="drb-field">
+                        <span class="drb-field-label">Order Number</span>
+                        <span class="drb-field-value">#{returnDetailsBean.returnRequest.orderNumber}</span>
+                    </div>
+                    <div class="drb-field">
+                        <span class="drb-field-label">Priority</span>
+                        <span class="drb-field-value">#{returnDetailsBean.returnRequest.priority}</span>
+                    </div>
+                    <div class="drb-field">
+                        <span class="drb-field-label">Opened By</span>
+                        <span class="drb-field-value">
+                            #{returnDetailsBean.returnRequest.openedByUser != null ? returnDetailsBean.returnRequest.openedByUser.fullName : '—'}
+                        </span>
+                    </div>
+                    <div class="drb-field">
+                        <span class="drb-field-label">Created At</span>
+                        <span class="drb-field-value">
+                            <h:outputText value="#{returnDetailsBean.returnRequest.createdAt}">
+                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm" type="localDateTime"/>
+                            </h:outputText>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="drb-field-row-wide">
+                <div class="drb-field drb-field-wide">
+                    <span class="drb-field-label">Reason</span>
+                    <span class="drb-field-value">#{returnDetailsBean.returnRequest.reason}</span>
+                </div>
+                <div class="drb-field drb-field-wide">
+                    <span class="drb-field-label">Defect Description</span>
+                    <span class="drb-field-value">#{returnDetailsBean.returnRequest.defectDescription}</span>
+                </div>
+            </div>
+        </div>
 
-        <!-- Core Details -->
-        <p:panel header="Return Information" style="margin-bottom:16px;">
-            <p:graphicImage value="#{returnDetailsBean.returnRequest.product.imageUrl}"
-                            rendered="#{not empty returnDetailsBean.returnRequest.product.imageUrl}"
-                            style="max-width:200px;border:1px solid #ddd;border-radius:6px;margin-bottom:12px;"/>
-            <p:panelGrid columns="4" style="width:100%;">
-                <p:outputLabel value="Customer"/>
-                <h:outputText value="#{returnDetailsBean.returnRequest.customer.fullName}"/>
-                <p:outputLabel value="Phone"/>
-                <h:outputText value="#{returnDetailsBean.returnRequest.customer.phone}"/>
-
-                <p:outputLabel value="Product"/>
-                <h:outputText value="#{returnDetailsBean.returnRequest.product.name}"/>
-                <p:outputLabel value="SKU"/>
-                <h:outputText value="#{returnDetailsBean.returnRequest.product.sku}"/>
-
-                <p:outputLabel value="Order Number"/>
-                <h:outputText value="#{returnDetailsBean.returnRequest.orderNumber}"/>
-                <p:outputLabel value="Priority"/>
-                <h:outputText value="#{returnDetailsBean.returnRequest.priority}"/>
-
-                <p:outputLabel value="Reason"/>
-                <h:outputText value="#{returnDetailsBean.returnRequest.reason}"
-                              style="white-space:pre-wrap;"/>
-                <p:outputLabel value="Defect Description"/>
-                <h:outputText value="#{returnDetailsBean.returnRequest.defectDescription}"
-                              style="white-space:pre-wrap;"/>
-
-                <p:outputLabel value="Opened By"/>
-                <h:outputText value="#{returnDetailsBean.returnRequest.openedByUser != null ? returnDetailsBean.returnRequest.openedByUser.fullName : '—'}"/>
-                <p:outputLabel value="Created At"/>
-                <h:outputText value="#{returnDetailsBean.returnRequest.createdAt}">
-                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm" type="localDateTime"/>
-                </h:outputText>
-            </p:panelGrid>
-        </p:panel>
-
-        <!-- Barcode Block -->
-        <p:panel header="Barcode / Pickup" style="margin-bottom:16px;">
+        <!-- Barcode / Pickup -->
+        <div class="drb-details-card">
+            <h2 class="drb-details-card-title">Barcode / Pickup</h2>
             <ui:fragment rendered="#{not returnDetailsBean.barcodeAssigned}">
                 <p:message severity="warn" summary="Barcode not assigned"
                            detail="No barcode has been assigned to this return request yet."/>
             </ui:fragment>
-            <ui:fragment rendered="#{returnDetailsBean.barcodeAssigned}">
-                <p:panelGrid columns="2" style="width:100%;">
-                    <p:outputLabel value="Barcode"/>
-                    <h:outputText value="#{returnDetailsBean.returnRequest.barcode}"
-                                  style="font-family:monospace;font-size:18px;font-weight:bold;"/>
-                    <p:outputLabel value="Assigned At"/>
-                    <h:outputText value="#{returnDetailsBean.returnRequest.barcodeAssignedAt}">
-                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm" type="localDateTime"/>
-                    </h:outputText>
-                    <p:outputLabel value="Assigned By Driver"/>
-                    <h:outputText value="#{returnDetailsBean.returnRequest.barcodeAssignedByDriver != null ? returnDetailsBean.returnRequest.barcodeAssignedByDriver.user.fullName : '—'}"/>
-                </p:panelGrid>
-            </ui:fragment>
+            <div class="drb-field-grid">
+                <div class="drb-field" style="max-width:300px;">
+                    <span class="drb-field-label">Barcode</span>
+                    <span class="drb-field-value">
+                        <ui:fragment rendered="#{returnDetailsBean.barcodeAssigned}">
+                            #{returnDetailsBean.returnRequest.barcode}
+                        </ui:fragment>
+                        <ui:fragment rendered="#{not returnDetailsBean.barcodeAssigned}">—</ui:fragment>
+                    </span>
+                </div>
+                <div class="drb-field" style="max-width:300px;">
+                    <span class="drb-field-label">Assigned At</span>
+                    <span class="drb-field-value">
+                        <ui:fragment rendered="#{returnDetailsBean.barcodeAssigned}">
+                            <h:outputText value="#{returnDetailsBean.returnRequest.barcodeAssignedAt}">
+                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm" type="localDateTime"/>
+                            </h:outputText>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{not returnDetailsBean.barcodeAssigned}">—</ui:fragment>
+                    </span>
+                </div>
+                <div class="drb-field" style="max-width:300px;">
+                    <span class="drb-field-label">Assigned By Driver</span>
+                    <span class="drb-field-value">
+                        #{returnDetailsBean.returnRequest.barcodeAssignedByDriver != null ? returnDetailsBean.returnRequest.barcodeAssignedByDriver.user.fullName : '—'}
+                    </span>
+                </div>
+                <div class="drb-field" style="max-width:300px;">
+                    <span class="drb-field-label">Assigned Driver</span>
+                    <span class="drb-field-value">
+                        #{returnDetailsBean.returnRequest.driver != null ? returnDetailsBean.returnRequest.driver.user.fullName : '—'}
+                    </span>
+                </div>
+            </div>
+        </div>
 
-            <p:panelGrid columns="2" style="width:100%;margin-top:8px;">
-                <p:outputLabel value="Assigned Driver"/>
-                <h:outputText value="#{returnDetailsBean.returnRequest.driver != null ? returnDetailsBean.returnRequest.driver.user.fullName : '—'}"/>
-            </p:panelGrid>
-        </p:panel>
+        <!-- Images -->
+        <ui:fragment rendered="#{not empty returnDetailsBean.images}">
+            <div class="drb-details-card">
+                <h2 class="drb-details-card-title">Images</h2>
+                <div class="drb-thumb-row">
+                    <ui:repeat value="#{returnDetailsBean.images}" var="img">
+                        <p:graphicImage value="#{img.imageUrl}" styleClass="drb-thumb"/>
+                    </ui:repeat>
+                </div>
+            </div>
+        </ui:fragment>
 
-        <!-- Image Gallery -->
-        <p:panel header="Images" style="margin-bottom:16px;"
-                 rendered="#{not empty returnDetailsBean.images}">
-            <p:galleria value="#{returnDetailsBean.images}" var="img"
-                        numVisible="5" style="max-width:640px;" showThumbnails="true">
-                <f:facet name="item">
-                    <p:graphicImage value="#{img.imageUrl}" style="max-width:100%;"/>
-                </f:facet>
-                <f:facet name="thumbnail">
-                    <p:graphicImage value="#{img.imageUrl}" style="width:60px;height:60px;object-fit:cover;"/>
-                </f:facet>
-            </p:galleria>
-        </p:panel>
-
-        <!-- Status Timeline -->
-        <p:panel header="Status History" style="margin-bottom:16px;"
-                 rendered="#{not empty returnDetailsBean.statusHistory}">
-            <p:dataTable value="#{returnDetailsBean.statusHistory}" var="sh"
-                         style="width:100%;" emptyMessage="No status changes recorded.">
-                <p:column headerText="Date">
-                    <h:outputText value="#{sh.changedAt}">
-                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm" type="localDateTime"/>
-                    </h:outputText>
-                </p:column>
-                <p:column headerText="From">
-                    <h:outputText value="#{sh.oldStatus != null ? sh.oldStatus.name() : '—'}"/>
-                </p:column>
-                <p:column headerText="To">
-                    <h:outputText value="#{sh.newStatus != null ? sh.newStatus.name() : '—'}"/>
-                </p:column>
-                <p:column headerText="Changed By">
-                    <h:outputText value="#{sh.changedByUser != null ? sh.changedByUser.fullName : '—'}"/>
-                </p:column>
-                <p:column headerText="Notes">
-                    <h:outputText value="#{sh.comment}"/>
-                </p:column>
-            </p:dataTable>
-        </p:panel>
+        <!-- Status History -->
+        <ui:fragment rendered="#{not empty returnDetailsBean.statusHistory}">
+            <div class="drb-details-card">
+                <h2 class="drb-details-card-title">Status History</h2>
+                <table class="drb-detail-table">
+                    <thead>
+                        <tr>
+                            <th class="drb-col-date">Date</th>
+                            <th class="drb-col-status">From</th>
+                            <th class="drb-col-status">To</th>
+                            <th class="drb-col-user">Changed By</th>
+                            <th class="drb-col-notes">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ui:repeat value="#{returnDetailsBean.statusHistory}" var="sh">
+                            <tr>
+                                <td class="drb-col-date">
+                                    <h:outputText value="#{sh.createdAt}">
+                                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm" type="localDateTime"/>
+                                    </h:outputText>
+                                </td>
+                                <td class="drb-col-status">
+                                    <ui:fragment rendered="#{sh.oldStatus == null}">—</ui:fragment>
+                                    <h:panelGroup layout="span"
+                                                  styleClass="#{statusUi.chipClass(sh.oldStatus)}"
+                                                  rendered="#{sh.oldStatus != null}">
+                                        #{statusUi.label(sh.oldStatus)}
+                                    </h:panelGroup>
+                                </td>
+                                <td class="drb-col-status">
+                                    <h:panelGroup layout="span"
+                                                  styleClass="#{statusUi.chipClass(sh.newStatus)}"
+                                                  rendered="#{sh.newStatus != null}">
+                                        #{statusUi.label(sh.newStatus)}
+                                    </h:panelGroup>
+                                </td>
+                                <td class="drb-col-user">
+                                    #{sh.changedByUser != null ? sh.changedByUser.fullName : '—'}
+                                </td>
+                                <td class="drb-col-notes">#{sh.comment}</td>
+                            </tr>
+                        </ui:repeat>
+                    </tbody>
+                </table>
+            </div>
+        </ui:fragment>
 
         <p:button value="Back to List"
                   href="#{request.contextPath}/returns/list.xhtml"
-                  styleClass="ui-button-secondary"
+                  styleClass="drb-btn-secondary"
                   icon="pi pi-arrow-left"/>
 
+        </div>
         </h:form>
     </ui:fragment>
 

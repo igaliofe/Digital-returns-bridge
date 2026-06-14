@@ -4,6 +4,8 @@ Base path: `/api`
 Authentication: `Authorization: Bearer <token>` (all endpoints except `/api/auth/login`)  
 Content-Type: `application/json` (unless noted)
 
+> **Audit timestamps**: every entity DTO carries `createdAt` and `updatedAt` (ISO-8601 `LocalDateTime`), auto-managed server-side via JPA `@PrePersist`/`@PreUpdate`. They are read-only and present on all resources for future statistics.
+
 ---
 
 ## Authentication
@@ -89,6 +91,51 @@ List all customers. Optional `?search={text}` filters by name or phone.
 ### GET /api/customers/{customerId}
 **Roles**: SERVICE_REP, MANAGER
 
+### GET /api/customers/by-phone/{phone}
+Look up a customer by phone number. Used by Create Return wizard Step 1 (`identify-customer.xhtml`).
+
+**Roles**: SERVICE_REP, MANAGER
+
+**Response 200**: `CustomerDto`
+
+**Errors**: `404 NOT_FOUND` if no customer matches the phone
+
+---
+
+### GET /api/customers/{customerId}/purchases
+Returns purchase-history rows for the Item Selection table (wizard Step 2). Each row includes product details and a `handled` flag.
+
+**Roles**: SERVICE_REP, MANAGER
+
+**Response 200**: array of `CustomerPurchaseDto`
+
+```json
+[
+  {
+    "id": 1,
+    "customerId": 1,
+    "productId": 2,
+    "productName": "Smart TV 55\"",
+    "productSku": "TV-55-4K",
+    "productPrice": 2499.00,
+    "productImageUrl": "https://res.cloudinary.com/...",
+    "orderNumber": "ORD-2024-001",
+    "quantity": 1,
+    "originalDeliveryDate": "2024-05-01",
+    "underWarranty": true,
+    "handled": false,
+    "createdAt": "2024-01-10T08:00:00",
+    "updatedAt": "2024-01-10T08:00:00"
+  }
+]
+```
+
+Rows with `handled: true` are shown as non-selectable in the wizard (Handled badge).
+
+**Errors**: `404` if customer not found
+
+---
+
 ### POST /api/customers
 **Request**: `{ "fullName", "phone", "email", "address" }`  
 **Response**: `201 Created`
@@ -108,7 +155,7 @@ List all products. Optional `?search={text}` filters by name or SKU.
 ### POST /api/products
 **Request**: `{ "sku", "name", "category", "description", "price", "imageUrl" }`  
 `imageUrl` is the catalog image URL (Cloudinary), shown to the driver and warehouse. Nullable.  
-**Response**: `201 Created` with `ProductDto` (`{ id, sku, name, category, description, price, imageUrl, createdAt }`)
+**Response**: `201 Created` with `ProductDto` (`{ id, sku, name, category, description, price, imageUrl, createdAt, updatedAt }`)
 
 ### PUT /api/products/{productId}
 
@@ -121,8 +168,7 @@ List all drivers.  **Roles**: SERVICE_REP, MANAGER
 
 ### GET /api/drivers/{driverId}
 
-### POST /api/drivers
-**Request**: `{ "userId", "vehicleNumber", "phone" }`
+> **Note**: There is no `POST /api/drivers` endpoint. Driver records are created via seed data or the admin UI; the Android app resolves `drivers.id` from the logged-in user via `DriverIdResolver` (`GET /api/auth/me` + `GET /api/drivers`).
 
 ### GET /api/drivers/{driverId}/pickups
 Returns `ReturnRequest` list assigned to this driver.  
@@ -138,7 +184,11 @@ List return requests. Optional filters:
 - `?driverId={id}`
 - `?customerId={id}`
 
-**Roles**: SERVICE_REP, WAREHOUSE, MANAGER
+**Roles**: SERVICE_REP, WAREHOUSE, MANAGER (shared read endpoint — intentionally not role-restricted)
+
+**Consumed by**: JSF web + Android. The Android **storekeeper work queue** (`StorekeeperHomeActivity`) uses the `?status` filter (single status per call) twice — `PICKED_UP` and `ARRIVED_TO_WAREHOUSE` — and merges client-side.
+
+**Response fields on `ReturnRequestDto`**: includes `customerAddress`, `customerPhone` (from linked customer), `productPrice`, `productImageUrl` (from linked product) — used by Android pickup list rows.
 
 ### GET /api/returns/{returnId}
 Get full return request detail.
@@ -156,6 +206,7 @@ Create a new return request. Barcode is **not** set here.
 {
   "customerId": 1,
   "productId": 2,
+  "purchaseId": 5,
   "driverId": 3,
   "orderNumber": "ORD-2024-001",
   "reason": "Defective product",
@@ -184,8 +235,11 @@ Service-rep checklist fields (all nullable):
 | `defectType` | enum `DefectType` | Defect kind (see [Enum Values](#enum-values)) |
 | `defectStage` | enum `DefectStage` | When the defect appeared |
 | `defectLocationText` | `string` | Free-text defect location |
+| `purchaseId` | `integer` | Optional. When set (Create Return wizard), links the return to a `customer_purchases` row |
 
-**Response**: `201 Created` with `ReturnRequestDto`. The DTO echoes the fields above plus `productPrice` and `productImageUrl` (denormalized from the linked product for the driver/warehouse views).
+**Handled rule**: When `purchaseId` is provided, the server links `return_requests.purchase_id`, pre-fills missing order/delivery/qty/warranty fields from the purchase, and sets `customer_purchases.handled = true` in the same transaction. Already-handled purchases are rejected by the wizard UI before submit.
+
+**Response**: `201 Created` with `ReturnRequestDto`. The DTO echoes the fields above plus `customerAddress`, `customerPhone`, `productPrice`, and `productImageUrl` (denormalized from the linked customer/product for driver and warehouse views).
 
 ### PUT /api/returns/{returnId}
 Update return details (reason, defect, priority, order number).
@@ -230,6 +284,8 @@ Allowed transitions (enforced server-side):
 | `NEEDS_MORE_INFO` | `WAITING_FOR_PICKUP` |
 
 > `ARRIVED_TO_WAREHOUSE → NEEDS_MORE_INFO` backs the warehouse "Request More Info" action (see Warehouse section).
+
+**Consumed by**: JSF web + Android. The Android storekeeper uses this endpoint for two transitions: **Request More Info** (`ARRIVED_TO_WAREHOUSE → NEEDS_MORE_INFO`) and, when an inspection is marked **Call Fully Handled**, a follow-up `INSPECTED → CLOSED`.
 
 **Errors**: `409` for illegal transitions
 
@@ -326,29 +382,40 @@ Update an existing pickup update record.
 
 ## Warehouse
 
+All `/api/warehouse/*` endpoints are **role-restricted to `WAREHOUSE` / `MANAGER`** (`@RolesAllowed({"WAREHOUSE","MANAGER"})` at the `WarehouseResource` class level, enforced by `RolesAllowedFilter`).
+
+**Consumed by**: JSF web Warehouse Receiving screen **and** the Android storekeeper screens (`WarehouseScanActivity`, `WarehouseReturnDetailsActivity`). The two are interchangeable clients of these endpoints.
+
 ### GET /api/warehouse/returns/{barcode}
 Fetch the complete return file (return request + images + pickup updates) by barcode.  
-Used by the warehouse receiving screen.
+Used by the warehouse receiving screen and the Android `WarehouseScanActivity` barcode lookup.
+
+**Roles**: WAREHOUSE, MANAGER
 
 **Errors**: `404` if barcode unknown
 
 ### POST /api/warehouse/arrivals/{barcode}
-Mark the item as arrived at the warehouse. Transitions status → `ARRIVED_TO_WAREHOUSE`.
+Mark the item as arrived at the warehouse (no request body). Transitions status → `ARRIVED_TO_WAREHOUSE` and records the authenticated user in status history. Returns the updated `ReturnRequestDto`. Backs the **Mark Arrived** action in both the JSF receiving screen and Android `WarehouseReturnDetailsActivity`.
+
+**Roles**: WAREHOUSE, MANAGER
 
 **Errors**: `404` if barcode unknown
 
 > **Request More Info**: The warehouse receiving screen's "Request More Info" button transitions an `ARRIVED_TO_WAREHOUSE` return to `NEEDS_MORE_INFO`. There is no dedicated REST route — the JSF bean performs this through the standard status-transition engine (equivalent to `PATCH /api/returns/{id}/status` with `{ "status": "NEEDS_MORE_INFO" }`).
 
 ### GET /api/returns/{returnId}/warehouse-inspections
-List warehouse inspections for a return.
+List warehouse inspections for a return. Consumed by JSF web + Android.
 
 ### POST /api/returns/{returnId}/warehouse-inspections
 Create a warehouse inspection record. Transitions status → `INSPECTED`.
 
+**Roles**: WAREHOUSE, MANAGER (`@RolesAllowed({"WAREHOUSE","MANAGER"})` on `ReturnResource.createWarehouseInspection`)
+
+**Consumed by**: JSF web Warehouse Receiving screen **and** Android `WarehouseInspectionActivity`. When the Android storekeeper checks **Call Fully Handled**, the app chains a follow-up `PATCH /api/returns/{returnId}/status` `{ "status": "CLOSED" }` after the inspection so the return ends in `CLOSED`.
+
 **Request** (`WarehouseInspectionRequest`)
 ```json
 {
-  "inspectedByUserId": 3,
   "itemCondition": "LIKE_NEW_ORIGINAL_PACKAGING",
   "warehouseDecision": "STOCK_AS_NEW_114",
   "callFullyHandled": true,
@@ -358,11 +425,12 @@ Create a warehouse inspection record. Transitions status → `INSPECTED`.
 
 | Field | Type | Notes |
 |---|---|---|
-| `inspectedByUserId` | `integer` | Warehouse user who inspected |
 | `itemCondition` | enum `ItemCondition` | Warehouse-graded condition |
 | `warehouseDecision` | enum `WarehouseDecision` | Routing classification (see below) |
 | `callFullyHandled` | `boolean` | Whether the customer call was fully handled |
 | `warehouseNotes` | `string` | Free-text inspection notes |
+
+> `inspectedByUserId` is **derived server-side** from the authenticated Bearer token; clients do not send it. (The JSF receiving bean binds the inspecting user the same way.)
 
 `warehouseDecision` values (remapped): `STOCK_AS_NEW_114`, `CLASS_B`, `SHAPIIM_155`, `REDESIGN_208`, `FROZEN_FURTHER_HANDLING`, `REPAIR`, `DISPOSE`.
 
@@ -385,7 +453,8 @@ List all status changes for a return.
     "id": 1,
     "oldStatus": "OPEN",
     "newStatus": "WAITING_FOR_PICKUP",
-    "changedAt": "2024-01-15T10:30:00",
+    "createdAt": "2024-01-15T10:30:00",
+    "updatedAt": "2024-01-15T10:30:00",
     "comment": "Driver assigned",
     "changedByUserName": "Alice Cohen"
   }
@@ -406,21 +475,27 @@ All report endpoints require **MANAGER** role.
 ### GET /api/reports/dashboard
 General KPI summary.
 
-**Response**
+**Response** (`DashboardDto`)
 ```json
 {
-  "open": 4,
-  "waitingForPickup": 12,
-  "barcodeAssigned": 5,
-  "pickedUp": 8,
-  "arrivedToWarehouse": 3,
-  "inspected": 7,
-  "closed": 45,
-  "needsMoreInfo": 2,
-  "noBarcode": 16
+  "statusCounts": {
+    "OPEN": 4,
+    "WAITING_FOR_PICKUP": 12,
+    "BARCODE_ASSIGNED": 5,
+    "PICKED_UP": 8,
+    "ARRIVED_TO_WAREHOUSE": 3,
+    "INSPECTED": 7,
+    "CLOSED": 45,
+    "NEEDS_MORE_INFO": 2
+  },
+  "noBarcode": 16,
+  "totalOpen": 4,
+  "totalPickedUp": 8,
+  "totalInspected": 7,
+  "totalClosed": 45
 }
 ```
-`noBarcode` = count of returns where `barcode IS NULL`.
+`noBarcode` = count of returns where `barcode IS NULL`. The JSF dashboard and reports pages derive individual KPI tiles from `statusCounts` (e.g. `WAITING_FOR_PICKUP`) plus the top-level totals above.
 
 ### GET /api/reports/returns-by-status
 Count of returns grouped by status.

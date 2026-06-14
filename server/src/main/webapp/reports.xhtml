@@ -11,52 +11,55 @@
 <ui:composition template="/WEB-INF/templates/layout.xhtml">
 <ui:define name="content">
 
-    <h2 style="margin-bottom:16px;">Reports &amp; KPIs</h2>
+    <h1 class="drb-page-title">Reports &amp; KPIs</h1>
 
     <!-- KPI Summary -->
-    <p:panel header="Status Overview" style="margin-bottom:16px;">
-        <p:panelGrid columns="4" style="width:100%;">
-            <p:outputLabel value="Open"/>
-            <h:outputText value="#{reportsBean.getDashboardValue('totalOpen')}"
-                          style="font-size:20px;font-weight:bold;color:#2196F3;"/>
-            <p:outputLabel value="Waiting Pickup"/>
-            <h:outputText value="#{reportsBean.getDashboardValue('totalWaitingPickup')}"
-                          style="font-size:20px;font-weight:bold;color:#FF9800;"/>
-
-            <p:outputLabel value="Barcode Assigned"/>
-            <h:outputText value="#{reportsBean.getDashboardValue('totalBarcodeAssigned')}"
-                          style="font-size:20px;font-weight:bold;"/>
-            <p:outputLabel value="Picked Up"/>
-            <h:outputText value="#{reportsBean.getDashboardValue('totalPickedUp')}"
-                          style="font-size:20px;font-weight:bold;"/>
-
-            <p:outputLabel value="In Warehouse"/>
-            <h:outputText value="#{reportsBean.getDashboardValue('totalInWarehouse')}"
-                          style="font-size:20px;font-weight:bold;"/>
-            <p:outputLabel value="Inspected"/>
-            <h:outputText value="#{reportsBean.getDashboardValue('totalInspected')}"
-                          style="font-size:20px;font-weight:bold;"/>
-
-            <p:outputLabel value="Closed"/>
-            <h:outputText value="#{reportsBean.getDashboardValue('totalClosed')}"
-                          style="font-size:20px;font-weight:bold;color:#4CAF50;"/>
-            <p:outputLabel value="Needs More Info"/>
-            <h:outputText value="#{reportsBean.getDashboardValue('totalNeedsMoreInfo')}"
-                          style="font-size:20px;font-weight:bold;color:#FF5722;"/>
-
-            <p:outputLabel value="No Barcode Assigned" style="font-weight:bold;"/>
-            <h:outputText value="#{reportsBean.getDashboardValue('noBarcode')}"
-                          style="font-size:20px;font-weight:bold;color:#F44336;"/>
-            <p:outputLabel value=""/>
-            <h:outputText value=""/>
-        </p:panelGrid>
+    <p:panel header="Status Overview" styleClass="drb-panel">
+        <div class="drb-kpi-grid">
+            <div class="drb-kpi-card">
+                <span class="drb-kpi-label">Open</span>
+                <span class="drb-kpi-value drb-kpi-open">#{reportsBean.getDashboardValue('totalOpen')}</span>
+            </div>
+            <div class="drb-kpi-card">
+                <span class="drb-kpi-label">Waiting Pickup</span>
+                <span class="drb-kpi-value drb-kpi-waiting">#{reportsBean.getDashboardValue('totalWaitingPickup')}</span>
+            </div>
+            <div class="drb-kpi-card">
+                <span class="drb-kpi-label">Barcode Assigned</span>
+                <span class="drb-kpi-value drb-kpi-barcode">#{reportsBean.getDashboardValue('totalBarcodeAssigned')}</span>
+            </div>
+            <div class="drb-kpi-card">
+                <span class="drb-kpi-label">Picked Up</span>
+                <span class="drb-kpi-value drb-kpi-picked">#{reportsBean.getDashboardValue('totalPickedUp')}</span>
+            </div>
+            <div class="drb-kpi-card">
+                <span class="drb-kpi-label">In Warehouse</span>
+                <span class="drb-kpi-value drb-kpi-warehouse">#{reportsBean.getDashboardValue('totalInWarehouse')}</span>
+            </div>
+            <div class="drb-kpi-card">
+                <span class="drb-kpi-label">Inspected</span>
+                <span class="drb-kpi-value drb-kpi-barcode">#{reportsBean.getDashboardValue('totalInspected')}</span>
+            </div>
+            <div class="drb-kpi-card">
+                <span class="drb-kpi-label">Closed</span>
+                <span class="drb-kpi-value drb-kpi-closed">#{reportsBean.getDashboardValue('totalClosed')}</span>
+            </div>
+            <div class="drb-kpi-card">
+                <span class="drb-kpi-label">Needs More Info</span>
+                <span class="drb-kpi-value drb-kpi-needs-info">#{reportsBean.getDashboardValue('totalNeedsMoreInfo')}</span>
+            </div>
+            <div class="drb-kpi-card">
+                <span class="drb-kpi-label">No Barcode Assigned</span>
+                <span class="drb-kpi-value drb-kpi-no-barcode">#{reportsBean.getDashboardValue('noBarcode')}</span>
+            </div>
+        </div>
     </p:panel>
 
     <!-- Top Return Reasons -->
-    <p:panel header="Top Return Reasons" style="margin-bottom:16px;"
+    <p:panel header="Top Return Reasons" styleClass="drb-panel"
              rendered="#{not empty reportsBean.topReturnReasons}">
         <p:dataTable value="#{reportsBean.topReturnReasons.entrySet().toArray()}" var="entry"
-                     style="width:100%;" emptyMessage="No data.">
+                     styleClass="drb-table" style="width:100%;" emptyMessage="No data.">
             <p:column headerText="Reason">
                 <h:outputText value="#{entry.key}"/>
             </p:column>
@@ -67,10 +70,10 @@
     </p:panel>
 
     <!-- Returns by Driver -->
-    <p:panel header="Returns by Driver" style="margin-bottom:16px;"
+    <p:panel header="Returns by Driver" styleClass="drb-panel"
              rendered="#{not empty reportsBean.returnsByDriver}">
         <p:dataTable value="#{reportsBean.returnsByDriver}" var="row"
-                     style="width:100%;" emptyMessage="No data.">
+                     styleClass="drb-table" style="width:100%;" emptyMessage="No data.">
             <p:column headerText="Driver">
                 <h:outputText value="#{row['driver']}"/>
             </p:column>
@@ -81,10 +84,10 @@
     </p:panel>
 
     <!-- Returns by Customer -->
-    <p:panel header="Returns by Customer" style="margin-bottom:16px;"
+    <p:panel header="Returns by Customer" styleClass="drb-panel"
              rendered="#{not empty reportsBean.returnsByCustomer}">
         <p:dataTable value="#{reportsBean.returnsByCustomer}" var="row"
-                     style="width:100%;" emptyMessage="No data.">
+                     styleClass="drb-table" style="width:100%;" emptyMessage="No data.">
             <p:column headerText="Customer">
                 <h:outputText value="#{row['customer']}"/>
             </p:column>
@@ -95,7 +98,7 @@
     </p:panel>
 
     <!-- Monthly Volume -->
-    <p:panel header="Monthly Volume" style="margin-bottom:16px;"
+    <p:panel header="Monthly Volume" styleClass="drb-panel"
              rendered="#{not empty reportsBean.monthlyVolume}">
         <p:dataTable value="#{reportsBean.monthlyVolume}" var="row"
                      style="width:100%;" emptyMessage="No data.">

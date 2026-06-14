@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/drb_cream_bg">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,7 +15,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardElevation="2dp">
+            app:cardElevation="@dimen/drb_elevation_card"
+            app:cardCornerRadius="@dimen/drb_radius_md">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -27,7 +29,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="180dp"
                     android:scaleType="fitCenter"
-                    android:background="#F0F0F0"
+                    android:background="@color/drb_image_placeholder"
                     android:layout_marginBottom="12dp"
                     android:visibility="gone"
                     android:contentDescription="Catalog image"/>
@@ -91,7 +93,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardElevation="2dp">
+            app:cardElevation="@dimen/drb_elevation_card"
+            app:cardCornerRadius="@dimen/drb_radius_md">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -142,22 +145,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Capture Image"
-            android:layout_marginBottom="8dp"/>
+            style="@style/DrbButton.Outlined"
+            android:layout_marginBottom="@dimen/drb_spacing_sm"/>
 
         <Button
             android:id="@+id/btnConfirmPickup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Confirm Pickup"
+            style="@style/DrbButton.Primary"
             android:enabled="false"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginBottom="@dimen/drb_spacing_sm"/>
 
         <Button
             android:id="@+id/btnViewHistory"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="View History"
-            style="@style/Widget.Material3.Button.OutlinedButton"/>
+            style="@style/DrbButton.Outlined"/>
 
     </LinearLayout>
 </ScrollView>

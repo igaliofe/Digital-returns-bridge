@@ -1,6 +1,5 @@
 package com.drb.driver.ui;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -19,6 +18,8 @@ import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
+    public static final String EXTRA_PREFERRED_ROLE = "preferred_role";
+
     private TextInputEditText etPhone;
     private Button btnLogin;
     private ProgressBar progressBar;
@@ -31,14 +32,16 @@ public class LoginActivity extends AppCompatActivity {
         sessionManager = new SessionManager(this);
 
         if (sessionManager.isLoggedIn()) {
-            startActivity(new Intent(this, PickupListActivity.class));
-            finish();
+            NavigationHelper.routeAfterLogin(this, sessionManager.getRole());
             return;
         }
 
         etPhone = findViewById(R.id.etPhone);
         btnLogin = findViewById(R.id.btnLogin);
         progressBar = findViewById(R.id.progressBar);
+
+        String preferredRole = getIntent().getStringExtra(EXTRA_PREFERRED_ROLE);
+        LoginChromeHelper.apply(this, preferredRole);
 
         btnLogin.setOnClickListener(v -> performLogin());
     }
@@ -59,9 +62,8 @@ public class LoginActivity extends AppCompatActivity {
                 btnLogin.setEnabled(true);
                 if (response.isSuccessful() && response.body() != null) {
                     LoginResponse body = response.body();
-                    sessionManager.saveSession(body.token, body.userId, body.fullName, body.role);
-                    startActivity(new Intent(LoginActivity.this, PickupListActivity.class));
-                    finish();
+                    sessionManager.saveSession(body.token, body.role);
+                    NavigationHelper.routeAfterLogin(LoginActivity.this, body.role);
                 } else {
                     Toast.makeText(LoginActivity.this, "Login failed. Check phone number.", Toast.LENGTH_LONG).show();
                 }

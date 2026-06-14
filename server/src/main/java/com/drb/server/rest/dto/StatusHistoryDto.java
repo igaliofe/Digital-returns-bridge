@@ -12,6 +12,7 @@ public class StatusHistoryDto {
     public Long changedByUserId;
     public String changedByUserName;
     public LocalDateTime createdAt;
+    public LocalDateTime updatedAt;
 
     public static StatusHistoryDto from(StatusHistory sh) {
         StatusHistoryDto d = new StatusHistoryDto();
@@ -25,6 +26,7 @@ public class StatusHistoryDto {
             d.changedByUserName = sh.getChangedByUser().getFullName();
         }
         d.createdAt = sh.getCreatedAt();
+        d.updatedAt = sh.getUpdatedAt();
         return d;
     }
 }

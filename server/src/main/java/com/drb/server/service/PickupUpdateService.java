@@ -11,7 +11,6 @@ import com.drb.server.service.exception.NotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.List;
 
 @ApplicationScoped
 public class PickupUpdateService {
@@ -22,10 +21,6 @@ public class PickupUpdateService {
     public PickupUpdate findById(Long id) {
         return pickupUpdateRepo.findById(id)
             .orElseThrow(() -> new NotFoundException("PickupUpdate", id));
-    }
-
-    public List<PickupUpdate> findByReturnRequestId(Long returnRequestId) {
-        return pickupUpdateRepo.findByReturnRequestId(returnRequestId);
     }
 
     @Transactional

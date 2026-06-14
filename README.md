@@ -5,10 +5,14 @@ A Jakarta EE 10 reverse-logistics management system for product returns, built a
 ## System Overview
 
 Digital Returns Bridge provides a complete digital flow for product returns between:
-- **Service Representatives** (JSF web UI) — open return requests
-- **Drivers** (Android app) — pick up items, scan barcodes, capture photos
-- **Warehouse Staff** (JSF web UI) — receive items by barcode, inspect, make decisions
+- **Service Representatives** (JSF web UI) — open return requests via a **3-step Create Return wizard** (identify customer → select purchase → new return)
+- **Drivers** (Android app) — pick up items, scan barcodes, capture photos and signatures
+- **Warehouse Staff** (JSF web UI **and** Android storekeeper flow) — receive items by barcode, inspect, make routing decisions
 - **Managers** (JSF web UI) — monitor KPIs and manage system data
+
+Purchase history (`customer_purchases`) powers wizard Step 2. When a return is created from a selected purchase row, the server sets `handled=true` on that purchase in the same transaction.
+
+All **24 Figma screens** are implemented with pixel-perfect styling: web via `resources/css/drb.css` (Inter font, design tokens), Android via shared theme resources. UI validation: [docs/figma-ui-gaps.md](docs/figma-ui-gaps.md) (no gaps).
 
 ## How Barcodes Work
 
@@ -100,13 +104,12 @@ psql -U postgres -c "CREATE DATABASE drb;"
 psql -U postgres -c "CREATE USER drb WITH PASSWORD 'drb_secret';"
 psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE drb TO drb;"
 
-# Load schema and seed data (apply migrations in order)
-psql -U drb -d drb -f database/migrations/V001__init.sql
-psql -U drb -d drb -f database/migrations/V002__seed.sql
-psql -U drb -d drb -f database/migrations/V003__checklist_fields.sql
+# Load schema then seed data
+psql -U drb -d drb -f database/schema.sql
+psql -U drb -d drb -f database/seed.sql
 ```
 
-> **Existing Docker volumes**: the initdb scripts only run on a *fresh* `postgres_data` volume, so an already-initialized database will not pick up `V003` automatically — reset the volume (`make clean`) or apply `V003__checklist_fields.sql` manually.
+> **Existing Docker volumes**: the initdb scripts only run on a *fresh* `postgres_data` volume, so an already-initialized database will not pick up schema changes automatically — reset the volume (`make clean`) or re-run `database/schema.sql` manually.
 
 #### Step 2 — Configure the WildFly datasource
 
@@ -145,7 +148,9 @@ The app is ready when the console prints `Deployed "digital-returns-bridge.war"`
 
 ---
 
-### Android App
+### Android App (Driver + Storekeeper)
+
+The Android app is **multi-role**: after login, `NavigationHelper` routes `DRIVER` users to the pickup flow and `WAREHOUSE` users to the storekeeper flow (receiving queue, scan, inspection). The storekeeper uses the same warehouse REST endpoints as the JSF receiving screen.
 
 #### Prerequisites
 
@@ -185,7 +190,14 @@ Or open the project in Android Studio and press **Run**.
 
 #### Step 3 — Grant permissions and log in
 
-On first launch, **allow the Camera permission** when prompted (used for barcode scanning and photos). Then log in with the driver phone number from the seed data: **`0502222222`**
+On first launch, **allow the Camera permission** when prompted (used for barcode scanning and photos). Log in with seed phone numbers:
+
+| Phone | Role | Home screen |
+|---|---|---|
+| `0502222222` | Driver | Pickup list |
+| `0503333333` | Warehouse (storekeeper) | Receiving queue |
+
+The app resolves `drivers.id` from the logged-in user via `DriverIdResolver` (not the raw `userId` from `/auth/me`).
 
 ---
 
@@ -204,7 +216,7 @@ mvn -pl server -am test
 digital-returns-bridge/
 ├── server/               Jakarta EE 10 WAR (JSF + JAX-RS + JPA)
 ├── android-driver-app/   Native Android Java app
-├── database/             PostgreSQL DDL (schema.sql, seed.sql, ERD, migrations)
+├── database/             PostgreSQL DDL (schema.sql, seed.sql, ERD)
 ├── infra/                Docker Compose, WildFly config, deployment scripts
 ├── docs/                 Architecture, API reference, screen descriptions
 ├── Makefile              Convenience wrapper for Docker Compose
@@ -251,7 +263,9 @@ OPEN → WAITING_FOR_PICKUP → BARCODE_ASSIGNED → PICKED_UP → ARRIVED_TO_WA
 
 ## Further Reading
 
-- [docs/architecture.md](docs/architecture.md) — system architecture and status transition diagram
-- [docs/api.md](docs/api.md) — full REST API reference
-- [docs/screens.md](docs/screens.md) — JSF and Android screen descriptions
+- [docs/initial-plan.he.html](docs/initial-plan.he.html) — lecturer-facing Hebrew specification (printable)
+- [docs/figma-ui-gaps.md](docs/figma-ui-gaps.md) — Figma UI validation report
+- [docs/architecture.md](docs/architecture.md) — system architecture, wizard flow, and status transition diagram
+- [docs/api.md](docs/api.md) — full REST API reference (purchase endpoints, `purchaseId`, handled rule)
+- [docs/screens.md](docs/screens.md) — 24 Figma screens mapped to routes/activities
 - [infra/README.md](infra/README.md) — detailed deployment and troubleshooting guide

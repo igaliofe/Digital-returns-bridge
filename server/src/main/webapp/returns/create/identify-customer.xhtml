@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+<f:metadata>
+    <f:viewAction action="#{createReturnWizardBean.ensureStep1}"/>
+</f:metadata>
+<h:head><title>Identify Customer — Digital Returns Bridge</title></h:head>
+<h:body class="drb-wizard-page">
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+<ui:define name="content">
+
+    <div class="drb-wizard-center">
+        <h:form id="identifyForm">
+            <div class="drb-wizard-card">
+                <p class="drb-wizard-step">STEP 1 OF 3</p>
+                <h2 class="drb-wizard-title">Customer Identification</h2>
+                <p class="drb-wizard-desc">Enter the customer's phone number to pull up their file, purchase history and active return status.</p>
+
+                <p:messages showDetail="true" closable="true"/>
+
+                <label class="drb-field-label" for="phone">Customer Phone Number</label>
+                <div class="drb-wizard-row">
+                    <p:inputText id="phone" value="#{createReturnWizardBean.phoneNumber}"
+                                 placeholder="e.g. 0501234567" required="true"
+                                 requiredMessage="Phone number is required"
+                                 style="width:100%;"/>
+                    <p:commandButton value="Find Customer →"
+                                     action="#{createReturnWizardBean.lookupCustomer}"
+                                     styleClass="drb-btn-primary"/>
+                </div>
+                <p class="drb-wizard-hint">We'll match the number against registered customers. If no match is found, you can create a new customer record.</p>
+            </div>
+        </h:form>
+    </div>
+
+</ui:define>
+</ui:composition>
+</h:body>
+</html>

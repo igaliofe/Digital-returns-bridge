@@ -4,15 +4,14 @@ import com.drb.server.domain.ReturnRequest;
 import com.drb.server.domain.User;
 import com.drb.server.rest.dto.*;
 import com.drb.server.rest.exception.ErrorEnvelope;
+import com.drb.server.rest.security.AuthenticatedUser;
 import com.drb.server.service.ImageService;
 import com.drb.server.service.ReturnRequestService;
 import com.drb.server.service.exception.NotFoundException;
 import com.drb.server.service.exception.ValidationException;
-import jakarta.enterprise.context.RequestScoped;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.EntityPart;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -21,7 +20,6 @@ import java.util.stream.Collectors;
 @Path("/returns")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@RequestScoped
 public class ReturnResource {
 
     @Inject
@@ -29,6 +27,9 @@ public class ReturnResource {
 
     @Inject
     private ImageService imageService;
+
+    @Inject
+    private AuthenticatedUser authenticatedUser;
 
     @GET
     public Response getAll(
@@ -59,10 +60,13 @@ public class ReturnResource {
     }
 
     @POST
-    public Response create(CreateReturnRequest req, @Context ContainerRequestContext ctx) {
+    public Response create(CreateReturnRequest req) {
         ReturnRequest rr = new ReturnRequest();
         applyChecklistFields(rr, req);
-        return Response.status(201).entity(ReturnRequestDto.from(returnRequestService.create(rr))).build();
+        User user = authenticatedUser.get();
+        return Response.status(201).entity(ReturnRequestDto.from(
+            returnRequestService.createReturnRequest(rr, req, user)
+        )).build();
     }
 
     @PUT
@@ -106,8 +110,7 @@ public class ReturnResource {
 
     @PATCH
     @Path("/{returnId}/assign-barcode")
-    public Response assignBarcode(@PathParam("returnId") Long returnId, AssignBarcodeRequest req,
-                                  @Context ContainerRequestContext ctx) {
+    public Response assignBarcode(@PathParam("returnId") Long returnId, AssignBarcodeRequest req) {
         try {
             ReturnRequest rr = returnRequestService.assignBarcode(returnId, req.barcode, req.driverId);
             return Response.ok(ReturnRequestDto.from(rr)).build();
@@ -126,9 +129,8 @@ public class ReturnResource {
 
     @PATCH
     @Path("/{returnId}/status")
-    public Response changeStatus(@PathParam("returnId") Long returnId, StatusChangeRequest req,
-                                 @Context ContainerRequestContext ctx) {
-        User user = (User) ctx.getProperty("authenticatedUser");
+    public Response changeStatus(@PathParam("returnId") Long returnId, StatusChangeRequest req) {
+        User user = authenticatedUser.get();
         return Response.ok(ReturnRequestDto.from(
             returnRequestService.changeStatus(returnId, req.status, req.comment, user)
         )).build();
@@ -165,9 +167,8 @@ public class ReturnResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response uploadImage(@PathParam("returnId") Long returnId,
                                 EntityPart file,
-                                @FormParam("imageType") String imageType,
-                                @Context ContainerRequestContext ctx) {
-        User user = (User) ctx.getProperty("authenticatedUser");
+                                @FormParam("imageType") String imageType) {
+        User user = authenticatedUser.get();
         return Response.status(201).entity(ReturnImageDto.from(
             imageService.upload(returnId, file, imageType, user)
         )).build();
@@ -185,9 +186,8 @@ public class ReturnResource {
     @POST
     @Path("/{returnId}/pickup-updates")
     public Response createPickupUpdate(@PathParam("returnId") Long returnId,
-                                       PickupConfirmationRequest req,
-                                       @Context ContainerRequestContext ctx) {
-        User user = (User) ctx.getProperty("authenticatedUser");
+                                       PickupConfirmationRequest req) {
+        User user = authenticatedUser.get();
         return Response.status(201).entity(PickupUpdateDto.from(
             returnRequestService.createPickupUpdate(returnId, req, user)
         )).build();
@@ -196,9 +196,8 @@ public class ReturnResource {
     @POST
     @Path("/{returnId}/pickup-confirmation")
     public Response confirmPickup(@PathParam("returnId") Long returnId,
-                                  PickupConfirmationRequest req,
-                                  @Context ContainerRequestContext ctx) {
-        User user = (User) ctx.getProperty("authenticatedUser");
+                                  PickupConfirmationRequest req) {
+        User user = authenticatedUser.get();
         return Response.ok(ReturnRequestDto.from(
             returnRequestService.confirmPickup(returnId, req, user)
         )).build();
@@ -216,9 +215,8 @@ public class ReturnResource {
     @POST
     @Path("/{returnId}/status-history")
     public Response addManualStatusHistory(@PathParam("returnId") Long returnId,
-                                           ManualStatusHistoryRequest req,
-                                           @Context ContainerRequestContext ctx) {
-        User user = (User) ctx.getProperty("authenticatedUser");
+                                           ManualStatusHistoryRequest req) {
+        User user = authenticatedUser.get();
         return Response.status(201).entity(StatusHistoryDto.from(
             returnRequestService.addStatusHistory(returnId, req.newStatus, req.comment, user)
         )).build();
@@ -235,10 +233,10 @@ public class ReturnResource {
 
     @POST
     @Path("/{returnId}/warehouse-inspections")
+    @RolesAllowed({"WAREHOUSE", "MANAGER"})
     public Response createWarehouseInspection(@PathParam("returnId") Long returnId,
-                                              WarehouseInspectionRequest req,
-                                              @Context ContainerRequestContext ctx) {
-        User user = (User) ctx.getProperty("authenticatedUser");
+                                              WarehouseInspectionRequest req) {
+        User user = authenticatedUser.get();
         return Response.status(201).entity(WarehouseInspectionDto.from(
             returnRequestService.createWarehouseInspection(returnId, req, user)
         )).build();

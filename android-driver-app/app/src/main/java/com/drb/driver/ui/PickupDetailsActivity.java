@@ -120,7 +120,13 @@ public class PickupDetailsActivity extends AppCompatActivity {
 
     private void bindUI(ReturnRequestModel r) {
         tvCustomer.setText("Customer: " + safe(r.customerName));
-        tvProduct.setText("Product: " + safe(r.productName));
+        if (r.customerAddress != null && !r.customerAddress.isEmpty()) {
+            tvCustomer.append("\nAddress: " + r.customerAddress);
+        }
+        if (r.customerPhone != null && !r.customerPhone.isEmpty()) {
+            tvCustomer.append("\nPhone: " + r.customerPhone);
+        }
+        tvProduct.setText("Product: " + ReturnCardBinder.formatProductQty(r));
         tvPrice.setText("Price: " + (r.productPrice != null ? String.format(Locale.US, "%.2f", r.productPrice) : "—"));
         tvOrderNumber.setText("Order: " + safe(r.orderNumber));
         tvOriginalDeliveryDate.setText("Original delivery: " + safe(r.originalDeliveryDate));

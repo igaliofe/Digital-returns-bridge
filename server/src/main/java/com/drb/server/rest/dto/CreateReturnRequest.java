@@ -3,6 +3,7 @@ package com.drb.server.rest.dto;
 public class CreateReturnRequest {
     public Long customerId;
     public Long productId;
+    public Long purchaseId;
     public Long driverId;
     public String orderNumber;
     public String reason;

@@ -5,39 +5,72 @@
       xmlns:h="jakarta.faces.html"
       xmlns:f="jakarta.faces.core"
       xmlns:ui="jakarta.faces.facelets"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
 <h:head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Digital Returns Bridge</title>
-    <style>
-        html, body { margin: 0; padding: 0; height: 100%; }
-        body { display: flex; flex-direction: column; min-height: 100vh; font-family: var(--font-family, sans-serif); }
-        .app-header { flex: 0 0 auto; border-bottom: 1px solid #e5e7eb; background: #ffffff; }
-        .app-header .ui-menubar { border: 0; border-radius: 0; }
-        .app-content { flex: 1 1 auto; padding: 16px; box-sizing: border-box; overflow: auto; }
+    <h:outputStylesheet name="css/drb.css"/>
+    <!-- Load after PrimeFaces saga theme (injected by PF components) -->
+    <style type="text/css">
+        html, body.drb-body, body.drb-body .drb-content {
+            background-color: #faf5ec !important;
+        }
     </style>
 </h:head>
-<h:body>
-    <header class="app-header">
-        <h:form>
-            <p:menubar>
-                <p:menuitem value="Dashboard" url="#{request.contextPath}/dashboard.xhtml" icon="pi pi-home"/>
-                <p:menuitem value="Returns" url="#{request.contextPath}/returns/list.xhtml" icon="pi pi-list"/>
-                <p:menuitem value="New Return" url="#{request.contextPath}/returns/create.xhtml" icon="pi pi-plus"/>
-                <p:menuitem value="Warehouse" url="#{request.contextPath}/warehouse/receiving.xhtml" icon="pi pi-inbox"/>
-                <p:menuitem value="Reports" url="#{request.contextPath}/reports.xhtml" icon="pi pi-chart-bar"/>
-                <p:submenu label="Admin" icon="pi pi-cog">
-                    <p:menuitem value="Users" url="#{request.contextPath}/admin/users.xhtml"/>
-                    <p:menuitem value="Customers" url="#{request.contextPath}/admin/customers.xhtml"/>
-                    <p:menuitem value="Products" url="#{request.contextPath}/admin/products.xhtml"/>
-                    <p:menuitem value="Drivers" url="#{request.contextPath}/admin/drivers.xhtml"/>
-                </p:submenu>
-                <p:menuitem value="Logout" action="#{loginBean.logout}" icon="pi pi-sign-out"/>
-            </p:menubar>
-        </h:form>
+<h:body class="drb-body">
+    <c:set var="viewId" value="#{facesContext.viewRoot.viewId}"/>
+    <c:set var="cp" value="#{request.contextPath}"/>
+
+    <header class="drb-header">
+        <div class="drb-header-inner">
+            <div class="drb-logo-wrap">
+                <h:outputLink value="#{cp}/dashboard.xhtml" styleClass="drb-logo">DRB</h:outputLink>
+            </div>
+
+            <nav class="drb-nav">
+                <h:outputLink value="#{cp}/dashboard.xhtml"
+                              styleClass="#{viewId.contains('dashboard') ? 'drb-nav-active' : ''}">Dashboard</h:outputLink>
+
+                <h:outputLink value="#{cp}/returns/list.xhtml"
+                              styleClass="#{viewId.contains('/returns/list') or viewId.contains('/returns/details') ? 'drb-nav-active' : ''}">Returns</h:outputLink>
+
+                <h:outputLink value="#{cp}/returns/create.xhtml"
+                              styleClass="#{viewId.contains('/returns/create') ? 'drb-nav-active' : ''}">New Return</h:outputLink>
+
+                <h:outputLink value="#{cp}/warehouse/receiving.xhtml"
+                              styleClass="#{viewId.contains('warehouse') ? 'drb-nav-active' : ''}">Warehouse</h:outputLink>
+
+                <h:outputLink value="#{cp}/reports.xhtml"
+                              styleClass="#{viewId.contains('reports') ? 'drb-nav-active' : ''}">Reports</h:outputLink>
+
+                <div class="drb-admin-dropdown">
+                    <h:outputLink value="#{cp}/admin/users.xhtml"
+                                  styleClass="#{viewId.contains('admin') ? 'drb-nav-active' : ''}">Admin ▾</h:outputLink>
+                    <div class="drb-admin-menu">
+                        <h:outputLink value="#{cp}/admin/users.xhtml">Users</h:outputLink>
+                        <h:outputLink value="#{cp}/admin/customers.xhtml">Customers</h:outputLink>
+                        <h:outputLink value="#{cp}/admin/products.xhtml">Products</h:outputLink>
+                        <h:outputLink value="#{cp}/admin/drivers.xhtml">Drivers</h:outputLink>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="drb-nav-spacer"/>
+
+            <div class="drb-header-actions">
+                <h:form style="display:inline;">
+                    <h:commandLink action="#{loginBean.logout}" styleClass="drb-logout-link" value="Logout"/>
+                </h:form>
+                <span class="drb-avatar">
+                    <h:outputText value="#{sessionScope.loggedInUser.fullName != null and sessionScope.loggedInUser.fullName.length() >= 2 ? sessionScope.loggedInUser.fullName.substring(0,2) : 'DR'}"/>
+                </span>
+            </div>
+        </div>
     </header>
-    <main class="app-content">
+
+    <main class="drb-content">
         <p:messages showDetail="true" showSummary="false" closable="true"/>
         <ui:insert name="content"/>
     </main>

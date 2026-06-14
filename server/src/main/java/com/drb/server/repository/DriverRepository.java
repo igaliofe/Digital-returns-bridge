@@ -26,19 +26,9 @@ public class DriverRepository {
         return Optional.ofNullable(em.find(Driver.class, id));
     }
 
-    public List<Driver> findAll() {
-        return em.createQuery("SELECT d FROM Driver d", Driver.class).getResultList();
-    }
-
     public List<Driver> findAllWithUser() {
         return em.createQuery(
                 "SELECT DISTINCT d FROM Driver d LEFT JOIN FETCH d.user",
                 Driver.class).getResultList();
-    }
-
-    public List<Driver> findByUserId(Long userId) {
-        return em.createQuery("SELECT d FROM Driver d WHERE d.user.id = :userId", Driver.class)
-                .setParameter("userId", userId)
-                .getResultList();
     }
 }

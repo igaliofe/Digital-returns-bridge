@@ -1,27 +1,25 @@
 package com.drb.server.rest;
-
 import com.drb.server.domain.User;
 import com.drb.server.rest.dto.LoginRequest;
 import com.drb.server.rest.dto.LoginResponse;
 import com.drb.server.rest.dto.UserDto;
+import com.drb.server.rest.security.AuthenticatedUser;
 import com.drb.server.service.AuthService;
-import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @Path("/auth")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@RequestScoped
 public class AuthResource {
 
     @Inject
     private AuthService authService;
 
+    @Inject
+    private AuthenticatedUser authenticatedUser;
     @POST
     @Path("/login")
     public Response login(LoginRequest req) {
@@ -34,15 +32,13 @@ public class AuthResource {
         resp.role = user.getRole().name();
         return Response.ok(resp).build();
     }
-
     @GET
     @Path("/me")
-    public Response me(@Context ContainerRequestContext ctx) {
-        User user = (User) ctx.getProperty("authenticatedUser");
+    public Response me() {
+        User user = authenticatedUser.get();
         if (user == null) return Response.status(401).build();
         return Response.ok(UserDto.from(user)).build();
     }
-
     @POST
     @Path("/logout")
     public Response logout(@HeaderParam("Authorization") String authHeader) {

@@ -8,7 +8,8 @@ CREATE TABLE users (
     full_name        VARCHAR(120) NOT NULL,
     role             VARCHAR(30)  NOT NULL CHECK (role IN ('SERVICE_REP','DRIVER','WAREHOUSE','MANAGER')),
     active           BOOLEAN      NOT NULL DEFAULT TRUE,
-    created_at       TIMESTAMP    NOT NULL DEFAULT NOW()
+    created_at       TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_at       TIMESTAMP    NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE customers (
@@ -17,7 +18,8 @@ CREATE TABLE customers (
     phone        VARCHAR(30),
     email        VARCHAR(120),
     address      VARCHAR(255),
-    created_at   TIMESTAMP    NOT NULL DEFAULT NOW()
+    created_at   TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_at   TIMESTAMP    NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE products (
@@ -28,7 +30,8 @@ CREATE TABLE products (
     description  TEXT,
     price        NUMERIC(12,2),
     image_url    VARCHAR(500),
-    created_at   TIMESTAMP    NOT NULL DEFAULT NOW()
+    created_at   TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_at   TIMESTAMP    NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE drivers (
@@ -36,7 +39,22 @@ CREATE TABLE drivers (
     user_id        BIGINT       NOT NULL REFERENCES users(id),
     vehicle_number VARCHAR(30),
     phone          VARCHAR(30),
-    active         BOOLEAN      NOT NULL DEFAULT TRUE
+    active         BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at     TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_at     TIMESTAMP    NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE customer_purchases (
+    id                      BIGSERIAL    PRIMARY KEY,
+    customer_id             BIGINT       NOT NULL REFERENCES customers(id),
+    product_id              BIGINT       NOT NULL REFERENCES products(id),
+    order_number            VARCHAR(60),
+    quantity                INT,
+    original_delivery_date  DATE,
+    under_warranty          BOOLEAN,
+    handled                 BOOLEAN      NOT NULL DEFAULT FALSE,
+    created_at              TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_at              TIMESTAMP    NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE return_requests (
@@ -46,6 +64,7 @@ CREATE TABLE return_requests (
     barcode_assigned_by_driver_id BIGINT     REFERENCES drivers(id),
     customer_id                 BIGINT       NOT NULL REFERENCES customers(id),
     product_id                  BIGINT       NOT NULL REFERENCES products(id),
+    purchase_id                 BIGINT       REFERENCES customer_purchases(id),
     driver_id                   BIGINT       REFERENCES drivers(id),
     opened_by_user_id           BIGINT       NOT NULL REFERENCES users(id),
     order_number                VARCHAR(60),
@@ -84,7 +103,8 @@ CREATE TABLE return_images (
                                                                       'SERVICE_REP_SIGNATURE','DRIVER_PRODUCT_IMAGE',
                                                                       'DRIVER_DISTANT_IMAGE','DRIVER_DEFECT_IMAGE',
                                                                       'DRIVER_SIGNATURE','WAREHOUSE_IMAGE')),
-    created_at           TIMESTAMP    NOT NULL DEFAULT NOW()
+    created_at           TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_at           TIMESTAMP    NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE pickup_updates (
@@ -101,7 +121,8 @@ CREATE TABLE pickup_updates (
     signature_image_url   VARCHAR(500),
     item_collected        BOOLEAN      NOT NULL DEFAULT FALSE,
     driver_notes          TEXT,
-    created_at            TIMESTAMP    NOT NULL DEFAULT NOW()
+    created_at            TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_at            TIMESTAMP    NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE warehouse_inspections (
@@ -115,7 +136,8 @@ CREATE TABLE warehouse_inspections (
                                                                      'REPAIR','DISPOSE')),
     call_fully_handled    BOOLEAN,
     warehouse_notes       TEXT,
-    created_at            TIMESTAMP    NOT NULL DEFAULT NOW()
+    created_at            TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_at            TIMESTAMP    NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE status_history (
@@ -128,11 +150,16 @@ CREATE TABLE status_history (
     new_status          VARCHAR(30)  NOT NULL CHECK (new_status IN ('OPEN','WAITING_FOR_PICKUP','BARCODE_ASSIGNED',
                                                                      'PICKED_UP','ARRIVED_TO_WAREHOUSE','INSPECTED',
                                                                      'CLOSED','NEEDS_MORE_INFO')),
-    changed_at          TIMESTAMP    NOT NULL DEFAULT NOW(),
+    created_at          TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_at          TIMESTAMP    NOT NULL DEFAULT NOW(),
     comment             TEXT
 );
 
 -- Indexes
+CREATE INDEX idx_customer_purchases_customer_id   ON customer_purchases(customer_id);
+CREATE INDEX idx_customer_purchases_product_id      ON customer_purchases(product_id);
+CREATE INDEX idx_customer_purchases_handled         ON customer_purchases(handled);
+CREATE INDEX idx_return_requests_purchase_id        ON return_requests(purchase_id);
 CREATE INDEX idx_return_requests_status           ON return_requests(status);
 CREATE INDEX idx_return_requests_driver_id        ON return_requests(driver_id);
 CREATE INDEX idx_return_requests_customer_id      ON return_requests(customer_id);

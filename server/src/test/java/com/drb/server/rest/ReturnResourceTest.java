@@ -49,8 +49,7 @@ class ReturnResourceTest {
         req.barcode = "BC-001";
         req.driverId = 2L;
 
-        ContainerRequestContext ctx = mock(ContainerRequestContext.class);
-        Response response = returnResource.assignBarcode(1L, req, ctx);
+        Response response = returnResource.assignBarcode(1L, req);
 
         assertThat(response.getStatus()).isEqualTo(200);
         ReturnRequestDto dto = (ReturnRequestDto) response.getEntity();
@@ -67,8 +66,7 @@ class ReturnResourceTest {
         req.barcode = "";
         req.driverId = 2L;
 
-        ContainerRequestContext ctx = mock(ContainerRequestContext.class);
-        Response response = returnResource.assignBarcode(1L, req, ctx);
+        Response response = returnResource.assignBarcode(1L, req);
 
         assertThat(response.getStatus()).isEqualTo(400);
     }
@@ -82,8 +80,7 @@ class ReturnResourceTest {
         req.barcode = "BC-USED";
         req.driverId = 2L;
 
-        ContainerRequestContext ctx = mock(ContainerRequestContext.class);
-        Response response = returnResource.assignBarcode(1L, req, ctx);
+        Response response = returnResource.assignBarcode(1L, req);
 
         assertThat(response.getStatus()).isEqualTo(409);
     }

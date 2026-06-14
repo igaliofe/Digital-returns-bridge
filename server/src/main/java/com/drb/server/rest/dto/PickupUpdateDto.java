@@ -15,6 +15,7 @@ public class PickupUpdateDto {
     public boolean itemCollected;
     public String driverNotes;
     public LocalDateTime createdAt;
+    public LocalDateTime updatedAt;
 
     public static PickupUpdateDto from(PickupUpdate pu) {
         PickupUpdateDto d = new PickupUpdateDto();
@@ -29,6 +30,7 @@ public class PickupUpdateDto {
         d.itemCollected = pu.isItemCollected();
         d.driverNotes = pu.getDriverNotes();
         d.createdAt = pu.getCreatedAt();
+        d.updatedAt = pu.getUpdatedAt();
         return d;
     }
 }

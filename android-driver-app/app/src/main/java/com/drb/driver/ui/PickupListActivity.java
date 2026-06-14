@@ -41,6 +41,19 @@ public class PickupListActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
 
+        View header = findViewById(R.id.pickupHeader);
+        if (header != null) {
+            TextView tvTitle = header.findViewById(R.id.tvHeaderTitle);
+            if (tvTitle != null) {
+                tvTitle.setText(R.string.my_pickups_title);
+            }
+            TextView tvLogout = header.findViewById(R.id.tvHeaderAction);
+            if (tvLogout != null) {
+                tvLogout.setVisibility(View.VISIBLE);
+                tvLogout.setOnClickListener(v -> performLogout());
+            }
+        }
+
         recyclerView = findViewById(R.id.recyclerPickups);
         swipeRefresh = findViewById(R.id.swipeRefresh);
         progressBar = findViewById(R.id.progressBar);
@@ -72,25 +85,17 @@ public class PickupListActivity extends AppCompatActivity {
 
     private void fetchMeAndLoad() {
         progressBar.setVisibility(View.VISIBLE);
-        ApiClient.get(sessionManager).me().enqueue(new Callback<com.drb.driver.model.UserModel>() {
+        DriverIdResolver.resolve(this, sessionManager, new DriverIdResolver.DriverIdCallback() {
             @Override
-            public void onResponse(Call<com.drb.driver.model.UserModel> call, Response<com.drb.driver.model.UserModel> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    Long id = response.body().id;
-                    sessionManager.setDriverId(id);
-                    fetchPickups(id);
-                } else {
-                    progressBar.setVisibility(View.GONE);
-                    swipeRefresh.setRefreshing(false);
-                    Toast.makeText(PickupListActivity.this, "Failed to load driver info", Toast.LENGTH_LONG).show();
-                }
+            public void onResolved(Long driverId) {
+                fetchPickups(driverId);
             }
 
             @Override
-            public void onFailure(Call<com.drb.driver.model.UserModel> call, Throwable t) {
+            public void onFailure(String message) {
                 progressBar.setVisibility(View.GONE);
                 swipeRefresh.setRefreshing(false);
-                Toast.makeText(PickupListActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                DriverIdResolver.toastFailure(PickupListActivity.this, message);
             }
         });
     }
@@ -122,8 +127,7 @@ public class PickupListActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(0, Menu.FIRST, 0, "Logout");
-        return true;
+        return false;
     }
 
     @Override
@@ -149,8 +153,14 @@ public class PickupListActivity extends AppCompatActivity {
         });
         sessionManager.clearSession();
         ApiClient.reset();
-        startActivity(new Intent(this, LoginActivity.class));
+        startActivity(logoutIntent(this));
         finish();
+    }
+
+    static Intent logoutIntent(android.content.Context context) {
+        Intent intent = new Intent(context, LoginActivity.class);
+        intent.putExtra(LoginActivity.EXTRA_PREFERRED_ROLE, NavigationHelper.ROLE_DRIVER);
+        return intent;
     }
 
     // ──────────────────────────── Adapter ────────────────────────────
@@ -177,11 +187,7 @@ public class PickupListActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             ReturnRequestModel item = items.get(position);
-            holder.tvCustomerName.setText(item.customerName != null ? item.customerName : "—");
-            holder.tvAddress.setText(item.orderNumber != null ? "Order: " + item.orderNumber : "");
-            holder.tvProduct.setText(item.productName != null ? item.productName : "");
-            String barcodeLabel = item.isBarcodeAssigned() ? "Barcode: " + item.barcode : "Barcode: Not assigned";
-            holder.tvStatus.setText(item.status + " · " + barcodeLabel);
+            ReturnCardBinder.bind(holder.itemView, item, false);
             holder.itemView.setOnClickListener(v -> {
                 Intent intent = new Intent(PickupListActivity.this, PickupDetailsActivity.class);
                 intent.putExtra(PickupDetailsActivity.EXTRA_RETURN_ID, item.id);
@@ -195,14 +201,8 @@ public class PickupListActivity extends AppCompatActivity {
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
-            TextView tvCustomerName, tvAddress, tvProduct, tvStatus;
-
             ViewHolder(View v) {
                 super(v);
-                tvCustomerName = v.findViewById(R.id.tvCustomerName);
-                tvAddress = v.findViewById(R.id.tvAddress);
-                tvProduct = v.findViewById(R.id.tvProduct);
-                tvStatus = v.findViewById(R.id.tvStatus);
             }
         }
     }

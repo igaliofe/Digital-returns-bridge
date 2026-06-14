@@ -88,14 +88,34 @@ public class ReturnRequestRepository {
         }
     }
 
-    public List<ReturnRequest> findByDriverId(Long driverId) {
-        return em.createQuery("SELECT r FROM ReturnRequest r WHERE r.driver.id = :driverId", ReturnRequest.class)
+    public List<ReturnRequest> findByDriverIdWithRefs(Long driverId) {
+        return em.createQuery(
+                "SELECT DISTINCT r FROM ReturnRequest r " +
+                "LEFT JOIN FETCH r.customer " +
+                "LEFT JOIN FETCH r.product " +
+                "LEFT JOIN FETCH r.driver d " +
+                "LEFT JOIN FETCH d.user " +
+                "LEFT JOIN FETCH r.openedByUser " +
+                "LEFT JOIN FETCH r.barcodeAssignedByDriver bd " +
+                "LEFT JOIN FETCH bd.user " +
+                "WHERE r.driver.id = :driverId",
+                ReturnRequest.class)
                 .setParameter("driverId", driverId)
                 .getResultList();
     }
 
-    public List<ReturnRequest> findByCustomerId(Long customerId) {
-        return em.createQuery("SELECT r FROM ReturnRequest r WHERE r.customer.id = :customerId", ReturnRequest.class)
+    public List<ReturnRequest> findByCustomerIdWithRefs(Long customerId) {
+        return em.createQuery(
+                "SELECT DISTINCT r FROM ReturnRequest r " +
+                "LEFT JOIN FETCH r.customer " +
+                "LEFT JOIN FETCH r.product " +
+                "LEFT JOIN FETCH r.driver d " +
+                "LEFT JOIN FETCH d.user " +
+                "LEFT JOIN FETCH r.openedByUser " +
+                "LEFT JOIN FETCH r.barcodeAssignedByDriver bd " +
+                "LEFT JOIN FETCH bd.user " +
+                "WHERE r.customer.id = :customerId",
+                ReturnRequest.class)
                 .setParameter("customerId", customerId)
                 .getResultList();
     }

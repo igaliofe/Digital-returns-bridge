@@ -14,6 +14,8 @@ public class ReturnRequestDto {
     public String barcodeAssignedByDriverName;
     public Long customerId;
     public String customerName;
+    public String customerAddress;
+    public String customerPhone;
     public Long productId;
     public String productName;
     public String productSku;
@@ -50,6 +52,8 @@ public class ReturnRequestDto {
         if (rr.getCustomer() != null) {
             d.customerId = rr.getCustomer().getId();
             d.customerName = rr.getCustomer().getFullName();
+            d.customerAddress = rr.getCustomer().getAddress();
+            d.customerPhone = rr.getCustomer().getPhone();
         }
         if (rr.getProduct() != null) {
             d.productId = rr.getProduct().getId();

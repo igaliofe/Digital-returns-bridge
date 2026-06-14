@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+<f:metadata>
+    <f:viewAction action="#{createReturnWizardBean.ensureStep2}"/>
+</f:metadata>
+<h:head><title>Item Selection — Digital Returns Bridge</title></h:head>
+<h:body class="drb-wizard-page">
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+<ui:define name="content">
+
+    <div class="drb-wizard-center">
+        <div class="drb-wizard-card drb-wizard-card-wide">
+            <p class="drb-wizard-step">STEP 2 OF 3</p>
+            <h2 class="drb-wizard-title">Item Selection</h2>
+            <p class="drb-wizard-desc">Select a purchase item from the customer's order history to create a return request.</p>
+
+            <p:panel header="Customer" styleClass="drb-panel" style="margin-bottom:16px;">
+                <p:panelGrid columns="4" style="width:100%;">
+                    <p:outputLabel value="Name"/>
+                    <h:outputText value="#{createReturnWizardBean.customer.fullName}"/>
+                    <p:outputLabel value="Phone"/>
+                    <h:outputText value="#{createReturnWizardBean.customer.phone}"/>
+                    <p:outputLabel value="Email"/>
+                    <h:outputText value="#{createReturnWizardBean.customer.email}"/>
+                    <p:outputLabel value="Address"/>
+                    <h:outputText value="#{createReturnWizardBean.customer.address}"/>
+                </p:panelGrid>
+            </p:panel>
+
+            <h:form id="selectForm">
+                <p:panel header="Select Purchase Item" styleClass="drb-panel">
+                    <p:messages showDetail="true" closable="true"/>
+
+                    <p:dataTable id="purchasesTable" value="#{createReturnWizardBean.purchases}" var="p"
+                                 emptyMessage="No purchase history found for this customer."
+                                 styleClass="drb-table" style="width:100%;">
+
+                        <p:column headerText="Product" sortBy="#{p.product.name}">
+                            <h:outputText value="#{p.product.name}"/>
+                        </p:column>
+
+                        <p:column headerText="SKU" sortBy="#{p.product.sku}">
+                            <h:outputText value="#{p.product.sku}"/>
+                        </p:column>
+
+                        <p:column headerText="Order #" sortBy="#{p.orderNumber}">
+                            <h:outputText value="#{p.orderNumber}"/>
+                        </p:column>
+
+                        <p:column headerText="Qty" sortBy="#{p.quantity}" style="width:60px;">
+                            <h:outputText value="#{p.quantity}"/>
+                        </p:column>
+
+                        <p:column headerText="Delivery Date" sortBy="#{p.originalDeliveryDate}">
+                            <h:outputText value="#{p.originalDeliveryDate}">
+                                <f:convertDateTime pattern="dd/MM/yyyy" type="localDate"/>
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Warranty" style="width:80px;">
+                            <h:outputText value="#{p.underWarranty ? 'Yes' : 'No'}"/>
+                        </p:column>
+
+                        <p:column headerText="Status" style="width:120px;">
+                            <h:panelGroup layout="span" styleClass="drb-chip drb-chip-handled" rendered="#{p.handled}">Handled</h:panelGroup>
+                            <h:panelGroup layout="span" styleClass="drb-chip drb-chip-available" rendered="#{not p.handled}">Available</h:panelGroup>
+                        </p:column>
+
+                        <p:column headerText="Action" style="width:100px;" exportable="false">
+                            <p:commandButton value="Select"
+                                             action="#{createReturnWizardBean.selectPurchase(p.id)}"
+                                             icon="pi pi-check"
+                                             styleClass="drb-btn-primary"
+                                             rendered="#{not p.handled}"/>
+                            <h:outputText value="—" rendered="#{p.handled}" style="color:#999;"/>
+                        </p:column>
+                    </p:dataTable>
+
+                    <div class="drb-btn-row" style="margin-top:16px;">
+                        <p:commandButton value="Back"
+                                       action="#{createReturnWizardBean.backToStep1}"
+                                       icon="pi pi-arrow-left"
+                                       styleClass="drb-btn-secondary"/>
+                        <p:button value="Cancel"
+                                  href="#{request.contextPath}/returns/list.xhtml"
+                                  styleClass="drb-btn-secondary"/>
+                    </div>
+                </p:panel>
+            </h:form>
+        </div>
+    </div>
+
+</ui:define>
+</ui:composition>
+</h:body>
+</html>

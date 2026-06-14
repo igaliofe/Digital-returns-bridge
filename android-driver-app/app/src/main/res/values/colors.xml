@@ -1,14 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
+    <!-- Figma Android driver (36:*) / storekeeper (50:*) palette -->
+    <color name="drb_navy">#243044</color>
+    <color name="drb_navy_dark">#15202e</color>
+    <color name="drb_cream_bg">#faf5ec</color>
+    <color name="drb_gold">#9a7b4f</color>
+    <color name="drb_gold_muted">#8a7149</color>
+    <color name="drb_text_primary">#1f2733</color>
+    <color name="drb_text_secondary">#6f6655</color>
+    <color name="drb_text_muted">#a89f8c</color>
+    <color name="drb_text_header_muted">#e6e0d4</color>
+    <color name="drb_border_warm">#e7e0d2</color>
+    <color name="drb_surface">#FFFFFF</color>
+    <color name="drb_image_placeholder">#F0F0F0</color>
+
+    <!-- Status chips -->
+    <color name="drb_status_waiting_bg">#29D98A0B</color>
+    <color name="drb_status_waiting_text">#d98a0b</color>
+    <color name="drb_status_barcode_bg">#297C3AED</color>
+    <color name="drb_status_barcode_text">#7c3aed</color>
+    <color name="drb_status_picked_bg">#290891B2</color>
+    <color name="drb_status_picked_text">#0891b2</color>
+    <color name="drb_status_open_bg">#292196F3</color>
+    <color name="drb_status_open_text">#2196f3</color>
+    <color name="drb_status_closed_bg">#294CAF50</color>
+    <color name="drb_status_closed_text">#4caf50</color>
+    <color name="drb_status_warehouse_bg">#29607D8B</color>
+    <color name="drb_status_warehouse_text">#607d8b</color>
+
     <color name="white">#FFFFFFFF</color>
-    <color name="status_open">#FF9800</color>
-    <color name="status_assigned">#2196F3</color>
-    <color name="status_picked_up">#4CAF50</color>
     <color name="error_red">#F44336</color>
 </resources>

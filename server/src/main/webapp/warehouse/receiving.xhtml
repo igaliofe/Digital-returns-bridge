@@ -11,33 +11,33 @@
 <ui:composition template="/WEB-INF/templates/layout.xhtml">
 <ui:define name="content">
 
-    <h2 style="margin-bottom:16px;">Warehouse Receiving</h2>
+    <div class="drb-page-stack">
+        <h1 class="drb-page-title" style="margin-bottom:0;">Warehouse Receiving</h1>
 
-    <!-- Barcode Search -->
-    <h:form id="searchForm">
-        <p:panel header="Scan / Enter Barcode" style="margin-bottom:16px;max-width:600px;">
-            <p:panelGrid columns="2">
-                <p:outputLabel for="barcodeInput" value="Barcode:"/>
-                <p:inputText id="barcodeInput"
-                             value="#{warehouseReceivingBean.barcodeInput}"
-                             placeholder="Scan or type barcode..."
-                             style="width:300px;"
-                             required="true"/>
-            </p:panelGrid>
-            <p:commandButton value="Search"
-                             action="#{warehouseReceivingBean.searchByBarcode}"
-                             icon="pi pi-search"
-                             update="searchForm digitalFile inspectionForm"
-                             style="margin-top:8px;"/>
-            <p:messages id="searchMessages" showDetail="true" closable="true" style="margin-top:8px;"/>
-        </p:panel>
-    </h:form>
+        <!-- Barcode Search -->
+        <h:form id="searchForm">
+            <div class="drb-search-card">
+                <h2 class="drb-search-card-title">Scan / Enter Barcode</h2>
+                <div class="drb-search-row">
+                    <p:inputText id="barcodeInput"
+                                 value="#{warehouseReceivingBean.barcodeInput}"
+                                 placeholder="Scan or type barcode..."
+                                 required="true"/>
+                    <p:commandButton value="Search"
+                                     action="#{warehouseReceivingBean.searchByBarcode}"
+                                     icon="pi pi-search"
+                                     styleClass="drb-btn-primary"
+                                     update="searchForm digitalFile inspectionForm"/>
+                </div>
+                <p:messages id="searchMessages" showDetail="true" closable="true" style="margin-top:10px;"/>
+            </div>
+        </h:form>
 
     <!-- Digital File -->
     <h:form id="digitalFile">
     <ui:fragment rendered="#{warehouseReceivingBean.foundReturn != null}">
         <p:panel header="Digital Return File — ##{warehouseReceivingBean.foundReturn.id}"
-                 style="margin-bottom:16px;">
+                 styleClass="drb-panel">
 
             <!-- Catalog image + price -->
             <div style="display:flex;gap:24px;align-items:flex-start;margin-bottom:16px;">
@@ -190,43 +190,50 @@
     <ui:fragment rendered="#{warehouseReceivingBean.foundReturn != null and
                              (warehouseReceivingBean.foundReturn.status.name() == 'ARRIVED_TO_WAREHOUSE' or
                               warehouseReceivingBean.foundReturn.status.name() == 'INSPECTED')}">
-        <p:panel header="Create Warehouse Inspection" style="margin-bottom:16px;max-width:600px;">
+        <div class="drb-inspection-card">
+            <h2 class="drb-inspection-title">Warehouse Inspection</h2>
             <p:messages showDetail="true" closable="true"/>
 
-            <p:panelGrid columns="2" style="width:100%;">
-                <p:outputLabel for="itemCondition" value="Item Condition *"/>
+            <div class="drb-inspection-field">
+                <p:outputLabel for="itemCondition" value="Item Condition"/>
                 <p:selectOneMenu id="itemCondition" value="#{warehouseReceivingBean.itemCondition}"
-                                 required="true">
+                                 required="true" style="width:100%;">
                     <f:selectItem itemLabel="— Select Condition —" itemValue=""/>
                     <f:selectItems value="#{warehouseReceivingBean.itemConditions}" var="ic"
                                    itemLabel="#{ic.name()}" itemValue="#{ic.name()}"/>
                 </p:selectOneMenu>
+            </div>
 
-                <p:outputLabel for="decision" value="Decision (routing) *"/>
+            <div class="drb-inspection-field">
+                <p:outputLabel for="decision" value="Decision (routing)"/>
                 <p:selectOneMenu id="decision" value="#{warehouseReceivingBean.warehouseDecision}"
-                                 required="true">
+                                 required="true" style="width:100%;">
                     <f:selectItem itemLabel="— Select Decision —" itemValue=""/>
                     <f:selectItems value="#{warehouseReceivingBean.decisions}" var="d"
                                    itemLabel="#{d.name()}" itemValue="#{d.name()}"/>
                 </p:selectOneMenu>
+            </div>
 
-                <p:outputLabel for="callFullyHandled" value="Call Fully Handled"/>
+            <div class="drb-inspection-check">
                 <p:selectBooleanCheckbox id="callFullyHandled" value="#{warehouseReceivingBean.callFullyHandled}"/>
+                <p:outputLabel for="callFullyHandled" value="Call Fully Handled"/>
+            </div>
 
+            <div class="drb-inspection-field">
                 <p:outputLabel for="notes" value="Notes"/>
                 <p:inputTextarea id="notes" value="#{warehouseReceivingBean.warehouseNotes}"
-                                 rows="4" style="width:100%;"/>
-            </p:panelGrid>
+                                 rows="4" placeholder="Inspector notes…" style="width:100%;"/>
+            </div>
 
             <p:commandButton value="Save Inspection"
                              action="#{warehouseReceivingBean.createInspection}"
                              icon="pi pi-save"
-                             styleClass="ui-button-primary"
-                             update="inspectionForm"
-                             style="margin-top:8px;"/>
-        </p:panel>
+                             styleClass="drb-btn-inspection"
+                             update="inspectionForm"/>
+        </div>
     </ui:fragment>
     </h:form>
+    </div>
 
 </ui:define>
 </ui:composition>

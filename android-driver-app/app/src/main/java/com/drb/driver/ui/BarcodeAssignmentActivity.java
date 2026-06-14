@@ -72,11 +72,26 @@ public class BarcodeAssignmentActivity extends AppCompatActivity {
             return;
         }
 
-        Long driverId = sessionManager.getDriverId();
-        AssignBarcodeRequest request = new AssignBarcodeRequest(barcode, driverId);
-
         btnAssign.setEnabled(false);
         btnScan.setEnabled(false);
+        DriverIdResolver.resolve(this, sessionManager, new DriverIdResolver.DriverIdCallback() {
+            @Override
+            public void onResolved(Long driverId) {
+                submitAssignBarcode(barcode, driverId);
+            }
+
+            @Override
+            public void onFailure(String message) {
+                btnAssign.setEnabled(true);
+                btnScan.setEnabled(true);
+                DriverIdResolver.toastFailure(BarcodeAssignmentActivity.this, message);
+            }
+        });
+    }
+
+    private void submitAssignBarcode(String barcode, Long driverId) {
+        AssignBarcodeRequest request = new AssignBarcodeRequest(barcode, driverId);
+
         ApiClient.get(sessionManager).assignBarcode(returnId, request).enqueue(new Callback<ReturnRequestModel>() {
             @Override
             public void onResponse(Call<ReturnRequestModel> call, Response<ReturnRequestModel> response) {

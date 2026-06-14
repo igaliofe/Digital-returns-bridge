@@ -13,8 +13,10 @@ services:
       # Path is relative to THIS compose file (infra/). The Makefile runs
       # `docker compose -f infra/docker-compose.yml` without --project-directory,
       # so Compose resolves relative paths against infra/, hence the `../`.
-      # initdb scripts run alphabetically; V003 sorts last and applies last.
-      - ../database/migrations:/docker-entrypoint-initdb.d:ro
+      # initdb runs scripts alphabetically: 01_schema.sql creates the tables,
+      # then 02_seed.sql inserts the sample data. Both only run on a fresh volume.
+      - ../database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ../database/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
     ports:
       - "5432:5432"
     healthcheck:

@@ -21,8 +21,6 @@ public class DashboardBean {
         dashboard = reportsService.getDashboard();
     }
 
-    public DashboardDto getDashboard() { return dashboard; }
-
     public long get(String key) {
         if (dashboard == null) return 0L;
         switch (key) {

@@ -10,6 +10,7 @@ public class CustomerDto {
     public String email;
     public String address;
     public LocalDateTime createdAt;
+    public LocalDateTime updatedAt;
 
     public static CustomerDto from(Customer c) {
         CustomerDto d = new CustomerDto();
@@ -19,6 +20,7 @@ public class CustomerDto {
         d.email = c.getEmail();
         d.address = c.getAddress();
         d.createdAt = c.getCreatedAt();
+        d.updatedAt = c.getUpdatedAt();
         return d;
     }
 }

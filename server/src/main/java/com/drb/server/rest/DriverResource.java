@@ -1,41 +1,32 @@
 package com.drb.server.rest;
-
 import com.drb.server.rest.dto.DriverDto;
 import com.drb.server.rest.dto.ReturnRequestDto;
 import com.drb.server.service.DriverService;
 import com.drb.server.service.ReturnRequestService;
-import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.stream.Collectors;
-
 @Path("/drivers")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@RequestScoped
 public class DriverResource {
-
     @Inject
     private DriverService driverService;
-
     @Inject
     private ReturnRequestService returnRequestService;
-
     @GET
     public Response getAll() {
         return Response.ok(
             driverService.findAll().stream().map(DriverDto::from).collect(Collectors.toList())
         ).build();
     }
-
     @GET
     @Path("/{id}")
     public Response getById(@PathParam("id") Long id) {
         return Response.ok(DriverDto.from(driverService.findById(id))).build();
     }
-
     @GET
     @Path("/{id}/pickups")
     public Response getPickups(

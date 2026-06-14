@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">DRB Driver</string>
-    <string name="login_title">Driver Login</string>
+    <string name="app_name">Digital Returns Bridge</string>
+    <string name="login_driver_header">DRB Driver</string>
+    <string name="login_warehouse_header">DRB Warehouse</string>
+    <string name="login_driver_phone_hint">Sign in with your phone number</string>
     <string name="phone_hint">Phone Number</string>
     <string name="login_button">Login</string>
     <string name="logout">Logout</string>
-    <string name="assign_barcode">Assign Barcode</string>
+    <string name="my_pickups_title">My Pickups</string>
     <string name="scan_barcode">Scan Barcode</string>
-    <string name="confirm_pickup">Confirm Pickup</string>
-    <string name="barcode_not_assigned">Not assigned</string>
-    <string name="barcode_assigned">Barcode Assigned</string>
 
     <!-- Sticker / barcode attachment guidance -->
     <string name="sticker_instruction">Attach the barcode sticker firmly to the outside of the package so it is clearly visible and scannable.</string>
@@ -25,4 +24,34 @@
 
     <!-- Image capture labels -->
     <string name="image_type_label">Image Type</string>
+
+    <!-- Storekeeper (WAREHOUSE) flow -->
+    <string name="wh_home_title">Storekeeper Queue</string>
+    <string name="wh_queue_empty">No returns awaiting handling</string>
+    <string name="wh_scan_lookup">Scan / Look up barcode</string>
+    <string name="wh_scan_title">Storekeeper Lookup</string>
+    <string name="wh_scan_instruction">Scan or enter a barcode to look up its return request.</string>
+    <string name="wh_barcode_hint">Barcode</string>
+    <string name="wh_lookup">Look up</string>
+    <string name="wh_details_title">Return Details</string>
+    <string name="wh_catalog_photo">Catalog photo</string>
+    <string name="wh_mark_arrived">Mark Arrived to Warehouse</string>
+    <string name="wh_inspect">Inspect</string>
+    <string name="wh_view_history">View History</string>
+
+    <!-- Inspection form -->
+    <string name="wh_inspection_title">Warehouse Inspection</string>
+    <string name="wh_return_info">Return Information</string>
+    <string name="wh_service_images">Service images</string>
+    <string name="wh_defect_details">Defect Details</string>
+    <string name="wh_driver_defect_photos">Driver defect photos</string>
+    <string name="wh_sufficient_info_q">Is there enough information to handle this return?</string>
+    <string name="wh_request_more_info">Request More Info</string>
+    <string name="wh_more_info_comment_hint">What information is missing? (optional)</string>
+    <string name="wh_send">Send</string>
+    <string name="wh_item_condition">Item Condition</string>
+    <string name="wh_further_handling">Further Handling</string>
+    <string name="wh_fully_handled">Call fully handled (close after inspection)</string>
+    <string name="wh_notes_hint">Warehouse notes (optional)</string>
+    <string name="wh_submit_inspection">Submit Inspection</string>
 </resources>

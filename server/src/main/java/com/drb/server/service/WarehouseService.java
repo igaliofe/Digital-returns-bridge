@@ -10,7 +10,6 @@ import com.drb.server.service.exception.NotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.List;
 
 @ApplicationScoped
 public class WarehouseService {
@@ -30,10 +29,10 @@ public class WarehouseService {
     }
 
     @Transactional
-    public ReturnRequest markArrived(String barcode) {
+    public ReturnRequest markArrived(String barcode, User user) {
         ReturnRequest rr = findByBarcode(barcode);
         return returnRequestService.transitionStatus(
-            rr.getId(), ReturnStatus.ARRIVED_TO_WAREHOUSE, null, "Arrived at warehouse");
+            rr.getId(), ReturnStatus.ARRIVED_TO_WAREHOUSE, user, "Arrived at warehouse");
     }
 
     @Transactional
@@ -50,9 +49,5 @@ public class WarehouseService {
         WarehouseInspection saved = inspectionRepo.save(inspection);
         returnRequestService.transitionStatus(returnId, ReturnStatus.INSPECTED, null, "Warehouse inspection completed");
         return saved;
-    }
-
-    public List<WarehouseInspection> findInspectionsByReturnId(Long returnId) {
-        return inspectionRepo.findByReturnRequestId(returnId);
     }
 }

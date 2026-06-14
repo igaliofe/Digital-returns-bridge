@@ -10,46 +10,62 @@
 <ui:composition template="/WEB-INF/templates/layout.xhtml">
 <ui:define name="content">
 
-    <h2 style="margin-bottom:16px;">Dashboard</h2>
+    <div class="drb-page-stack">
+        <div>
+            <h1 class="drb-page-title" style="margin-bottom:0;">Dashboard</h1>
+            <p class="drb-page-subtitle" style="margin-bottom:0;">Live status overview across all return requests.</p>
+        </div>
 
-    <p:panelGrid columns="4" style="width:100%;margin-bottom:24px;"
-                 columnClasses="ui-panelgrid-col,ui-panelgrid-col,ui-panelgrid-col,ui-panelgrid-col">
-        <p:outputLabel value="Open"/>
-        <p:outputLabel value="#{dashboardBean.get('totalOpen')}"
-                       style="font-size:24px;font-weight:bold;color:#2196F3;"/>
-        <p:outputLabel value="Waiting Pickup"/>
-        <p:outputLabel value="#{dashboardBean.get('totalWaitingPickup')}"
-                       style="font-size:24px;font-weight:bold;color:#FF9800;"/>
+        <div class="drb-kpi-grid">
+        <div class="drb-kpi-card">
+            <span class="drb-kpi-label">Open</span>
+            <span class="drb-kpi-value drb-kpi-open">#{dashboardBean.get('totalOpen')}</span>
+        </div>
+        <div class="drb-kpi-card">
+            <span class="drb-kpi-label">Waiting Pickup</span>
+            <span class="drb-kpi-value drb-kpi-waiting">#{dashboardBean.get('totalWaitingPickup')}</span>
+        </div>
+        <div class="drb-kpi-card">
+            <span class="drb-kpi-label">Barcode Assigned</span>
+            <span class="drb-kpi-value drb-kpi-barcode">#{dashboardBean.get('totalBarcodeAssigned')}</span>
+        </div>
+        <div class="drb-kpi-card">
+            <span class="drb-kpi-label">Picked Up</span>
+            <span class="drb-kpi-value drb-kpi-picked">#{dashboardBean.get('totalPickedUp')}</span>
+        </div>
+        <div class="drb-kpi-card">
+            <span class="drb-kpi-label">In Warehouse</span>
+            <span class="drb-kpi-value drb-kpi-warehouse">#{dashboardBean.get('totalInWarehouse')}</span>
+        </div>
+        <div class="drb-kpi-card">
+            <span class="drb-kpi-label">Closed</span>
+            <span class="drb-kpi-value drb-kpi-closed">#{dashboardBean.get('totalClosed')}</span>
+        </div>
+        <div class="drb-kpi-card">
+            <span class="drb-kpi-label">Needs More Info</span>
+            <span class="drb-kpi-value drb-kpi-needs-info">#{dashboardBean.get('totalNeedsMoreInfo')}</span>
+        </div>
+        <div class="drb-kpi-card">
+            <span class="drb-kpi-label">No Barcode Assigned</span>
+            <span class="drb-kpi-value drb-kpi-no-barcode">#{dashboardBean.get('noBarcode')}</span>
+        </div>
+    </div>
 
-        <p:outputLabel value="Barcode Assigned"/>
-        <p:outputLabel value="#{dashboardBean.get('totalBarcodeAssigned')}"
-                       style="font-size:24px;font-weight:bold;color:#9C27B0;"/>
-        <p:outputLabel value="Picked Up"/>
-        <p:outputLabel value="#{dashboardBean.get('totalPickedUp')}"
-                       style="font-size:24px;font-weight:bold;color:#00BCD4;"/>
-
-        <p:outputLabel value="In Warehouse"/>
-        <p:outputLabel value="#{dashboardBean.get('totalInWarehouse')}"
-                       style="font-size:24px;font-weight:bold;color:#607D8B;"/>
-        <p:outputLabel value="Closed"/>
-        <p:outputLabel value="#{dashboardBean.get('totalClosed')}"
-                       style="font-size:24px;font-weight:bold;color:#4CAF50;"/>
-
-        <p:outputLabel value="Needs More Info"/>
-        <p:outputLabel value="#{dashboardBean.get('totalNeedsMoreInfo')}"
-                       style="font-size:24px;font-weight:bold;color:#FF5722;"/>
-        <p:outputLabel value="No Barcode Assigned" style="font-weight:bold;"/>
-        <p:outputLabel value="#{dashboardBean.get('noBarcode')}"
-                       style="font-size:24px;font-weight:bold;color:#F44336;"/>
-    </p:panelGrid>
-
-    <p:button value="New Return" icon="pi pi-plus"
-              href="#{request.contextPath}/returns/create.xhtml"
-              rendered="#{sessionScope.loggedInUser.role.name() == 'SERVICE_REP' or sessionScope.loggedInUser.role.name() == 'MANAGER'}"/>
-    <p:button value="View All Returns" icon="pi pi-list"
-              href="#{request.contextPath}/returns/list.xhtml"
-              styleClass="ui-button-secondary"
-              style="margin-left:8px;"/>
+    <div class="drb-btn-row">
+        <p:button value="New Return"
+                  href="#{request.contextPath}/returns/create.xhtml"
+                  styleClass="drb-btn-primary"/>
+        <p:button value="View All Returns"
+                  href="#{request.contextPath}/returns/list.xhtml"
+                  styleClass="drb-btn-secondary"/>
+        <p:button value="Reports"
+                  href="#{request.contextPath}/reports.xhtml"
+                  styleClass="drb-btn-secondary"/>
+        <p:button value="Warehouse Receiving"
+                  href="#{request.contextPath}/warehouse/receiving.xhtml"
+                  styleClass="drb-btn-secondary"/>
+    </div>
+    </div>
 
 </ui:define>
 </ui:composition>

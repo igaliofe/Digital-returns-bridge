@@ -6,7 +6,7 @@ import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 
-@WebFilter("/faces/*")
+@WebFilter("/*")
 public class RoleAuthFilter implements Filter {
 
     @Override
@@ -16,7 +16,12 @@ public class RoleAuthFilter implements Filter {
         HttpServletResponse res = (HttpServletResponse) response;
 
         String path = req.getRequestURI();
-        if (path.contains("/faces/login.xhtml")) {
+        String ctx = req.getContextPath();
+        String appPath = path.startsWith(ctx) ? path.substring(ctx.length()) : path;
+
+        if (!appPath.endsWith(".xhtml")
+                || appPath.contains("/jakarta.faces.resource/")
+                || appPath.endsWith("/login.xhtml")) {
             chain.doFilter(request, response);
             return;
         }
@@ -25,7 +30,7 @@ public class RoleAuthFilter implements Filter {
         User user = session != null ? (User) session.getAttribute("loggedInUser") : null;
 
         if (user == null) {
-            res.sendRedirect(req.getContextPath() + "/faces/login.xhtml");
+            res.sendRedirect(ctx + "/login.xhtml");
             return;
         }
 

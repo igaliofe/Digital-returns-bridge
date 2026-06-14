@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="drb_spacing_xs">4dp</dimen>
+    <dimen name="drb_spacing_sm">8dp</dimen>
+    <dimen name="drb_spacing_md">12dp</dimen>
+    <dimen name="drb_spacing_lg">16dp</dimen>
+    <dimen name="drb_spacing_xl">24dp</dimen>
+    <dimen name="drb_spacing_xxl">28dp</dimen>
+
+    <dimen name="drb_radius_sm">8dp</dimen>
+    <dimen name="drb_radius_md">14dp</dimen>
+    <dimen name="drb_radius_lg">20dp</dimen>
+    <dimen name="drb_radius_pill">24dp</dimen>
+
+    <dimen name="drb_header_padding_horizontal">18dp</dimen>
+    <dimen name="drb_header_padding_vertical">14dp</dimen>
+    <dimen name="drb_card_padding">16dp</dimen>
+    <dimen name="drb_card_margin">12dp</dimen>
+    <dimen name="drb_logo_size">72dp</dimen>
+    <dimen name="drb_elevation_card">2dp</dimen>
+
+    <dimen name="drb_text_title">24sp</dimen>
+    <dimen name="drb_text_header">18sp</dimen>
+    <dimen name="drb_text_body">15sp</dimen>
+    <dimen name="drb_text_caption">13sp</dimen>
+    <dimen name="drb_text_chip">11sp</dimen>
+    <dimen name="drb_text_logo">22sp</dimen>
+</resources>

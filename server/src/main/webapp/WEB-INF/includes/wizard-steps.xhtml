@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="jakarta.faces.facelets">
+<body>
+<ui:composition>
+    <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;">
+        <span style="padding:6px 12px;border-radius:4px;
+                     #{createReturnWizardBean.currentStep == 1 ? 'background:#2196F3;color:#fff;font-weight:bold;' : 'background:#e5e7eb;'}">
+            1. Identify Customer
+        </span>
+        <span style="padding:6px 12px;border-radius:4px;
+                     #{createReturnWizardBean.currentStep == 2 ? 'background:#2196F3;color:#fff;font-weight:bold;' : 'background:#e5e7eb;'}">
+            2. Item Selection
+        </span>
+        <span style="padding:6px 12px;border-radius:4px;
+                     #{createReturnWizardBean.currentStep == 3 ? 'background:#2196F3;color:#fff;font-weight:bold;' : 'background:#e5e7eb;'}">
+            3. New Return Request
+        </span>
+    </div>
+</ui:composition>
+</body>
+</html>

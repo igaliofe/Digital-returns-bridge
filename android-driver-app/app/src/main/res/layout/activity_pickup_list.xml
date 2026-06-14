@@ -2,7 +2,12 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/drb_cream_bg">
+
+    <include
+        android:id="@+id/pickupHeader"
+        layout="@layout/include_drb_header"/>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefresh"
@@ -19,7 +24,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
-                android:padding="8dp"/>
+                android:padding="@dimen/drb_card_margin"/>
 
             <TextView
                 android:id="@+id/tvEmpty"
@@ -28,6 +33,7 @@
                 android:layout_gravity="center"
                 android:text="No pickups assigned"
                 android:textSize="16sp"
+                android:textColor="@color/drb_text_secondary"
                 android:visibility="gone"/>
 
         </FrameLayout>

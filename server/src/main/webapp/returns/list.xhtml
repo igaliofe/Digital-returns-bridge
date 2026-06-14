@@ -11,80 +11,108 @@
 <ui:composition template="/WEB-INF/templates/layout.xhtml">
 <ui:define name="content">
 
-    <h2 style="margin-bottom:16px;">Return Requests</h2>
+    <div class="drb-page-stack">
+        <h1 class="drb-page-title" style="margin-bottom:0;">Return Requests</h1>
 
-    <h:form id="filterForm">
-        <p:panel header="Filters" style="margin-bottom:16px;" toggleable="true" collapsed="false">
-            <p:panelGrid columns="4">
-                <p:outputLabel for="statusFilter" value="Status:"/>
-                <p:selectOneMenu id="statusFilter" value="#{returnListBean.filterStatus}">
-                    <f:selectItem itemLabel="— All Statuses —" itemValue=""/>
-                    <f:selectItems value="#{returnListBean.statuses}" var="s"
-                                   itemLabel="#{s.name()}" itemValue="#{s.name()}"/>
-                </p:selectOneMenu>
+        <h:form id="filterForm">
+            <div class="drb-filter-card">
+                <h2 class="drb-filter-card-title">Filters</h2>
+                <div class="drb-filter-bar">
+                    <div class="drb-filter-field">
+                        <label class="drb-field-label" for="statusFilter">Status</label>
+                        <p:selectOneMenu id="statusFilter" value="#{returnListBean.filterStatus}" style="width:100%;">
+                            <f:selectItem itemLabel="— All Statuses —" itemValue=""/>
+                            <f:selectItems value="#{returnListBean.statuses}" var="s"
+                                           itemLabel="#{s.name()}" itemValue="#{s.name()}"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="drb-filter-field">
+                        <label class="drb-field-label" for="driverFilter">Driver</label>
+                        <p:selectOneMenu id="driverFilter" value="#{returnListBean.filterDriverId}" style="width:100%;">
+                            <f:selectItem itemLabel="— All Drivers —" itemValue="#{null}"/>
+                            <f:selectItems value="#{returnListBean.drivers}" var="d"
+                                           itemLabel="#{d.user.fullName}" itemValue="#{d.id}"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="drb-filter-field drb-filter-field-wide">
+                        <label class="drb-field-label" for="customerFilter">Customer Search</label>
+                        <p:inputText id="customerFilter" value="#{returnListBean.filterCustomerQuery}"
+                                     placeholder="Name or phone" style="width:100%;"/>
+                    </div>
+                    <div class="drb-filter-field">
+                        <label class="drb-field-label" for="barcodeFilter">Barcode</label>
+                        <p:inputText id="barcodeFilter" value="#{returnListBean.filterBarcode}"
+                                     placeholder="Partial barcode" style="width:100%;"/>
+                    </div>
+                    <div class="drb-filter-field drb-filter-field-check">
+                        <p:selectBooleanCheckbox id="noBarcodeFilter"
+                                                 value="#{returnListBean.filterHasNoBarcode}"/>
+                        <label class="drb-field-label" for="noBarcodeFilter">No Barcode Only</label>
+                    </div>
+                    <div class="drb-filter-actions">
+                        <p:commandButton value="Apply Filters" icon="pi pi-search"
+                                         action="#{returnListBean.load}"
+                                         update="returnsTable filterForm"
+                                         styleClass="drb-btn-primary"/>
+                    </div>
+                </div>
+            </div>
 
-                <p:outputLabel for="noBarcodeFilter" value="No Barcode Only:"/>
-                <p:selectBooleanCheckbox id="noBarcodeFilter"
-                                         value="#{returnListBean.filterHasNoBarcode}"
-                                         style="vertical-align:middle;"/>
-            </p:panelGrid>
-            <p:commandButton value="Apply Filters" icon="pi pi-search"
-                             action="#{returnListBean.load}"
-                             update="returnsTable filterForm"
-                             style="margin-top:8px;"/>
-        </p:panel>
+            <p:dataTable id="returnsTable" value="#{returnListBean.returns}" var="r"
+                         paginator="true" rows="20"
+                         paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="10,20,50"
+                         emptyMessage="No return requests found."
+                         sortMode="multiple"
+                         styleClass="drb-table"
+                         style="width:100%;">
 
-        <p:dataTable id="returnsTable" value="#{returnListBean.returns}" var="r"
-                     paginator="true" rows="20"
-                     paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                     rowsPerPageTemplate="10,20,50"
-                     emptyMessage="No return requests found."
-                     sortMode="multiple"
-                     style="width:100%;">
+                <p:column headerText="ID" sortBy="#{r.id}" style="width:56px;">
+                    <h:outputText value="#{r.id}"/>
+                </p:column>
 
-            <p:column headerText="ID" sortBy="#{r.id}" style="width:60px;">
-                <h:outputText value="#{r.id}"/>
-            </p:column>
+                <p:column headerText="Barcode" sortBy="#{r.barcode}" filterBy="#{r.barcode}" style="width:150px;">
+                    <h:outputText value="#{r.barcode}" rendered="#{not empty r.barcode}"/>
+                    <h:outputText value="Not assigned"
+                                  rendered="#{empty r.barcode}"
+                                  styleClass="drb-chip-no-barcode"/>
+                </p:column>
 
-            <p:column headerText="Barcode" sortBy="#{r.barcode}" filterBy="#{r.barcode}">
-                <h:outputText value="#{r.barcode}" rendered="#{not empty r.barcode}"/>
-                <h:outputText value="Not assigned"
-                              rendered="#{empty r.barcode}"
-                              style="color:#F44336;font-style:italic;"/>
-            </p:column>
+                <p:column headerText="Customer" sortBy="#{r.customer.fullName}" filterBy="#{r.customer.fullName}">
+                    <h:outputText value="#{r.customer.fullName}"/>
+                </p:column>
 
-            <p:column headerText="Customer" sortBy="#{r.customer.fullName}" filterBy="#{r.customer.fullName}">
-                <h:outputText value="#{r.customer.fullName}"/>
-            </p:column>
+                <p:column headerText="Product" sortBy="#{r.product.name}" filterBy="#{r.product.name}">
+                    <h:outputText value="#{r.product.name}"/>
+                </p:column>
 
-            <p:column headerText="Product" sortBy="#{r.product.name}" filterBy="#{r.product.name}">
-                <h:outputText value="#{r.product.name}"/>
-            </p:column>
+                <p:column headerText="Status" sortBy="#{r.status}" style="width:176px;">
+                    <h:panelGroup layout="span" styleClass="#{statusUi.chipClass(r.status)}">
+                        #{statusUi.label(r.status)}
+                    </h:panelGroup>
+                </p:column>
 
-            <p:column headerText="Status" sortBy="#{r.status}">
-                <h:outputText value="#{r.status.name()}"/>
-            </p:column>
+                <p:column headerText="Driver" style="width:150px;">
+                    <h:outputText value="#{r.driver != null ? r.driver.user.fullName : '—'}"/>
+                </p:column>
 
-            <p:column headerText="Driver">
-                <h:outputText value="#{r.driver != null ? r.driver.user.fullName : '—'}"/>
-            </p:column>
+                <p:column headerText="Priority" sortBy="#{r.priority}" style="width:86px;">
+                    <h:outputText value="#{r.priority}"/>
+                </p:column>
 
-            <p:column headerText="Priority" sortBy="#{r.priority}">
-                <h:outputText value="#{r.priority}"/>
-            </p:column>
+                <p:column headerText="Created At" sortBy="#{r.createdAt}" style="width:150px;">
+                    <h:outputText value="#{r.createdAt}">
+                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm" type="localDateTime"/>
+                    </h:outputText>
+                </p:column>
 
-            <p:column headerText="Created At" sortBy="#{r.createdAt}">
-                <h:outputText value="#{r.createdAt}">
-                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm" type="localDateTime"/>
-                </h:outputText>
-            </p:column>
-
-            <p:column headerText="Actions" style="width:80px;" exportable="false">
-                <p:button icon="pi pi-eye" title="View"
-                          href="#{request.contextPath}/returns/details.xhtml?id=#{r.id}"/>
-            </p:column>
-        </p:dataTable>
-    </h:form>
+                <p:column headerText="" style="width:72px;" exportable="false">
+                    <h:outputLink value="#{request.contextPath}/returns/details.xhtml?id=#{r.id}"
+                                  styleClass="drb-link-view">View</h:outputLink>
+                </p:column>
+            </p:dataTable>
+        </h:form>
+    </div>
 
 </ui:define>
 </ui:composition>
