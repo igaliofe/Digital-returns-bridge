@@ -22,14 +22,16 @@ public class CloudinaryImageService {
     private Cloudinary cloudinary;
 
     public UploadResult upload(InputStream inputStream, ImageType imageType, Long returnId) {
-        if (cloudinary.config.cloudName.startsWith("placeholder")) {
+        if (cloudinary.config.cloudName == null || cloudinary.config.cloudName.startsWith("placeholder")) {
             throw new ValidationException("CLOUDINARY_NOT_CONFIGURED",
                 "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET env vars.");
         }
         try {
             byte[] bytes = inputStream.readAllBytes();
             String folder = BASE_FOLDER + "/" + returnId;
-            String publicId = folder + "/" + imageType.name().toLowerCase() + "_" + System.currentTimeMillis();
+            // public_id is the bare filename; the "folder" param does the nesting.
+            // Prefixing the folder here too made Cloudinary double-nest the path.
+            String publicId = imageType.name().toLowerCase() + "_" + System.currentTimeMillis();
 
             @SuppressWarnings("unchecked")
             Map<String, Object> result = cloudinary.uploader().upload(bytes,
@@ -43,7 +45,7 @@ public class CloudinaryImageService {
             String pid = (String) result.get("public_id");
             LOG.info("Uploaded image to Cloudinary: " + pid);
             return new UploadResult(pid, url);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new ValidationException("UPLOAD_FAILED", "Image upload failed: " + e.getMessage());
         }
     }
