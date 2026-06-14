@@ -30,13 +30,16 @@
 
         <TextView
             android:id="@+id/tvLoginLogo"
-            android:layout_width="@dimen/drb_logo_size"
+            android:layout_width="wrap_content"
             android:layout_height="@dimen/drb_logo_size"
+            android:minWidth="@dimen/drb_logo_size"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
             android:background="@drawable/bg_logo_square"
             android:gravity="center"
-            android:text="DRB"
+            android:text="@string/logo_text"
             android:textColor="@color/white"
-            android:textSize="@dimen/drb_text_logo"
+            android:textSize="14sp"
             android:textStyle="bold"/>
 
         <TextView
@@ -45,6 +48,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/drb_spacing_lg"
             android:text="@string/app_name"
+            android:visibility="gone"
             style="@style/DrbText.Title"/>
 
         <TextView
@@ -67,13 +71,16 @@
         android:visibility="gone">
 
         <TextView
-            android:layout_width="@dimen/drb_logo_size"
+            android:layout_width="wrap_content"
             android:layout_height="@dimen/drb_logo_size"
+            android:minWidth="@dimen/drb_logo_size"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
             android:background="@drawable/bg_logo_square"
             android:gravity="center"
-            android:text="DRB"
+            android:text="@string/logo_text"
             android:textColor="@color/white"
-            android:textSize="@dimen/drb_text_logo"
+            android:textSize="14sp"
             android:textStyle="bold"/>
 
         <TextView
@@ -82,6 +89,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/drb_spacing_lg"
             android:text="@string/app_name"
+            android:visibility="gone"
             style="@style/DrbText.Title"/>
 
         <TextView

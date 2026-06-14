@@ -10,7 +10,7 @@
 <h:head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Digital Returns Bridge</title>
+    <title>Tollman&apos;s</title>
     <h:outputStylesheet name="css/drb.css"/>
     <!-- Load after PrimeFaces saga theme (injected by PF components) -->
     <style type="text/css">
@@ -26,7 +26,7 @@
     <header class="drb-header">
         <div class="drb-header-inner">
             <div class="drb-logo-wrap">
-                <h:outputLink value="#{cp}/dashboard.xhtml" styleClass="drb-logo">DRB</h:outputLink>
+                <h:outputLink value="#{cp}/dashboard.xhtml" styleClass="drb-logo">Tollman&apos;s</h:outputLink>
             </div>
 
             <nav class="drb-nav">
@@ -64,7 +64,7 @@
                     <h:commandLink action="#{loginBean.logout}" styleClass="drb-logout-link" value="Logout"/>
                 </h:form>
                 <span class="drb-avatar">
-                    <h:outputText value="#{sessionScope.loggedInUser.fullName != null and sessionScope.loggedInUser.fullName.length() >= 2 ? sessionScope.loggedInUser.fullName.substring(0,2) : 'DR'}"/>
+                    <h:outputText value="#{sessionScope.loggedInUser.fullName != null and sessionScope.loggedInUser.fullName.length() >= 2 ? sessionScope.loggedInUser.fullName.substring(0,2) : 'TO'}"/>
                 </span>
             </div>
         </div>

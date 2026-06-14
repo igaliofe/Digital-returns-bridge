@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Digital Returns Bridge</string>
-    <string name="login_driver_header">DRB Driver</string>
-    <string name="login_warehouse_header">DRB Warehouse</string>
+    <string name="app_name">Tollman&apos;s</string>
+    <string name="logo_text">Tollman&apos;s</string>
+    <string name="login_driver_header">Tollman&apos;s Driver</string>
+    <string name="login_warehouse_header">Tollman&apos;s Warehouse</string>
     <string name="login_driver_phone_hint">Sign in with your phone number</string>
     <string name="phone_hint">Phone Number</string>
     <string name="login_button">Login</string>

@@ -1,4 +1,4 @@
-/* Digital Returns Bridge — Figma design tokens & PrimeFaces overrides */
+/* Tollman's — Figma design tokens & PrimeFaces overrides */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -77,18 +77,19 @@ body.drb-body {
 }
 
 .drb-logo {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
+    min-height: 34px;
+    padding: 6px 10px;
     background: var(--drb-primary);
     border-radius: 9px;
     color: var(--drb-bg-cream);
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 700;
     text-decoration: none;
     line-height: 1;
+    white-space: nowrap;
 }
 
 .drb-nav {
@@ -339,16 +340,17 @@ body.drb-body {
 }
 
 .drb-login-logo {
-    width: 46px;
-    height: 46px;
+    min-height: 46px;
+    padding: 8px 12px;
     border-radius: 11px;
     background: var(--drb-primary);
     color: var(--drb-bg-cream);
-    font-size: 14px;
+    font-size: 10px;
     font-weight: 700;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
+    white-space: nowrap;
 }
 
 .drb-login-app-name {
