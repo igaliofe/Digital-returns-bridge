@@ -27,7 +27,7 @@ public class PickupDetailsActivity extends AppCompatActivity {
     public static final String EXTRA_RETURN_ID = "return_id";
 
     private TextView tvCustomer, tvProduct, tvPrice, tvOrderNumber, tvOriginalDeliveryDate, tvReason, tvDefect, tvStatus;
-    private TextView tvBarcode, tvBarcodeAssignedAt, tvBarcodeDriver;
+    private TextView tvBarcode, tvBarcodeAssignedAt, tvBarcodeDriver, tvConfirmHint;
     private ImageView ivProductImage;
     private Button btnAssignBarcode, btnCaptureImage, btnConfirmPickup, btnViewHistory;
     private View barcodeAssignBlock;
@@ -43,6 +43,8 @@ public class PickupDetailsActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
         returnId = getIntent().getLongExtra(EXTRA_RETURN_ID, -1L);
+
+        HeaderHelper.setupSubScreen(this, R.string.pickup_details_title);
 
         tvCustomer = findViewById(R.id.tvCustomer);
         tvProduct = findViewById(R.id.tvProduct);
@@ -61,6 +63,7 @@ public class PickupDetailsActivity extends AppCompatActivity {
         btnCaptureImage = findViewById(R.id.btnCaptureImage);
         btnConfirmPickup = findViewById(R.id.btnConfirmPickup);
         btnViewHistory = findViewById(R.id.btnViewHistory);
+        tvConfirmHint = findViewById(R.id.tvConfirmHint);
 
         btnAssignBarcode.setOnClickListener(v -> {
             Intent intent = new Intent(this, BarcodeAssignmentActivity.class);
@@ -139,21 +142,23 @@ public class PickupDetailsActivity extends AppCompatActivity {
             ivProductImage.setVisibility(View.GONE);
         }
         tvDefect.setText("Defect: " + safe(r.defectDescription));
-        tvStatus.setText("Status: " + safe(r.status));
+        ReturnCardBinder.applyStatusChip(tvStatus, r.status);
 
-        if (r.isBarcodeAssigned()) {
-            barcodeAssignBlock.setVisibility(View.GONE);
-            tvBarcode.setText("Barcode: " + r.barcode);
-            tvBarcodeAssignedAt.setText("Assigned at: " + safe(r.barcodeAssignedAt));
-            tvBarcodeDriver.setText("Assigned by: " + safe(r.barcodeAssignedByDriverName));
+        tvBarcode.setText("Barcode: " + (r.isBarcodeAssigned() ? r.barcode : "Not assigned"));
+        tvBarcodeAssignedAt.setText("Assigned At: " + safe(r.barcodeAssignedAt));
+        tvBarcodeDriver.setText("Driver: " + safe(r.driverName));
+        barcodeAssignBlock.setVisibility(r.isBarcodeAssigned() ? View.GONE : View.VISIBLE);
+
+        boolean canConfirm = r.isStatusBarcodeAssigned() && r.hasDriverPhoto();
+        btnConfirmPickup.setEnabled(canConfirm);
+        if (canConfirm) {
+            tvConfirmHint.setVisibility(View.GONE);
         } else {
-            barcodeAssignBlock.setVisibility(View.VISIBLE);
-            tvBarcode.setText("Barcode: Not assigned");
-            tvBarcodeAssignedAt.setText("");
-            tvBarcodeDriver.setText("");
+            tvConfirmHint.setVisibility(View.VISIBLE);
+            tvConfirmHint.setText(!r.isStatusBarcodeAssigned()
+                ? "Assign a barcode and capture a photo to confirm pickup."
+                : "Capture a photo to confirm pickup.");
         }
-
-        btnConfirmPickup.setEnabled(r.isStatusBarcodeAssigned());
     }
 
     private void loadAndShowTimeline() {

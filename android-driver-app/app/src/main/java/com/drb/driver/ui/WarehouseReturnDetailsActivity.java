@@ -44,7 +44,7 @@ public class WarehouseReturnDetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_warehouse_return_details);
-        setTitle(R.string.wh_details_title);
+        HeaderHelper.setupSubScreen(this, R.string.wh_details_title);
 
         sessionManager = new SessionManager(this);
         barcode = getIntent().getStringExtra(EXTRA_BARCODE);
@@ -115,7 +115,7 @@ public class WarehouseReturnDetailsActivity extends AppCompatActivity {
         tvReturnDate.setText("Return date: " + safe(r.createdAt));
         tvReason.setText("Reason: " + safe(r.returnReason != null ? r.returnReason : r.reason));
         tvBarcode.setText("Barcode: " + safe(r.barcode));
-        tvStatus.setText("Status: " + safe(r.status));
+        ReturnCardBinder.applyStatusChip(tvStatus, r.status);
 
         if (r.productImageUrl != null && !r.productImageUrl.isEmpty()) {
             ivProductImage.setVisibility(View.VISIBLE);

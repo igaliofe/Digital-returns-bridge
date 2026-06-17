@@ -3,59 +3,68 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/drb_cream_bg"
-    android:padding="@dimen/drb_spacing_xl">
+    android:background="@color/drb_cream_bg">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Assign Barcode"
-        style="@style/DrbText.Title"
-        android:layout_marginBottom="@dimen/drb_spacing_lg"/>
+    <include layout="@layout/include_drb_header"/>
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/sticker_instruction"
-        style="@style/DrbText.Body"
-        android:layout_marginBottom="@dimen/drb_spacing_sm"/>
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:padding="@dimen/drb_spacing_xl">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/multi_carton_note"
-        android:textStyle="italic"
-        android:textColor="@color/error_red"
-        android:textSize="@dimen/drb_text_caption"
-        android:layout_marginBottom="@dimen/drb_spacing_xl"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/assign_barcode_title"
+            style="@style/DrbText.Title"
+            android:layout_marginBottom="@dimen/drb_spacing_lg"/>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Barcode"
-        style="@style/DrbTextInputLayout"
-        android:layout_marginBottom="@dimen/drb_spacing_lg">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etBarcode"
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="text"/>
-    </com.google.android.material.textfield.TextInputLayout>
+            android:text="@string/sticker_instruction"
+            style="@style/DrbText.Body"
+            android:layout_marginBottom="@dimen/drb_spacing_sm"/>
 
-    <Button
-        android:id="@+id/btnScan"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/scan_barcode"
-        style="@style/DrbButton.Outlined"
-        android:layout_marginBottom="@dimen/drb_spacing_sm"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/multi_carton_note"
+            android:textStyle="italic"
+            android:textColor="@color/error_red"
+            android:textSize="@dimen/drb_text_caption"
+            android:layout_marginBottom="@dimen/drb_spacing_xl"/>
 
-    <Button
-        android:id="@+id/btnAssign"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Assign"
-        style="@style/DrbButton.Primary"/>
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/barcode_hint_driver"
+            style="@style/DrbTextInputLayout"
+            android:layout_marginBottom="@dimen/drb_spacing_lg">
 
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etBarcode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/btnScan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/scan_barcode"
+            style="@style/DrbButton.Outlined"
+            android:layout_marginBottom="@dimen/drb_spacing_sm"/>
+
+        <Button
+            android:id="@+id/btnAssign"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Assign"
+            style="@style/DrbButton.Primary"/>
+
+    </LinearLayout>
 </LinearLayout>

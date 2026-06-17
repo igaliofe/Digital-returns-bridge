@@ -1,15 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Tollman&apos;s</string>
-    <string name="logo_text">Tollman&apos;s</string>
-    <string name="login_driver_header">Tollman&apos;s Driver</string>
-    <string name="login_warehouse_header">Tollman&apos;s Warehouse</string>
+    <string name="app_name">Tollman\'s</string>
+    <string name="logo_text">Tollman\'s</string>
+    <string name="login_driver_header">Tollman\'s</string>
+    <string name="login_warehouse_header">Tollman\'s</string>
     <string name="login_driver_phone_hint">Sign in with your phone number</string>
     <string name="phone_hint">Phone Number</string>
     <string name="login_button">Login</string>
     <string name="logout">Logout</string>
     <string name="my_pickups_title">My Pickups</string>
     <string name="scan_barcode">Scan Barcode</string>
+
+    <!-- Screen titles (shown in the navy top bar) -->
+    <string name="pickup_details_title">Pickup Details</string>
+    <string name="assign_barcode_title">Assign Barcode</string>
+    <string name="capture_image_title">Capture Image</string>
+    <string name="confirm_pickup_title">Confirm Pickup</string>
+
+    <!-- Driver action buttons / barcode card -->
+    <string name="assign_barcode_btn">Assign Barcode</string>
+    <string name="capture_image_btn">Capture Image</string>
+    <string name="confirm_pickup_btn">Confirm Pickup</string>
+    <string name="view_history_btn">View History</string>
+    <string name="barcode_section">Barcode</string>
+    <string name="barcode_hint_driver">Scan or type barcode</string>
+    <string name="confirm_hint_no_barcode">Assign a barcode and capture a photo to confirm pickup.</string>
+    <string name="confirm_hint_no_photo">Capture a photo to confirm pickup.</string>
+    <string name="take_photo_btn">Take Photo</string>
+    <string name="upload_btn">Upload</string>
 
     <!-- Sticker / barcode attachment guidance -->
     <string name="sticker_instruction">Attach the barcode sticker firmly to the outside of the package so it is clearly visible and scannable.</string>
@@ -30,15 +48,19 @@
     <string name="wh_home_title">Storekeeper Queue</string>
     <string name="wh_queue_empty">No returns awaiting handling</string>
     <string name="wh_scan_lookup">Scan / Look up barcode</string>
-    <string name="wh_scan_title">Storekeeper Lookup</string>
-    <string name="wh_scan_instruction">Scan or enter a barcode to look up its return request.</string>
+    <string name="wh_scan_title">Scan Barcode</string>
+    <string name="wh_scan_instruction">Scan the sticker, or enter the code manually.</string>
     <string name="wh_barcode_hint">Barcode</string>
     <string name="wh_lookup">Look up</string>
-    <string name="wh_details_title">Return Details</string>
+    <string name="wh_search">Search</string>
+    <string name="wh_open_scanner">Open Scanner</string>
+    <string name="wh_details_title">Return File</string>
     <string name="wh_catalog_photo">Catalog photo</string>
-    <string name="wh_mark_arrived">Mark Arrived to Warehouse</string>
+    <string name="wh_mark_arrived">Mark as Arrived</string>
     <string name="wh_inspect">Inspect</string>
+    <string name="wh_start_inspection">Start Inspection</string>
     <string name="wh_view_history">View History</string>
+    <string name="wh_receiving_title">Receiving</string>
 
     <!-- Inspection form -->
     <string name="wh_inspection_title">Warehouse Inspection</string>
@@ -54,5 +76,6 @@
     <string name="wh_further_handling">Further Handling</string>
     <string name="wh_fully_handled">Call fully handled (close after inspection)</string>
     <string name="wh_notes_hint">Warehouse notes (optional)</string>
-    <string name="wh_submit_inspection">Submit Inspection</string>
+    <string name="wh_submit_inspection">Save Inspection</string>
+    <string name="wh_inspection_short_title">Inspection</string>
 </resources>

@@ -53,7 +53,7 @@ public class StorekeeperHomeActivity extends AppCompatActivity {
         if (header != null) {
             TextView tvTitle = header.findViewById(R.id.tvHeaderTitle);
             if (tvTitle != null) {
-                tvTitle.setText(R.string.wh_home_title);
+                tvTitle.setText(R.string.wh_receiving_title);
             }
             TextView tvLogout = header.findViewById(R.id.tvHeaderAction);
             if (tvLogout != null) {

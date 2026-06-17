@@ -9,7 +9,7 @@ Digital Returns Bridge is a Jakarta EE 10 monorepo for managing reverse-logistic
 
 > The **storekeeper** (`WAREHOUSE` role) is served by **both** clients: the Android app and the JSF web Warehouse Receiving screen (`/warehouse/receiving.xhtml`), which remain interchangeable clients of the same role-restricted warehouse endpoints (`@RolesAllowed WAREHOUSE/MANAGER`).
 
-> **UI**: All 24 Figma frames have code counterparts. Pixel-perfect styling is applied via `resources/css/drb.css` (web) and Android theme resources. See [figma-ui-gaps.md](figma-ui-gaps.md) — no gaps identified.
+> **UI**: All 24 Figma frames have code counterparts. Styling is applied via `resources/css/drb.css` (web) and Android theme resources. Known UI fidelity gaps and their fixes are tracked in [figma-ui-gaps.md](figma-ui-gaps.md).
 
 ## Technology Stack
 
@@ -224,8 +224,8 @@ Service Rep                Driver (Android)               Warehouse
 
 ## Key Design Decisions
 
-- **No barcode pool**: `return_requests.barcode` is nullable and unique. A barcode exists in the system only after a driver scans and assigns it.
-- **Pickup confirmation requires `BARCODE_ASSIGNED`**: A driver cannot confirm pickup until a barcode has been assigned to the return.
+- **Barcode is driver-written, warehouse-read**: `return_requests.barcode` is nullable and unique. The **driver** writes it (Barcode Assignment, `PATCH /api/returns/{id}/assign-barcode`); the **warehouse** only reads a return by it (Barcode Lookup, `GET /api/warehouse/returns/{barcode}`). No barcode pool — a barcode exists in the system only after a driver assigns it.
+- **Pickup confirmation requires `BARCODE_ASSIGNED`**: The server rejects pickup confirmation until a barcode has been assigned (`409` otherwise). The Android driver client additionally keeps **Confirm Pickup disabled until a barcode is assigned AND at least one driver photo has been captured** (`DRIVER_PRODUCT/DISTANT/DEFECT_IMAGE`) — a client-side guard; the photo requirement is not enforced server-side.
 - **In-memory token store**: Tokens are stored in a `ConcurrentHashMap` inside an `@ApplicationScoped` CDI bean. Tokens are lost on server restart (acceptable for a workshop project).
 - **Images via Cloudinary**: The image binary is stored in Cloudinary; the database stores only the URL and `cloudinary_public_id`.
 - **Checklist taxonomy**: The enums (`ItemCondition`, `ReturnReason`, `DefectType`, `DefectStage`, `DefectLocation`, and the remapped `WarehouseDecision`/`ImageType`) mirror the operational service-rep / driver / warehouse checklists. The same value strings are shared across the SQL `CHECK` constraints, the JPA enums, the JSF dropdowns, and the Android spinners; because `persistence.xml` runs `hibernate.hbm2ddl.auto=validate`, any drift fails deployment.

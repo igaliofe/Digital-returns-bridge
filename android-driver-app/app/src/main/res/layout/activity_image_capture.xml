@@ -3,68 +3,72 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:background="@color/drb_cream_bg">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Capture Image"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp"/>
+    <include layout="@layout/include_drb_header"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/image_type_label"
-        android:textSize="14sp"
-        android:layout_marginBottom="4dp"/>
-
-    <Spinner
-        android:id="@+id/spinnerImageType"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"/>
-
-    <TextView
-        android:id="@+id/tvDefectRequired"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="@color/error_red"
-        android:textStyle="bold"
-        android:visibility="gone"
-        android:layout_marginBottom="12dp"/>
-
-    <ImageView
-        android:id="@+id/ivPreview"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:scaleType="fitCenter"
-        android:background="#F0F0F0"
-        android:layout_marginBottom="16dp"
-        android:contentDescription="Photo preview"/>
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone"
-        android:layout_marginBottom="8dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/image_type_label"
+            android:textSize="14sp"
+            android:layout_marginBottom="4dp"/>
 
-    <Button
-        android:id="@+id/btnTakePhoto"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Take Photo"
-        android:layout_marginBottom="8dp"/>
+        <Spinner
+            android:id="@+id/spinnerImageType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"/>
 
-    <Button
-        android:id="@+id/btnUpload"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Upload"
-        android:enabled="false"/>
+        <TextView
+            android:id="@+id/tvDefectRequired"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/error_red"
+            android:textStyle="bold"
+            android:visibility="gone"
+            android:layout_marginBottom="12dp"/>
 
+        <ImageView
+            android:id="@+id/ivPreview"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:scaleType="fitCenter"
+            android:background="@color/drb_image_placeholder"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="Photo preview"/>
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:layout_marginBottom="8dp"/>
+
+        <Button
+            android:id="@+id/btnTakePhoto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/take_photo_btn"
+            style="@style/DrbButton.Primary"
+            android:layout_marginBottom="8dp"/>
+
+        <Button
+            android:id="@+id/btnUpload"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/upload_btn"
+            style="@style/DrbButton.Primary"
+            android:enabled="false"/>
+
+    </LinearLayout>
 </LinearLayout>

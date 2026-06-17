@@ -1,192 +1,206 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/drb_cream_bg">
 
-    <LinearLayout
+    <include layout="@layout/include_drb_header"/>
+
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-        <!-- ──────────── Read-only return info ──────────── -->
-        <com.google.android.material.card.MaterialCardView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardElevation="2dp">
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <LinearLayout
+            <!-- ──────────── Read-only return info ──────────── -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:layout_marginBottom="16dp"
+                app:cardElevation="2dp"
+                app:cardCornerRadius="@dimen/drb_radius_md">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/wh_return_info"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                    android:layout_marginBottom="8dp"/>
-
-                <ImageView
-                    android:id="@+id/ivCatalog"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="160dp"
-                    android:scaleType="fitCenter"
-                    android:background="#F0F0F0"
-                    android:layout_marginBottom="8dp"
-                    android:visibility="gone"
-                    android:contentDescription="@string/wh_catalog_photo"/>
-
-                <TextView android:id="@+id/tvOriginalDelivery" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="4dp"/>
-                <TextView android:id="@+id/tvReturnDate" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="4dp"/>
-                <TextView android:id="@+id/tvSku" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="4dp"/>
-                <TextView android:id="@+id/tvItem" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="4dp"/>
-                <TextView android:id="@+id/tvPrice" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="4dp"/>
-                <TextView android:id="@+id/tvReturnReason" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="4dp"/>
-                <TextView android:id="@+id/tvStatus" android:layout_width="match_parent" android:layout_height="wrap_content" android:textStyle="bold" android:layout_marginBottom="8dp"/>
-
-                <!-- Service (system) images -->
-                <TextView
-                    android:id="@+id/lblServiceImages"
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/wh_service_images"
-                    android:textStyle="bold"
-                    android:layout_marginTop="4dp"
-                    android:visibility="gone"/>
-                <HorizontalScrollView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                    <LinearLayout
-                        android:id="@+id/containerServiceImages"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"/>
-                </HorizontalScrollView>
+                        android:text="@string/wh_return_info"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="8dp"/>
 
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                    <ImageView
+                        android:id="@+id/ivCatalog"
+                        android:layout_width="match_parent"
+                        android:layout_height="160dp"
+                        android:scaleType="fitCenter"
+                        android:background="@color/drb_image_placeholder"
+                        android:layout_marginBottom="8dp"
+                        android:visibility="gone"
+                        android:contentDescription="@string/wh_catalog_photo"/>
 
-        <!-- ──────────── Defect details (shown only if present) ──────────── -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardDefect"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:visibility="gone"
-            app:cardElevation="2dp">
+                    <TextView android:id="@+id/tvOriginalDelivery" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="4dp"/>
+                    <TextView android:id="@+id/tvReturnDate" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="4dp"/>
+                    <TextView android:id="@+id/tvSku" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="4dp"/>
+                    <TextView android:id="@+id/tvItem" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="4dp"/>
+                    <TextView android:id="@+id/tvPrice" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="4dp"/>
+                    <TextView android:id="@+id/tvReturnReason" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="4dp"/>
+                    <TextView android:id="@+id/tvStatus" android:layout_width="match_parent" android:layout_height="wrap_content" android:textStyle="bold" android:layout_marginBottom="8dp"/>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/wh_defect_details"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                    android:layout_marginBottom="8dp"/>
-
-                <TextView android:id="@+id/tvServiceDefect" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="4dp"/>
-                <TextView android:id="@+id/tvDriverDefect" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="4dp"/>
-                <TextView android:id="@+id/tvDriverNotes" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
-
-                <TextView
-                    android:id="@+id/lblDriverImages"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/wh_driver_defect_photos"
-                    android:textStyle="bold"
-                    android:visibility="gone"/>
-                <HorizontalScrollView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                    <LinearLayout
-                        android:id="@+id/containerDriverImages"
+                    <!-- Service (system) images -->
+                    <TextView
+                        android:id="@+id/lblServiceImages"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"/>
-                </HorizontalScrollView>
+                        android:text="@string/wh_service_images"
+                        android:textStyle="bold"
+                        android:layout_marginTop="4dp"
+                        android:visibility="gone"/>
+                    <HorizontalScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <LinearLayout
+                            android:id="@+id/containerServiceImages"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"/>
+                    </HorizontalScrollView>
 
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-        <!-- ──────────── Sufficient info? ──────────── -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/wh_sufficient_info_q"
-            android:textSize="14sp"
-            android:layout_marginBottom="8dp"/>
-
-        <Button
-            android:id="@+id/btnRequestMoreInfo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/wh_request_more_info"
-            android:layout_marginBottom="24dp"
-            style="@style/Widget.Material3.Button.OutlinedButton"/>
-
-        <!-- ──────────── Classification ──────────── -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/wh_item_condition"
-            android:textSize="14sp"
-            android:layout_marginBottom="4dp"/>
-
-        <Spinner
-            android:id="@+id/spinnerCondition"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/wh_further_handling"
-            android:textSize="14sp"
-            android:layout_marginBottom="4dp"/>
-
-        <Spinner
-            android:id="@+id/spinnerDecision"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"/>
-
-        <CheckBox
-            android:id="@+id/cbFullyHandled"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/wh_fully_handled"
-            android:layout_marginBottom="16dp"/>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/wh_notes_hint"
-            android:layout_marginBottom="24dp">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etNotes"
+            <!-- ──────────── Defect details (shown only if present) ──────────── -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardDefect"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textMultiLine"
-                android:minLines="3"/>
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_marginBottom="16dp"
+                android:visibility="gone"
+                app:cardElevation="2dp"
+                app:cardCornerRadius="@dimen/drb_radius_md">
 
-        <Button
-            android:id="@+id/btnSubmit"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/wh_submit_inspection"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-    </LinearLayout>
-</ScrollView>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/wh_defect_details"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="8dp"/>
+
+                    <TextView android:id="@+id/tvServiceDefect" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="4dp"/>
+                    <TextView android:id="@+id/tvDriverDefect" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="4dp"/>
+                    <TextView android:id="@+id/tvDriverNotes" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+
+                    <TextView
+                        android:id="@+id/lblDriverImages"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/wh_driver_defect_photos"
+                        android:textStyle="bold"
+                        android:visibility="gone"/>
+                    <HorizontalScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <LinearLayout
+                            android:id="@+id/containerDriverImages"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"/>
+                    </HorizontalScrollView>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ──────────── Sufficient info? ──────────── -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/wh_sufficient_info_q"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp"/>
+
+            <Button
+                android:id="@+id/btnRequestMoreInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/wh_request_more_info"
+                style="@style/DrbButton.Outlined"
+                android:layout_marginBottom="24dp"/>
+
+            <!-- ──────────── Classification ──────────── -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/wh_item_condition"
+                android:textSize="14sp"
+                android:layout_marginBottom="4dp"/>
+
+            <Spinner
+                android:id="@+id/spinnerCondition"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/wh_further_handling"
+                android:textSize="14sp"
+                android:layout_marginBottom="4dp"/>
+
+            <Spinner
+                android:id="@+id/spinnerDecision"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"/>
+
+            <CheckBox
+                android:id="@+id/cbFullyHandled"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/wh_fully_handled"
+                android:layout_marginBottom="16dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/wh_notes_hint"
+                style="@style/DrbTextInputLayout"
+                android:layout_marginBottom="24dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etNotes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textMultiLine"
+                    android:minLines="3"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/btnSubmit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/wh_submit_inspection"
+                style="@style/DrbButton.Primary"/>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

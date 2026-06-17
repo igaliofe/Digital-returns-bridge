@@ -12,9 +12,13 @@ import com.drb.server.service.exception.ValidationException;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.EntityPart;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.jboss.resteasy.plugins.providers.multipart.InputPart;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Path("/returns")
@@ -56,7 +60,10 @@ public class ReturnResource {
     @GET
     @Path("/{returnId}")
     public Response getById(@PathParam("returnId") Long returnId) {
-        return Response.ok(ReturnRequestDto.from(returnRequestService.findById(returnId))).build();
+        ReturnRequestDto dto = ReturnRequestDto.from(returnRequestService.findById(returnId));
+        dto.images = returnRequestService.getImages(returnId)
+                .stream().map(ReturnImageDto::from).collect(Collectors.toList());
+        return Response.ok(dto).build();
     }
 
     @POST
@@ -166,12 +173,30 @@ public class ReturnResource {
     @Path("/{returnId}/images")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response uploadImage(@PathParam("returnId") Long returnId,
-                                EntityPart file,
-                                @FormParam("imageType") String imageType) {
-        User user = authenticatedUser.get();
-        return Response.status(201).entity(ReturnImageDto.from(
-            imageService.upload(returnId, file, imageType, user)
-        )).build();
+                                MultipartFormDataInput input) {
+        try {
+            Map<String, List<InputPart>> parts = input.getFormDataMap();
+
+            List<InputPart> fileParts = parts.get("file");
+            if (fileParts == null || fileParts.isEmpty()) {
+                return Response.status(400).type(MediaType.APPLICATION_JSON)
+                    .entity(new ErrorEnvelope("MISSING_FILE", "No file part in request")).build();
+            }
+            byte[] fileBytes = fileParts.get(0).getBody(byte[].class, null);
+
+            String imageType = null;
+            List<InputPart> typeParts = parts.get("imageType");
+            if (typeParts != null && !typeParts.isEmpty()) {
+                imageType = typeParts.get(0).getBodyAsString();
+            }
+
+            User user = authenticatedUser.get();
+            return Response.status(201).entity(ReturnImageDto.from(
+                imageService.upload(returnId, fileBytes, imageType, user)
+            )).build();
+        } catch (IOException e) {
+            throw new ValidationException("UPLOAD_FAILED", "Failed to read upload: " + e.getMessage());
+        }
     }
 
     @GET

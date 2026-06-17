@@ -346,7 +346,7 @@ List pickup updates for a return.
 Record a pickup update from the driver. Accepts the same `PickupConfirmationRequest` body as pickup-confirmation (below) but does **not** change the return status.
 
 ### POST /api/returns/{returnId}/pickup-confirmation
-Confirm pickup. **Requires** the return to be in `BARCODE_ASSIGNED` status; rejects with `409` otherwise.
+Confirm pickup. **Requires** the return to be in `BARCODE_ASSIGNED` status; rejects with `409` otherwise. (The Android driver app also keeps its **Confirm Pickup** button disabled until a barcode is assigned **and** at least one driver photo — `DRIVER_PRODUCT/DISTANT/DEFECT_IMAGE` — has been captured. This photo guard is client-side only; the server does not enforce it.)
 
 **Request** (`PickupConfirmationRequest`)
 ```json

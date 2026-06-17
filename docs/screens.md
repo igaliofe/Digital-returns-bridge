@@ -2,7 +2,7 @@
 
 > **Design source**: [Figma — Digital Returns Bridge Screen Designs](https://www.figma.com/design/QLMlsSFt51XHxZAyUNeI2U/Digital-Returns-Bridge-%E2%80%94-Screen-Designs) (24 frames).  
 > **UI styling**: Web uses `server/src/main/webapp/resources/css/drb.css` (Inter font, Figma tokens, PrimeFaces overrides). Android uses `colors.xml`, `dimens.xml`, `themes.xml`, `styles.xml`, and status-chip drawables.  
-> **Validation**: [figma-ui-gaps.md](figma-ui-gaps.md) — no gaps identified after pixel-perfect pass.
+> **Validation**: [figma-ui-gaps.md](figma-ui-gaps.md) — log of known UI fidelity gaps and their resolution.
 
 ---
 
@@ -141,10 +141,10 @@ Phone + Login. `POST /api/auth/login`. Role routing on success and session resto
 - Barcode chip (separate from status)
 
 #### PickupDetailsActivity — Figma `36:50`
-Full return detail with `customerAddress`, catalog image, barcode block, timeline. Actions: Assign Barcode, Take Photo, Confirm Pickup.
+Full return detail with `customerAddress`, catalog image, barcode block (status chip + prominent gold **Assign Barcode** entry shown until a barcode exists), timeline. Actions: Assign Barcode, Capture Image, Confirm Pickup, View History. **Confirm Pickup** stays disabled until a barcode is assigned **and** a driver photo has been captured.
 
 #### BarcodeAssignmentActivity — Figma `36:105`
-Manual entry + ZXing scan. `PATCH /api/returns/{id}/assign-barcode`.
+The **driver** *writes* the barcode here: manual entry + ZXing scan → `PATCH /api/returns/{id}/assign-barcode` (sets `barcode`, status → `BARCODE_ASSIGNED`). Distinct from the warehouse `WarehouseScanActivity`, which only *reads* a return by barcode.
 
 #### ImageCaptureActivity — Figma `36:124`
 Camera capture. Spinner: Product / Distant / Defect image types. Defect photo mandatory before other types.
@@ -158,7 +158,7 @@ Item condition spinner (`ItemCondition`), defect type/location, collected checkb
 Merged queue: `GET /api/returns?status=PICKED_UP` + `ARRIVED_TO_WAREHOUSE`. Shared header with logout. Scan button → `WarehouseScanActivity`.
 
 #### WarehouseScanActivity — Figma `50:50`
-ZXing scan → `GET /api/warehouse/returns/{barcode}` → details activity.
+The **warehouse** *reads* by barcode here (no write): viewfinder + manual entry / ZXing scan → `GET /api/warehouse/returns/{barcode}` → details activity. Buttons: **Search** (manual lookup) and **Open Scanner**.
 
 #### WarehouseReturnDetailsActivity — Figma `50:70`
 Digital return file. Mark Arrived, Inspect, View History.

@@ -34,7 +34,7 @@ public class WarehouseScanActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_warehouse_scan);
-        setTitle(R.string.wh_scan_title);
+        HeaderHelper.setupSubScreen(this, R.string.wh_scan_title);
         sessionManager = new SessionManager(this);
 
         etBarcode = findViewById(R.id.etBarcode);

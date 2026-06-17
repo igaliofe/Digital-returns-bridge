@@ -1,116 +1,128 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/drb_cream_bg">
 
-    <LinearLayout
+    <include layout="@layout/include_drb_header"/>
+
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-        <com.google.android.material.card.MaterialCardView
-            xmlns:app="http://schemas.android.com/apk/res-auto"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardElevation="2dp">
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <LinearLayout
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:layout_marginBottom="16dp"
+                app:cardElevation="2dp"
+                app:cardCornerRadius="@dimen/drb_radius_md">
 
-                <ImageView
-                    android:id="@+id/ivProductImage"
-                    android:layout_width="match_parent"
-                    android:layout_height="180dp"
-                    android:scaleType="fitCenter"
-                    android:background="#F0F0F0"
-                    android:layout_marginBottom="12dp"
-                    android:visibility="gone"
-                    android:contentDescription="@string/wh_catalog_photo"/>
-
-                <TextView
-                    android:id="@+id/tvCustomer"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="16sp"
-                    android:layout_marginBottom="4dp"/>
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                <TextView
-                    android:id="@+id/tvProduct"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"/>
+                    <ImageView
+                        android:id="@+id/ivProductImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="180dp"
+                        android:scaleType="fitCenter"
+                        android:background="@color/drb_image_placeholder"
+                        android:layout_marginBottom="12dp"
+                        android:visibility="gone"
+                        android:contentDescription="@string/wh_catalog_photo"/>
 
-                <TextView
-                    android:id="@+id/tvSku"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"/>
+                    <TextView
+                        android:id="@+id/tvCustomer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="4dp"/>
 
-                <TextView
-                    android:id="@+id/tvPrice"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"/>
+                    <TextView
+                        android:id="@+id/tvProduct"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"/>
 
-                <TextView
-                    android:id="@+id/tvOrderNumber"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"/>
+                    <TextView
+                        android:id="@+id/tvSku"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"/>
 
-                <TextView
-                    android:id="@+id/tvReturnDate"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"/>
+                    <TextView
+                        android:id="@+id/tvPrice"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"/>
 
-                <TextView
-                    android:id="@+id/tvReason"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"/>
+                    <TextView
+                        android:id="@+id/tvOrderNumber"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"/>
 
-                <TextView
-                    android:id="@+id/tvBarcode"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"/>
+                    <TextView
+                        android:id="@+id/tvReturnDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"/>
 
-                <TextView
-                    android:id="@+id/tvStatus"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textStyle="bold"
-                    android:textSize="15sp"/>
+                    <TextView
+                        android:id="@+id/tvReason"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"/>
 
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                    <TextView
+                        android:id="@+id/tvBarcode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"/>
 
-        <Button
-            android:id="@+id/btnMarkArrived"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/wh_mark_arrived"
-            android:layout_marginBottom="8dp"/>
+                    <TextView
+                        android:id="@+id/tvStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/DrbText.Chip"/>
 
-        <Button
-            android:id="@+id/btnInspect"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/wh_inspect"
-            android:layout_marginBottom="8dp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-        <Button
-            android:id="@+id/btnViewHistory"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/wh_view_history"
-            style="@style/Widget.Material3.Button.OutlinedButton"/>
+            <Button
+                android:id="@+id/btnMarkArrived"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/wh_mark_arrived"
+                style="@style/DrbButton.Gold"
+                android:layout_marginBottom="8dp"/>
 
-    </LinearLayout>
-</ScrollView>
+            <Button
+                android:id="@+id/btnInspect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/wh_start_inspection"
+                style="@style/DrbButton.Primary"
+                android:layout_marginBottom="8dp"/>
+
+            <Button
+                android:id="@+id/btnViewHistory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/wh_view_history"
+                style="@style/DrbButton.Outlined"/>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

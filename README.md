@@ -12,7 +12,7 @@ Digital Returns Bridge provides a complete digital flow for product returns betw
 
 Purchase history (`customer_purchases`) powers wizard Step 2. When a return is created from a selected purchase row, the server sets `handled=true` on that purchase in the same transaction.
 
-All **24 Figma screens** are implemented with pixel-perfect styling: web via `resources/css/drb.css` (Inter font, design tokens), Android via shared theme resources. UI validation: [docs/figma-ui-gaps.md](docs/figma-ui-gaps.md) (no gaps).
+All **24 Figma screens** are implemented: styling is web via `resources/css/drb.css` (Inter font, design tokens), Android via shared theme resources. Known UI fidelity gaps and their fixes are tracked in [docs/figma-ui-gaps.md](docs/figma-ui-gaps.md).
 
 ## How Barcodes Work
 
@@ -264,7 +264,7 @@ OPEN → WAITING_FOR_PICKUP → BARCODE_ASSIGNED → PICKED_UP → ARRIVED_TO_WA
 ## Further Reading
 
 - [docs/initial-plan.he.html](docs/initial-plan.he.html) — lecturer-facing Hebrew specification (printable)
-- [docs/figma-ui-gaps.md](docs/figma-ui-gaps.md) — Figma UI validation report
+- [docs/figma-ui-gaps.md](docs/figma-ui-gaps.md) — Figma UI fidelity gaps & resolution log
 - [docs/architecture.md](docs/architecture.md) — system architecture, wizard flow, and status transition diagram
 - [docs/api.md](docs/api.md) — full REST API reference (purchase endpoints, `purchaseId`, handled rule)
 - [docs/screens.md](docs/screens.md) — 24 Figma screens mapped to routes/activities

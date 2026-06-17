@@ -29,6 +29,7 @@ public class AuthFilter implements ContainerRequestFilter {
         // RESTEasy may return the path with or without a leading slash; normalize.
         if (path.startsWith("/")) path = path.substring(1);
         if (path.startsWith("auth/login")) return;
+        if (path.startsWith("debug/logs")) return;
 
         String header = ctx.getHeaderString("Authorization");
         if (header == null || !header.startsWith("Bearer ")) {

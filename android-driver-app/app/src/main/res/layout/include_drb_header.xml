@@ -11,6 +11,18 @@
     android:paddingBottom="@dimen/drb_header_padding_vertical">
 
     <TextView
+        android:id="@+id/headerBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="←"
+        android:textColor="@color/white"
+        android:textSize="24sp"
+        android:paddingStart="2dp"
+        android:paddingEnd="@dimen/drb_spacing_md"
+        android:contentDescription="Back"
+        android:visibility="gone"/>
+
+    <TextView
         android:id="@+id/tvHeaderTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

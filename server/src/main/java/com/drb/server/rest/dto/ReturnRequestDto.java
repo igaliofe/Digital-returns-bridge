@@ -5,6 +5,7 @@ import com.drb.server.domain.enums.ReturnStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class ReturnRequestDto {
     public Long id;
@@ -38,6 +39,7 @@ public class ReturnRequestDto {
     public ReturnStatus status;
     public LocalDateTime createdAt;
     public LocalDateTime updatedAt;
+    public List<ReturnImageDto> images;
 
     public static ReturnRequestDto from(ReturnRequest rr) {
         ReturnRequestDto d = new ReturnRequestDto();

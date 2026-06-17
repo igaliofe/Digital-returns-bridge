@@ -76,7 +76,7 @@ public class WarehouseInspectionActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_warehouse_inspection);
-        setTitle(R.string.wh_inspection_title);
+        HeaderHelper.setupSubScreen(this, R.string.wh_inspection_short_title);
 
         sessionManager = new SessionManager(this);
         returnId = getIntent().getLongExtra(EXTRA_RETURN_ID, -1L);

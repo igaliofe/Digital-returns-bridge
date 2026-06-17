@@ -69,6 +69,7 @@ public class PickupConfirmationActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pickup_confirmation);
+        HeaderHelper.setupSubScreen(this, R.string.confirm_pickup_title);
 
         sessionManager = new SessionManager(this);
         returnId = getIntent().getLongExtra(EXTRA_RETURN_ID, -1L);
@@ -121,10 +122,14 @@ public class PickupConfirmationActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     ReturnRequestModel r = response.body();
                     barcodeAssigned = r.isStatusBarcodeAssigned();
-                    btnConfirm.setEnabled(barcodeAssigned);
+                    boolean hasPhoto = r.hasDriverPhoto();
+                    btnConfirm.setEnabled(barcodeAssigned && hasPhoto);
                     if (!barcodeAssigned) {
                         Toast.makeText(PickupConfirmationActivity.this,
-                            "Confirm button disabled: barcode not yet assigned", Toast.LENGTH_LONG).show();
+                            "Confirm disabled: barcode not yet assigned", Toast.LENGTH_LONG).show();
+                    } else if (!hasPhoto) {
+                        Toast.makeText(PickupConfirmationActivity.this,
+                            "Confirm disabled: capture a photo first", Toast.LENGTH_LONG).show();
                     }
                 }
             }

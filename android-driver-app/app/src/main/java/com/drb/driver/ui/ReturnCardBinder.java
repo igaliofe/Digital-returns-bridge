@@ -31,6 +31,15 @@ public final class ReturnCardBinder {
         }
     }
 
+    /**
+     * Render a status as the same colored chip used in pickup/queue cards.
+     * Reused by detail screens so the status reads as a chip, not plain text.
+     */
+    public static void applyStatusChip(TextView tvStatus, String status) {
+        tvStatus.setText(formatStatusLabel(status));
+        applyStatusStyle(tvStatus.getContext(), tvStatus, status);
+    }
+
     public static String formatProductQty(ReturnRequestModel item) {
         String name = item.productName != null ? item.productName : "—";
         if (item.quantity != null && item.quantity > 0) {

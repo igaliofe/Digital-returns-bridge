@@ -1,6 +1,7 @@
 package com.drb.driver.api;
 
 import com.drb.driver.model.AssignBarcodeRequest;
+import com.drb.driver.model.LogRequest;
 import com.drb.driver.model.DriverModel;
 import com.drb.driver.model.LoginRequest;
 import com.drb.driver.model.LoginResponse;
@@ -98,4 +99,7 @@ public interface DrbApi {
 
     @GET("returns/{returnId}/status-history")
     Call<List<TimelineEntry>> getStatusHistory(@Path("returnId") Long returnId);
+
+    @POST("debug/logs")
+    Call<Void> postLog(@Body LogRequest request);
 }

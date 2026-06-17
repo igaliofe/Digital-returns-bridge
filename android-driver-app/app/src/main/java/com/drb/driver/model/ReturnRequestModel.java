@@ -48,4 +48,21 @@ public class ReturnRequestModel {
     public boolean isStatusBarcodeAssigned() {
         return "BARCODE_ASSIGNED".equals(status);
     }
+
+    /**
+     * True when the driver has captured at least one pickup photo
+     * (product / distant / defect). The driver signature is excluded — it is
+     * captured later, at pickup confirmation.
+     */
+    public boolean hasDriverPhoto() {
+        if (images == null) return false;
+        for (ReturnImageModel img : images) {
+            if (img.imageType != null
+                && img.imageType.startsWith("DRIVER_")
+                && !"DRIVER_SIGNATURE".equals(img.imageType)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

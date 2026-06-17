@@ -18,6 +18,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 import com.drb.driver.R;
+import com.drb.driver.RemoteLogger;
 import com.drb.driver.api.ApiClient;
 import com.drb.driver.model.ReturnImageModel;
 import com.drb.driver.model.ReturnRequestModel;
@@ -64,6 +65,7 @@ public class ImageCaptureActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_capture);
+        HeaderHelper.setupSubScreen(this, R.string.capture_image_title);
 
         sessionManager = new SessionManager(this);
         returnId = getIntent().getLongExtra(EXTRA_RETURN_ID, -1L);
@@ -137,13 +139,14 @@ public class ImageCaptureActivity extends AppCompatActivity {
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             try {
                 photoFile = createImageFile();
-            } catch (IOException e) {
-                Toast.makeText(this, "Cannot create image file", Toast.LENGTH_SHORT).show();
+                Uri photoUri = FileProvider.getUriForFile(this,
+                    getApplicationContext().getPackageName() + ".fileprovider", photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+            } catch (IOException | IllegalArgumentException e) {
+                RemoteLogger.e("ImageCaptureActivity", "Failed to create/resolve photo file", e);
+                Toast.makeText(this, "Cannot create image file: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 return;
             }
-            Uri photoUri = FileProvider.getUriForFile(this,
-                getApplicationContext().getPackageName() + ".fileprovider", photoFile);
-            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
             startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
         } else {
             Toast.makeText(this, "No camera app available", Toast.LENGTH_SHORT).show();
@@ -240,6 +243,8 @@ public class ImageCaptureActivity extends AppCompatActivity {
                     Toast.makeText(ImageCaptureActivity.this, "Image uploaded successfully!", Toast.LENGTH_SHORT).show();
                     finish();
                 } else {
+                    String msg = "Upload failed: HTTP " + response.code() + " for returnId=" + returnId + " type=" + selectedType;
+                    RemoteLogger.e("ImageCaptureActivity", msg);
                     Toast.makeText(ImageCaptureActivity.this, "Upload failed: " + response.code(), Toast.LENGTH_LONG).show();
                 }
             }
@@ -248,6 +253,7 @@ public class ImageCaptureActivity extends AppCompatActivity {
             public void onFailure(Call<ReturnImageModel> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 btnUpload.setEnabled(true);
+                RemoteLogger.e("ImageCaptureActivity", "Upload network error for returnId=" + returnId, t);
                 Toast.makeText(ImageCaptureActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });

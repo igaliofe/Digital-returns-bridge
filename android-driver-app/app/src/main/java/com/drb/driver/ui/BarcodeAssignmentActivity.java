@@ -36,6 +36,7 @@ public class BarcodeAssignmentActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_barcode_assignment);
+        HeaderHelper.setupSubScreen(this, R.string.assign_barcode_title);
         sessionManager = new SessionManager(this);
         returnId = getIntent().getLongExtra(EXTRA_RETURN_ID, -1L);
 
