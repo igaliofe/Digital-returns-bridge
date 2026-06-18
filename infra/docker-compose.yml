@@ -37,7 +37,9 @@ services:
       - "8080:8080"
       - "9990:9990"
     environment:
-      JDBC_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-drb}
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: ${POSTGRES_DB:-drb}
       POSTGRES_USER: ${POSTGRES_USER:-drb}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-drb_secret}
       CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-placeholder}
