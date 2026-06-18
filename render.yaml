@@ -2,8 +2,8 @@
 # New → Blueprint → pick repo. Provisions Postgres + WildFly web service.
 #
 # Manual steps NOT covered by this file:
-#   1. Set sync:false vars below in the Render dashboard (JDBC_URL + Cloudinary).
-#      JDBC_URL = jdbc:postgresql://<internal-host>:5432/<db>  (from drb-db internal URL)
+#   1. Set sync:false Cloudinary vars below in the Render dashboard.
+#      (DB connection is wired automatically from drb-db — no manual JDBC_URL.)
 #   2. Load schema before first boot (Hibernate runs hbm2ddl validate):
 #        psql "<EXTERNAL_DATABASE_URL>" -f database/schema.sql
 #        psql "<EXTERNAL_DATABASE_URL>" -f database/seed.sql
@@ -29,8 +29,21 @@ services:
         fromDatabase:
           name: drb-db
           property: password
-      - key: JDBC_URL
-        sync: false           # jdbc:postgresql://HOST:5432/DB — Render has no JDBC property
+      # DB connection assembled from these in configure-datasource.cli ->
+      # jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}. No JDBC property exists
+      # in Render, so build it from the parts it does expose.
+      - key: DB_HOST
+        fromDatabase:
+          name: drb-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: drb-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: drb-db
+          property: database
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
       - key: CLOUDINARY_API_KEY

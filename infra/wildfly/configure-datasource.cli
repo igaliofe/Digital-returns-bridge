@@ -14,7 +14,7 @@ data-source add \
   --name=DrbDS \
   --driver-name=postgresql \
   --jndi-name=java:/jdbc/DrbDS \
-  --connection-url=${env.JDBC_URL:jdbc:postgresql://localhost:5432/drb} \
+  --connection-url=${env.JDBC_URL:jdbc:postgresql://${env.DB_HOST:localhost}:${env.DB_PORT:5432}/${env.DB_NAME:drb}} \
   --user-name=${env.POSTGRES_USER:drb} \
   --password=${env.POSTGRES_PASSWORD:drb} \
   --min-pool-size=5 \

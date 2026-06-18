@@ -11,8 +11,7 @@ RUN mvn -pl server -am package -DskipTests -q
 FROM quay.io/wildfly/wildfly:36.0.1.Final-jdk17
 
 # Install PostgreSQL JDBC driver as WildFly module
-# NOTE: do NOT name this JDBC_URL — Render injects service env vars as build
-# args, and the runtime JDBC_URL (jdbc:postgresql://...) would clobber it.
+
 ARG JDBC_DRIVER_URL=https://jdbc.postgresql.org/download/postgresql-42.7.1.jar
 USER root
 RUN mkdir -p /opt/jboss/wildfly/modules/org/postgresql/main
@@ -32,5 +31,7 @@ USER jboss
 # Deploy WAR
 COPY --chown=jboss:jboss --from=build /workspace/server/target/server-1.0-SNAPSHOT.war /opt/jboss/wildfly/standalone/deployments/digital-returns-bridge.war
 
-EXPOSE 8080 9990
-CMD ["/opt/jboss/wildfly/bin/standalone.sh", "-b", "0.0.0.0", "-bmanagement", "0.0.0.0"]
+# Only expose the app port. Binding management to 0.0.0.0 makes Render's port
+# scanner pick 9990 as the primary port and route traffic to the mgmt console.
+EXPOSE 8080
+CMD ["/opt/jboss/wildfly/bin/standalone.sh", "-b", "0.0.0.0"]
