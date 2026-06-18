@@ -19,7 +19,7 @@ Digital Returns Bridge is a Jakarta EE 10 monorepo for managing reverse-logistic
 | Build | Maven (server), Gradle (Android) |
 | Web UI | JSF 4 (Mojarra) + PrimeFaces 13 + `drb.css` (Figma design tokens) |
 | REST API | JAX-RS 3.1 (RESTEasy) |
-| Persistence | JPA / Hibernate 6, PostgreSQL |
+| Persistence | JPA / Hibernate 6, PostgreSQL (15 local, 18 on Render) |
 | CDI | Jakarta CDI 4 |
 | Image storage | Cloudinary (`cloudinary-http5`) |
 | Authentication | Phone-only login, in-memory `TokenStore` (UUID tokens) |
@@ -65,7 +65,7 @@ Digital Returns Bridge is a Jakarta EE 10 monorepo for managing reverse-logistic
 └───────────────────────────┼────────────────────────────────--┘
                             │ JPA / JDBC
               ┌─────────────▼──────────┐   ┌──────────────────┐
-              │  PostgreSQL 15          │   │  Cloudinary CDN  │
+              │  PostgreSQL (15 / 18)   │   │  Cloudinary CDN  │
               └────────────────────────┘   └──────────────────┘
 ```
 
@@ -234,4 +234,4 @@ Service Rep                Driver (Android)               Warehouse
 - **Drawn signatures**: Service-rep and driver signatures are captured as drawings (JSF `<p:signature>` pad, Android `SignatureView` canvas) and stored like any other image — uploaded to Cloudinary and tagged `SERVICE_REP_SIGNATURE` / `DRIVER_SIGNATURE` (the driver URL is also denormalized onto `pickup_updates.signature_image_url`).
 - **Cloudinary now effectively required**: Catalog images, multi-image service docs, and drawn signatures all depend on Cloudinary being configured.
 - **Audit timestamps everywhere**: Every table/entity carries `created_at` and `updated_at`, auto-managed by JPA `@PrePersist`/`@PreUpdate` hooks, to support future statistics (record age, last-modified). `status_history` uses `created_at` (formerly `changed_at`) as its transition timestamp.
-- **Single schema + seed (no migrations)**: The app is not live, so the database is defined by one init file (`database/schema.sql`) and one seed file (`database/seed.sql`); both always reflect the latest desired state. `infra/docker-compose.yml` mounts them as `01_schema.sql` / `02_seed.sql` into the postgres `initdb` directory.
+- **Single schema + seed (no migrations)**: No migration framework is used; the database is defined by one init file (`database/schema.sql`) and one seed file (`database/seed.sql`), both always reflecting the latest desired state. Locally, `infra/docker-compose.yml` mounts them as `01_schema.sql` / `02_seed.sql` into the postgres `initdb` directory. The app is deployed on Render (`https://digital-returns-bridge.onrender.com`), where the schema/seed are loaded once via `psql -f` against the managed Postgres before first boot (Hibernate runs `hbm2ddl.auto=validate`).

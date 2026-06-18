@@ -22,4 +22,9 @@ data-source add \
   --valid-connection-checker-class-name=org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker \
   --exception-sorter-class-name=org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter
 
+# Remove WildFly's built-in "Welcome to WildFly" handler bound to "/", which
+# otherwise shadows the ROOT.war so the bare domain shows the WildFly splash
+# instead of the app's login page.
+/subsystem=undertow/server=default-server/host=default-host/location=\/:remove
+
 stop-embedded-server
