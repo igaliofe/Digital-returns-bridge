@@ -11,10 +11,12 @@ RUN mvn -pl server -am package -DskipTests -q
 FROM quay.io/wildfly/wildfly:36.0.1.Final-jdk17
 
 # Install PostgreSQL JDBC driver as WildFly module
-ARG JDBC_URL=https://jdbc.postgresql.org/download/postgresql-42.7.1.jar
+# NOTE: do NOT name this JDBC_URL — Render injects service env vars as build
+# args, and the runtime JDBC_URL (jdbc:postgresql://...) would clobber it.
+ARG JDBC_DRIVER_URL=https://jdbc.postgresql.org/download/postgresql-42.7.1.jar
 USER root
 RUN mkdir -p /opt/jboss/wildfly/modules/org/postgresql/main
-ADD ${JDBC_URL} /opt/jboss/wildfly/modules/org/postgresql/main/postgresql-42.7.1.jar
+ADD ${JDBC_DRIVER_URL} /opt/jboss/wildfly/modules/org/postgresql/main/postgresql-42.7.1.jar
 COPY infra/wildfly/standalone-snippet.xml /opt/jboss/wildfly/modules/org/postgresql/main/module.xml
 COPY infra/wildfly/configure-datasource.cli /tmp/configure-datasource.cli
 RUN /opt/jboss/wildfly/bin/jboss-cli.sh --file=/tmp/configure-datasource.cli
