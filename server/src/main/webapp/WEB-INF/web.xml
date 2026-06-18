@@ -37,4 +37,11 @@
         <welcome-file>login.xhtml</welcome-file>
     </welcome-file-list>
 
+    <!-- Cookie-only sessions: drops ;jsessionid= from URLs so PrimeFaces CSS/JS
+         (theme.css, jquery.js, components.js — ~490KB) become cacheable by the
+         browser/CDN instead of re-downloading every navigation. -->
+    <session-config>
+        <tracking-mode>COOKIE</tracking-mode>
+    </session-config>
+
 </web-app>
