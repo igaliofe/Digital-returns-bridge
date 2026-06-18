@@ -29,7 +29,8 @@ RUN chown -R jboss:jboss /opt/jboss/wildfly
 USER jboss
 
 # Deploy WAR
-COPY --chown=jboss:jboss --from=build /workspace/server/target/server-1.0-SNAPSHOT.war /opt/jboss/wildfly/standalone/deployments/digital-returns-bridge.war
+# Deploy as ROOT.war -> context root "/" (no /digital-returns-bridge prefix).
+COPY --chown=jboss:jboss --from=build /workspace/server/target/server-1.0-SNAPSHOT.war /opt/jboss/wildfly/standalone/deployments/ROOT.war
 
 # Only expose the app port. Binding management to 0.0.0.0 makes Render's port
 # scanner pick 9990 as the primary port and route traffic to the mgmt console.

@@ -20,19 +20,21 @@ mvn -pl server -am clean package -DskipTests
    ```
 4. Copy WAR:
    ```bash
-   cp server/target/server-1.0-SNAPSHOT.war $JBOSS_HOME/standalone/deployments/digital-returns-bridge.war
+   cp server/target/server-1.0-SNAPSHOT.war $JBOSS_HOME/standalone/deployments/ROOT.war
    ```
 5. Set environment variables before starting WildFly:
    ```bash
    export CLOUDINARY_CLOUD_NAME=your_cloud
    export CLOUDINARY_API_KEY=your_key
    export CLOUDINARY_API_SECRET=your_secret
-   export JDBC_URL=jdbc:postgresql://localhost:5432/drb
+   export DB_HOST=localhost
+   export DB_PORT=5432
+   export DB_NAME=drb
    export POSTGRES_USER=drb
    export POSTGRES_PASSWORD=secret
    ```
 6. Start WildFly: `$JBOSS_HOME/bin/standalone.sh`
-7. Access: http://localhost:8080/digital-returns-bridge/login.xhtml
+7. Access: http://localhost:8080/login.xhtml
 
 ## Database
 

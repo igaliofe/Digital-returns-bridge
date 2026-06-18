@@ -40,7 +40,7 @@ captures/
 *.keystore
 *.p12
 *.pem
-.env
+# .env
 .env.*
 !.env.example
 

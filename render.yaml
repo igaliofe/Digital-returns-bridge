@@ -19,7 +19,7 @@ services:
     dockerfilePath: server/Dockerfile
     dockerContext: .          # repo root — Dockerfile COPYs pom.xml, server/, infra/
     plan: starter             # WildFly heavy; 512MB free tier risks OOM on boot
-    healthCheckPath: /digital-returns-bridge/login.xhtml
+    healthCheckPath: /login.xhtml
     envVars:
       - key: POSTGRES_USER
         fromDatabase:

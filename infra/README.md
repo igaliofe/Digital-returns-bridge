@@ -35,7 +35,7 @@
    ```
 
 4. **Verify startup**
-   - Web UI: http://localhost:8080/digital-returns-bridge/login.xhtml
+   - Web UI: http://localhost:8080/login.xhtml
    - WildFly management: http://localhost:9990
    - Check logs: `make logs`
 

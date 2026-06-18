@@ -58,14 +58,14 @@ make up       # starts postgres + server in the background
 #### Step 3 — Wait for startup (~30 seconds)
 
 ```bash
-make logs     # watch server logs; ready when you see "Deployed digital-returns-bridge.war"
+make logs     # watch server logs; ready when you see "Deployed ROOT.war"
 ```
 
 #### Step 4 — Open the web UI
 
 | URL | Description |
 |---|---|
-| http://localhost:8080/digital-returns-bridge/login.xhtml | Main web UI (login page) |
+| http://localhost:8080/login.xhtml | Main web UI (login page) |
 | http://localhost:9990 | WildFly management console |
 
 Log in with any phone number from the seed data:
@@ -129,7 +129,9 @@ The JNDI name used is `java:/jdbc/DrbDS`. The `standalone-snippet.xml` in `infra
 export CLOUDINARY_CLOUD_NAME=your_cloud_name
 export CLOUDINARY_API_KEY=your_api_key
 export CLOUDINARY_API_SECRET=your_api_secret
-export JDBC_URL=jdbc:postgresql://localhost:5432/drb
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_NAME=drb
 export POSTGRES_USER=drb
 export POSTGRES_PASSWORD=drb_secret
 ```
@@ -138,13 +140,13 @@ export POSTGRES_PASSWORD=drb_secret
 
 ```bash
 mvn -pl server -am clean package
-cp server/target/server-1.0-SNAPSHOT.war $WILDFLY_HOME/standalone/deployments/digital-returns-bridge.war
+cp server/target/server-1.0-SNAPSHOT.war $WILDFLY_HOME/standalone/deployments/ROOT.war
 
 # Start WildFly
 $WILDFLY_HOME/bin/standalone.sh
 ```
 
-The app is ready when the console prints `Deployed "digital-returns-bridge.war"`.
+The app is ready when the console prints `Deployed "ROOT.war"`.
 
 ---
 
@@ -159,14 +161,14 @@ The Android app is **multi-role**: after login, `NavigationHelper` routes `DRIVE
 
 #### Step 1 — Point the app at your server
 
-The API base URL is set with the `drbApiBaseUrl` Gradle property (default lives in `android-driver-app/gradle.properties`). It **must** end with `/digital-returns-bridge/api/`.
+The API base URL is set with the `drbApiBaseUrl` Gradle property (default lives in `android-driver-app/gradle.properties`). It **must** end with `/api/`.
 
-- **Emulator:** the default `http://10.0.2.2:8080/digital-returns-bridge/api/` already works (`10.0.2.2` maps to the host's localhost).
+- **Emulator:** the default `http://10.0.2.2:8080/api/` already works (`10.0.2.2` maps to the host's localhost).
 - **Real device:** set it to your computer's LAN IP. Either edit the `drbApiBaseUrl` line in `gradle.properties`, or pass it at build time:
 
 ```bash
 ./gradlew :app:assembleDebug \
-  -PdrbApiBaseUrl=http://192.168.1.50:8080/digital-returns-bridge/api/
+  -PdrbApiBaseUrl=http://192.168.1.50:8080/api/
 ```
 
 For a real device, the phone and the server machine must be on the **same Wi-Fi/LAN**, and the server must be reachable on port `8080` (Docker Compose already binds `0.0.0.0:8080`; for a manual WildFly run start it with `-b 0.0.0.0` and allow port 8080 through your firewall).
