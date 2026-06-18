@@ -6,7 +6,15 @@
 
     <context-param>
         <param-name>jakarta.faces.PROJECT_STAGE</param-name>
-        <param-value>Development</param-value>
+        <param-value>Production</param-value>
+    </context-param>
+
+    <!-- Cache compiled facelets indefinitely (Production also implies this, but
+         set explicit so a stray Development override can't re-enable per-request
+         re-parsing). -1 = never check xhtml for changes at runtime. -->
+    <context-param>
+        <param-name>jakarta.faces.FACELETS_REFRESH_PERIOD</param-name>
+        <param-value>-1</param-value>
     </context-param>
 
     <context-param>
