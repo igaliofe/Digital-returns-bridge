@@ -3,7 +3,7 @@ FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /workspace
 COPY pom.xml .
 COPY server/pom.xml server/
-RUN mvn -pl server -am dependency:go-offline -q
+RUN mvn -B -pl server -am org.apache.maven.plugins:maven-dependency-plugin:3.6.1:go-offline
 COPY server/src server/src
 RUN mvn -pl server -am package -DskipTests -q
 
