@@ -5,6 +5,7 @@
       xmlns:h="jakarta.faces.html"
       xmlns:f="jakarta.faces.core"
       xmlns:ui="jakarta.faces.facelets"
+      xmlns:pt="jakarta.faces.passthrough"
       xmlns:p="http://primefaces.org/ui">
 <h:head><title>Returns List — Tollman's</title></h:head>
 <h:body>
@@ -87,7 +88,8 @@
                 </p:column>
 
                 <p:column headerText="Status" sortBy="#{r.status}" style="width:176px;">
-                    <h:panelGroup layout="span" styleClass="#{statusUi.chipClass(r.status)}">
+                    <h:panelGroup layout="span" pt:data-testid="status-badge"
+                                  styleClass="#{statusUi.chipClass(r.status)}">
                         #{statusUi.label(r.status)}
                     </h:panelGroup>
                 </p:column>

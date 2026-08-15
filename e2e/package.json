@@ -1,0 +1,20 @@
+{
+  "name": "drb-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Browser-level end-to-end suite for the Digital Returns Bridge JSF web portal.",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:parallel": "playwright test --workers=4",
+    "report": "playwright show-report",
+    "typecheck": "tsc --noEmit",
+    "install:browsers": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2"
+  }
+}

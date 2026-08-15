@@ -1,0 +1,8 @@
+node_modules
+test-results
+playwright-report
+
+# Worker-scoped storageState written by fixtures/auth.ts
+.auth
+blob-report
+playwright/.cache

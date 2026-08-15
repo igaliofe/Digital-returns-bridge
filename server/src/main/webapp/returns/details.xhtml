@@ -5,6 +5,7 @@
       xmlns:h="jakarta.faces.html"
       xmlns:f="jakarta.faces.core"
       xmlns:ui="jakarta.faces.facelets"
+      xmlns:pt="jakarta.faces.passthrough"
       xmlns:p="http://primefaces.org/ui">
 <h:head><title>Return Details — Tollman's</title></h:head>
 <h:body>
@@ -23,6 +24,7 @@
                 Return ##{returnDetailsBean.returnRequest.id}
             </h1>
             <h:panelGroup layout="span"
+                          pt:data-testid="status-badge"
                           styleClass="#{statusUi.chipClass(returnDetailsBean.returnRequest.status)}">
                 #{statusUi.label(returnDetailsBean.returnRequest.status)}
             </h:panelGroup>
@@ -95,7 +97,7 @@
         </div>
 
         <!-- Barcode / Pickup -->
-        <div class="drb-details-card">
+        <div class="drb-details-card" data-testid="barcode-block">
             <h2 class="drb-details-card-title">Barcode / Pickup</h2>
             <ui:fragment rendered="#{not returnDetailsBean.barcodeAssigned}">
                 <p:message severity="warn" summary="Barcode not assigned"
@@ -141,7 +143,7 @@
         <ui:fragment rendered="#{not empty returnDetailsBean.images}">
             <div class="drb-details-card">
                 <h2 class="drb-details-card-title">Images</h2>
-                <div class="drb-thumb-row">
+                <div class="drb-thumb-row" data-testid="image-gallery">
                     <ui:repeat value="#{returnDetailsBean.images}" var="img">
                         <p:graphicImage value="#{img.imageUrl}" styleClass="drb-thumb"/>
                     </ui:repeat>
@@ -153,7 +155,7 @@
         <ui:fragment rendered="#{not empty returnDetailsBean.statusHistory}">
             <div class="drb-details-card">
                 <h2 class="drb-details-card-title">Status History</h2>
-                <table class="drb-detail-table">
+                <table class="drb-detail-table" data-testid="status-timeline">
                     <thead>
                         <tr>
                             <th class="drb-col-date">Date</th>

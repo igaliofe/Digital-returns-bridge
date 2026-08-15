@@ -5,6 +5,7 @@
       xmlns:h="jakarta.faces.html"
       xmlns:f="jakarta.faces.core"
       xmlns:ui="jakarta.faces.facelets"
+      xmlns:pt="jakarta.faces.passthrough"
       xmlns:p="http://primefaces.org/ui">
 <h:head><title>Reports — Tollman's</title></h:head>
 <h:body>
@@ -18,45 +19,46 @@
         <div class="drb-kpi-grid">
             <div class="drb-kpi-card">
                 <span class="drb-kpi-label">Open</span>
-                <span class="drb-kpi-value drb-kpi-open">#{reportsBean.getDashboardValue('totalOpen')}</span>
+                <span class="drb-kpi-value drb-kpi-open" data-testid="kpi-open">#{reportsBean.getDashboardValue('totalOpen')}</span>
             </div>
             <div class="drb-kpi-card">
                 <span class="drb-kpi-label">Waiting Pickup</span>
-                <span class="drb-kpi-value drb-kpi-waiting">#{reportsBean.getDashboardValue('totalWaitingPickup')}</span>
+                <span class="drb-kpi-value drb-kpi-waiting" data-testid="kpi-waiting-pickup">#{reportsBean.getDashboardValue('totalWaitingPickup')}</span>
             </div>
             <div class="drb-kpi-card">
                 <span class="drb-kpi-label">Barcode Assigned</span>
-                <span class="drb-kpi-value drb-kpi-barcode">#{reportsBean.getDashboardValue('totalBarcodeAssigned')}</span>
+                <span class="drb-kpi-value drb-kpi-barcode" data-testid="kpi-barcode-assigned">#{reportsBean.getDashboardValue('totalBarcodeAssigned')}</span>
             </div>
             <div class="drb-kpi-card">
                 <span class="drb-kpi-label">Picked Up</span>
-                <span class="drb-kpi-value drb-kpi-picked">#{reportsBean.getDashboardValue('totalPickedUp')}</span>
+                <span class="drb-kpi-value drb-kpi-picked" data-testid="kpi-picked-up">#{reportsBean.getDashboardValue('totalPickedUp')}</span>
             </div>
             <div class="drb-kpi-card">
                 <span class="drb-kpi-label">In Warehouse</span>
-                <span class="drb-kpi-value drb-kpi-warehouse">#{reportsBean.getDashboardValue('totalInWarehouse')}</span>
+                <span class="drb-kpi-value drb-kpi-warehouse" data-testid="kpi-in-warehouse">#{reportsBean.getDashboardValue('totalInWarehouse')}</span>
             </div>
             <div class="drb-kpi-card">
                 <span class="drb-kpi-label">Inspected</span>
-                <span class="drb-kpi-value drb-kpi-barcode">#{reportsBean.getDashboardValue('totalInspected')}</span>
+                <span class="drb-kpi-value drb-kpi-barcode" data-testid="kpi-inspected">#{reportsBean.getDashboardValue('totalInspected')}</span>
             </div>
             <div class="drb-kpi-card">
                 <span class="drb-kpi-label">Closed</span>
-                <span class="drb-kpi-value drb-kpi-closed">#{reportsBean.getDashboardValue('totalClosed')}</span>
+                <span class="drb-kpi-value drb-kpi-closed" data-testid="kpi-closed">#{reportsBean.getDashboardValue('totalClosed')}</span>
             </div>
             <div class="drb-kpi-card">
                 <span class="drb-kpi-label">Needs More Info</span>
-                <span class="drb-kpi-value drb-kpi-needs-info">#{reportsBean.getDashboardValue('totalNeedsMoreInfo')}</span>
+                <span class="drb-kpi-value drb-kpi-needs-info" data-testid="kpi-needs-more-info">#{reportsBean.getDashboardValue('totalNeedsMoreInfo')}</span>
             </div>
             <div class="drb-kpi-card">
                 <span class="drb-kpi-label">No Barcode Assigned</span>
-                <span class="drb-kpi-value drb-kpi-no-barcode">#{reportsBean.getDashboardValue('noBarcode')}</span>
+                <span class="drb-kpi-value drb-kpi-no-barcode" data-testid="kpi-no-barcode">#{reportsBean.getDashboardValue('noBarcode')}</span>
             </div>
         </div>
     </p:panel>
 
     <!-- Top Return Reasons -->
     <p:panel header="Top Return Reasons" styleClass="drb-panel"
+             pt:data-testid="report-top-return-reasons"
              rendered="#{not empty reportsBean.topReturnReasons}">
         <p:dataTable value="#{reportsBean.topReturnReasons.entrySet().toArray()}" var="entry"
                      styleClass="drb-table" style="width:100%;" emptyMessage="No data.">
@@ -71,6 +73,7 @@
 
     <!-- Returns by Driver -->
     <p:panel header="Returns by Driver" styleClass="drb-panel"
+             pt:data-testid="report-returns-by-driver"
              rendered="#{not empty reportsBean.returnsByDriver}">
         <p:dataTable value="#{reportsBean.returnsByDriver}" var="row"
                      styleClass="drb-table" style="width:100%;" emptyMessage="No data.">
@@ -85,6 +88,7 @@
 
     <!-- Returns by Customer -->
     <p:panel header="Returns by Customer" styleClass="drb-panel"
+             pt:data-testid="report-returns-by-customer"
              rendered="#{not empty reportsBean.returnsByCustomer}">
         <p:dataTable value="#{reportsBean.returnsByCustomer}" var="row"
                      styleClass="drb-table" style="width:100%;" emptyMessage="No data.">
@@ -99,6 +103,7 @@
 
     <!-- Monthly Volume -->
     <p:panel header="Monthly Volume" styleClass="drb-panel"
+             pt:data-testid="report-monthly-volume"
              rendered="#{not empty reportsBean.monthlyVolume}">
         <p:dataTable value="#{reportsBean.monthlyVolume}" var="row"
                      style="width:100%;" emptyMessage="No data.">
