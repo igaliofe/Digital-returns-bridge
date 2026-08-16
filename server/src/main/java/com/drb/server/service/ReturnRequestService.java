@@ -14,14 +14,19 @@ import com.drb.server.repository.WarehouseInspectionRepository;
 import com.drb.server.rest.dto.CreateReturnRequest;
 import com.drb.server.rest.dto.PickupConfirmationRequest;
 import com.drb.server.rest.dto.WarehouseInspectionRequest;
+import com.drb.server.service.exception.ConcurrentModificationConflictException;
 import com.drb.server.service.exception.IllegalStatusTransitionException;
 import com.drb.server.service.exception.NotFoundException;
 import com.drb.server.service.exception.ValidationException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.OptimisticLockException;
+import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Supplier;
 
 @ApplicationScoped
 public class ReturnRequestService {
@@ -40,6 +45,14 @@ public class ReturnRequestService {
         m.put(ReturnStatus.CLOSED, Collections.emptySet());
         ALLOWED_TRANSITIONS = Collections.unmodifiableMap(m);
     }
+
+    /**
+     * Hibernate is not on the compile classpath (only jakarta.jakartaee-api is, as "provided"),
+     * so its stale-state exceptions are recognised by class name rather than by import.
+     */
+    private static final Set<String> STALE_STATE_EXCEPTIONS = Set.of(
+        "org.hibernate.StaleStateException",
+        "org.hibernate.StaleObjectStateException");
 
     @Inject
     private ReturnRequestRepository returnRepo;
@@ -74,7 +87,8 @@ public class ReturnRequestService {
 
     public List<ReturnRequest> findAll(String status, Long driverId, Long customerId) {
         if (status != null && !status.isBlank()) {
-            return returnRepo.findByStatusWithRefs(ReturnStatus.valueOf(status));
+            return returnRepo.findByStatusWithRefs(
+                EnumParser.parse(ReturnStatus.class, status, "status"));
         }
         if (driverId != null) {
             return returnRepo.findByDriverIdWithRefs(driverId);
@@ -208,21 +222,29 @@ public class ReturnRequestService {
 
     @Transactional
     public ReturnRequest assignDriver(Long returnId, Long driverId) {
-        ReturnRequest rr = returnRepo.findById(returnId)
+        return withConflictDetection(returnId, () -> doAssignDriver(returnId, driverId));
+    }
+
+    private ReturnRequest doAssignDriver(Long returnId, Long driverId) {
+        ReturnRequest rr = returnRepo.findByIdForUpdate(returnId)
             .orElseThrow(() -> new NotFoundException("ReturnRequest", returnId));
         Driver driver = driverRepo.findById(driverId)
             .orElseThrow(() -> new NotFoundException("Driver", driverId));
         rr.setDriver(driver);
         ReturnRequest saved = returnRepo.save(rr);
         if (saved.getStatus() == ReturnStatus.OPEN) {
-            return transitionStatus(returnId, ReturnStatus.WAITING_FOR_PICKUP, null, "Driver assigned");
+            return doTransitionStatus(returnId, ReturnStatus.WAITING_FOR_PICKUP, null, "Driver assigned");
         }
         return reload(saved);
     }
 
     @Transactional
     public ReturnRequest assignBarcode(Long returnId, String barcode, Long driverId) {
-        ReturnRequest rr = returnRepo.findById(returnId)
+        return withConflictDetection(returnId, () -> doAssignBarcode(returnId, barcode, driverId));
+    }
+
+    private ReturnRequest doAssignBarcode(Long returnId, String barcode, Long driverId) {
+        ReturnRequest rr = returnRepo.findByIdForUpdate(returnId)
             .orElseThrow(() -> new NotFoundException("ReturnRequest", returnId));
 
         if (barcode == null || barcode.isBlank()) {
@@ -243,7 +265,23 @@ public class ReturnRequestService {
         rr.setBarcodeAssignedByDriver(driver);
         rr.setStatus(ReturnStatus.BARCODE_ASSIGNED);
 
-        ReturnRequest saved = returnRepo.save(rr);
+        ReturnRequest saved;
+        try {
+            // saveAndFlush, not save: the row lock above only serialises writers to *this* return,
+            // so two drivers claiming the same barcode for two different returns still race. The
+            // UNIQUE index on return_requests.barcode is what actually decides that race, and the
+            // flush is what makes it surface here instead of at transaction commit.
+            saved = returnRepo.saveAndFlush(rr);
+        } catch (OptimisticLockException e) {
+            // let the boundary turn this into a 409 CONCURRENT_MODIFICATION
+            throw e;
+        } catch (PersistenceException e) {
+            if (!isIntegrityViolation(e)) {
+                throw e;
+            }
+            throw new ValidationException("BARCODE_ALREADY_ASSIGNED",
+                "Barcode '" + barcode + "' is already assigned to another return request");
+        }
 
         StatusHistory history = new StatusHistory();
         history.setReturnRequest(saved);
@@ -257,13 +295,20 @@ public class ReturnRequestService {
 
     @Transactional
     public ReturnRequest changeStatus(Long returnId, String status, String comment, User user) {
-        ReturnStatus newStatus = ReturnStatus.valueOf(status);
+        ReturnStatus newStatus = EnumParser.parse(ReturnStatus.class, status, "status");
+        if (newStatus == null) {
+            throw new ValidationException("STATUS_BLANK", "Status cannot be blank");
+        }
         return transitionStatus(returnId, newStatus, user, comment);
     }
 
     @Transactional
     public ReturnRequest transitionStatus(Long returnId, ReturnStatus newStatus, User user, String comment) {
-        ReturnRequest rr = returnRepo.findById(returnId)
+        return withConflictDetection(returnId, () -> doTransitionStatus(returnId, newStatus, user, comment));
+    }
+
+    private ReturnRequest doTransitionStatus(Long returnId, ReturnStatus newStatus, User user, String comment) {
+        ReturnRequest rr = returnRepo.findByIdForUpdate(returnId)
             .orElseThrow(() -> new NotFoundException("ReturnRequest", returnId));
 
         Set<ReturnStatus> allowed = ALLOWED_TRANSITIONS.getOrDefault(rr.getStatus(), Collections.emptySet());
@@ -286,15 +331,71 @@ public class ReturnRequestService {
         return reload(saved);
     }
 
+    @Transactional
     public ReturnRequest changePriority(Long returnId, String priority) {
-        ReturnRequest rr = returnRepo.findById(returnId)
+        return withConflictDetection(returnId, () -> doChangePriority(returnId, priority));
+    }
+
+    private ReturnRequest doChangePriority(Long returnId, String priority) {
+        ReturnRequest rr = returnRepo.findByIdForUpdate(returnId)
             .orElseThrow(() -> new NotFoundException("ReturnRequest", returnId));
         rr.setPriority(priority);
         return reload(returnRepo.save(rr));
     }
 
+    /**
+     * Runs a mutating action and translates a lost optimistic-lock race into a
+     * conflict the caller can show to the user, instead of a 500.
+     */
+    private <T> T withConflictDetection(Long returnId, Supplier<T> action) {
+        try {
+            return action.get();
+        } catch (OptimisticLockException e) {
+            throw new ConcurrentModificationConflictException("ReturnRequest", returnId, e);
+        } catch (RuntimeException e) {
+            if (isStaleState(e)) {
+                throw new ConcurrentModificationConflictException("ReturnRequest", returnId, e);
+            }
+            throw e;
+        }
+    }
+
+    /**
+     * True when the failure is a database integrity-constraint violation (SQLState class 23),
+     * as opposed to a connection or mapping problem that happens to share the same JPA
+     * exception type. Checked by SQLState so no Hibernate-specific type is needed here.
+     */
+    private static boolean isIntegrityViolation(Throwable t) {
+        for (Throwable cause = t; cause != null; cause = cause.getCause()) {
+            if (cause instanceof SQLException sqlException) {
+                String state = sqlException.getSQLState();
+                if (state != null && state.startsWith("23")) {
+                    return true;
+                }
+            }
+            if (cause.getCause() == cause) {
+                break;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isStaleState(Throwable t) {
+        for (Throwable cause = t; cause != null; cause = cause.getCause()) {
+            if (STALE_STATE_EXCEPTIONS.contains(cause.getClass().getName())) {
+                return true;
+            }
+            if (cause.getCause() == cause) {
+                break;
+            }
+        }
+        return false;
+    }
+
+    // Fetch-joins the changedByUser association: callers (REST DTO mapping, JSF views) read the
+    // user's name after the persistence context is gone, which would otherwise fail on a lazy proxy.
     public List<StatusHistory> getStatusHistory(Long returnId) {
-        return statusHistoryRepo.findByReturnRequestId(returnId);
+        return statusHistoryRepo.findByReturnRequestIdWithUser(returnId);
     }
 
     public List<ReturnImage> getImages(Long returnId) {
@@ -312,13 +413,16 @@ public class ReturnRequestService {
         pu.setReturnRequest(rr);
         pu.setDriver(rr.getDriver());
         if (req.itemCondition != null && !req.itemCondition.isBlank()) {
-            pu.setItemCondition(com.drb.server.domain.enums.ItemCondition.valueOf(req.itemCondition));
+            pu.setItemCondition(EnumParser.parse(
+                com.drb.server.domain.enums.ItemCondition.class, req.itemCondition, "itemCondition"));
         }
         if (req.defectType != null && !req.defectType.isBlank()) {
-            pu.setDefectType(com.drb.server.domain.enums.DefectType.valueOf(req.defectType));
+            pu.setDefectType(EnumParser.parse(
+                com.drb.server.domain.enums.DefectType.class, req.defectType, "defectType"));
         }
         if (req.defectLocation != null && !req.defectLocation.isBlank()) {
-            pu.setDefectLocation(com.drb.server.domain.enums.DefectLocation.valueOf(req.defectLocation));
+            pu.setDefectLocation(EnumParser.parse(
+                com.drb.server.domain.enums.DefectLocation.class, req.defectLocation, "defectLocation"));
         }
         pu.setDefectLocationOther(req.defectLocationOther);
         pu.setItemCollected(req.itemCollected);
@@ -337,7 +441,11 @@ public class ReturnRequestService {
         StatusHistory history = new StatusHistory();
         ReturnRequest rr = findById(returnId);
         history.setReturnRequest(rr);
-        history.setNewStatus(ReturnStatus.valueOf(newStatus));
+        ReturnStatus parsedStatus = EnumParser.parse(ReturnStatus.class, newStatus, "newStatus");
+        if (parsedStatus == null) {
+            throw new ValidationException("STATUS_BLANK", "Status cannot be blank");
+        }
+        history.setNewStatus(parsedStatus);
         history.setChangedByUser(user);
         history.setComment(comment);
         return statusHistoryRepo.save(history);
@@ -354,10 +462,12 @@ public class ReturnRequestService {
         inspection.setReturnRequest(rr);
         inspection.setInspectedByUser(user);
         if (req.warehouseDecision != null && !req.warehouseDecision.isBlank()) {
-            inspection.setWarehouseDecision(com.drb.server.domain.enums.WarehouseDecision.valueOf(req.warehouseDecision));
+            inspection.setWarehouseDecision(EnumParser.parse(
+                com.drb.server.domain.enums.WarehouseDecision.class, req.warehouseDecision, "warehouseDecision"));
         }
         if (req.itemCondition != null && !req.itemCondition.isBlank()) {
-            inspection.setItemCondition(com.drb.server.domain.enums.ItemCondition.valueOf(req.itemCondition));
+            inspection.setItemCondition(EnumParser.parse(
+                com.drb.server.domain.enums.ItemCondition.class, req.itemCondition, "itemCondition"));
         }
         inspection.setCallFullyHandled(req.callFullyHandled);
         inspection.setWarehouseNotes(req.warehouseNotes);

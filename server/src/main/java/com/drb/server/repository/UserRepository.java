@@ -41,4 +41,12 @@ public class UserRepository {
             return Optional.empty();
         }
     }
+
+    /** Hard delete. No-op when the row is already gone. */
+    public void delete(Long id) {
+        User user = em.find(User.class, id);
+        if (user != null) {
+            em.remove(user);
+        }
+    }
 }

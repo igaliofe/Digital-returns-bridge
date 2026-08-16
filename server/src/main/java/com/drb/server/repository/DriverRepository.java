@@ -31,4 +31,12 @@ public class DriverRepository {
                 "SELECT DISTINCT d FROM Driver d LEFT JOIN FETCH d.user",
                 Driver.class).getResultList();
     }
+
+    /** Hard delete. No-op when the row is already gone. */
+    public void delete(Long id) {
+        Driver driver = em.find(Driver.class, id);
+        if (driver != null) {
+            em.remove(driver);
+        }
+    }
 }

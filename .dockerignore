@@ -1,5 +1,9 @@
 android-driver-app/
 docs/
+# The Dockerfile only COPYs pom.xml, server/, and infra/wildfly/ — e2e/ is ~250MB
+# of node_modules, traces, videos and HTML reports that would ship to the daemon
+# on every build for nothing.
+e2e/
 database/seed.sql
 .git/
 **/.DS_Store

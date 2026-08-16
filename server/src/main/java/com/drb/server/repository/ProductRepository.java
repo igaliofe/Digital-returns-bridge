@@ -37,4 +37,12 @@ public class ProductRepository {
                 .setParameter("pattern", pattern)
                 .getResultList();
     }
+
+    /** Hard delete. No-op when the row is already gone. */
+    public void delete(Long id) {
+        Product product = em.find(Product.class, id);
+        if (product != null) {
+            em.remove(product);
+        }
+    }
 }

@@ -33,11 +33,25 @@ public class ReturnDetailsBean implements Serializable {
         Map<String, String> params = FacesContext.getCurrentInstance()
             .getExternalContext().getRequestParameterMap();
         String idParam = params.get("id");
-        if (idParam != null) {
-            id = Long.parseLong(idParam);
+        // A non-numeric id must not blow up the page: leave everything null so the view renders
+        // its "Return request not found." branch instead of propagating a NumberFormatException.
+        Long parsedId = parseId(idParam);
+        if (parsedId != null) {
+            id = parsedId;
             returnRequest = returnService.getById(id);
             images = imageService.findByReturnRequestId(id);
             statusHistory = statusHistoryRepo.findByReturnRequestIdWithUser(id);
+        }
+    }
+
+    private static Long parseId(String idParam) {
+        if (idParam == null || idParam.isBlank()) {
+            return null;
+        }
+        try {
+            return Long.valueOf(idParam);
+        } catch (NumberFormatException e) {
+            return null;
         }
     }
 

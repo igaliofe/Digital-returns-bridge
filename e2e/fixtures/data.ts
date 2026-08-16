@@ -153,11 +153,18 @@ export function nextBarcode(workerIndex: number): string {
 
 /**
  * A phone that cannot collide with seeded users (`050…`) or customers (`0521…`).
- * Shape: `0599<worker><5-digit counter>` — 10 digits.
+ * Shape: `0599<3-digit process salt><3-digit counter>` — 10 digits.
+ *
+ * The salt is per worker PROCESS, not per index: the old `workerIndex % 10` form broke
+ * once Playwright respawned past ten workers (a respawn bumps workerIndex), because two
+ * live processes then shared a digit AND both counters started at 1 — which is what made
+ * `POST /users` blow up on `users_phone_number_key`.
  */
+const PHONE_SALT = String(process.pid % 1000).padStart(3, '0');
+
 export function nextPhone(workerIndex: number): string {
-  const n = nextIn(phoneCounters, workerIndex);
-  return `0599${workerIndex % 10}${String(n).padStart(5, '0')}`;
+  const n = nextIn(phoneCounters, workerIndex) % 1000;
+  return `0599${PHONE_SALT}${String(n).padStart(3, '0')}`;
 }
 
 // ---------------------------------------------------------------------------

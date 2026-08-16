@@ -7,7 +7,15 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, type ReturnStatus } from '../fixtures';
 import { BasePage } from './base';
-import { byId, clickAjax, pfInput, pfSetCheckbox, pfSelectOne, pfSelectedLabel } from './pf';
+import {
+  AJAX_SETTLE_MS,
+  byId,
+  clickAjax,
+  pfInput,
+  pfSetCheckbox,
+  pfSelectOne,
+  pfSelectedLabel,
+} from './pf';
 
 /** Columns of `filterForm:returnsTable`, in render order (1-based, matches `td:nth-child`). */
 export const LIST_COLUMNS = {
@@ -204,12 +212,21 @@ export class ReturnsListPage extends BasePage {
 
   // --- table chrome --------------------------------------------------------
 
-  /** Click a sortable column header (`sortMode="multiple"`, so clicks accumulate). */
+  /**
+   * Click a sortable column header (`sortMode="multiple"`, so clicks accumulate).
+   *
+   * The click lands on the header's sort icon, never on the header itself: columns declaring
+   * `filterBy` (Barcode, Customer, Product) also render a filter `<input>` inside their `<th>`,
+   * and PrimeFaces' `shouldSort` only sorts when the event target `is('th,span')` — a click on
+   * the header centre lands in that input, no ajax is issued and `clickAjax` waits out its
+   * timeout. Every sortable header carries the icon span, filtered or not.
+   */
   async sortBy(headerText: string): Promise<void> {
-    await clickAjax(
-      this.page,
-      this.table.locator('th.ui-sortable-column').filter({ hasText: headerText }).first(),
-    );
+    const header = this.table
+      .locator('th.ui-sortable-column')
+      .filter({ hasText: headerText })
+      .first();
+    await clickAjax(this.page, header.locator('.ui-sortable-column-icon'));
   }
 
   async sortOrderOf(headerText: string): Promise<string | null> {
@@ -232,14 +249,23 @@ export class ReturnsListPage extends BasePage {
       );
       await native.selectOption(String(rows));
       await response;
+      // The XHR resolves BEFORE PrimeFaces writes the new rows into the tbody, and a 50-row page
+      // is a ~40KB patch — without the settle every other `clickAjax` uses, `rowCount()` straight
+      // after this call still reads the previous page size.
+      await this.page.waitForTimeout(AJAX_SETTLE_MS);
       return;
     }
+    // Widget flavour: the overlay panel is detached to the document, and every ajax rebuild of
+    // the table leaves the previous panel behind — a page-wide `.ui-selectonemenu-panel` lookup
+    // picks a stale one and the click never reaches the live widget. Its own panel is always
+    // `<widget client id>_panel`.
     const widget = this.paginator.locator('.ui-paginator-rpp-options').first();
     await widget.click();
-    await clickAjax(
-      this.page,
-      this.page.locator(`.ui-selectonemenu-panel li[data-label="${rows}"]`).first(),
-    );
+    const widgetId = await widget.getAttribute('id');
+    if (widgetId === null) throw new Error('rows-per-page dropdown has no client id');
+    const panel = this.page.locator(byId(`${widgetId}_panel`));
+    await expect(panel).toBeVisible();
+    await clickAjax(this.page, panel.locator(`li[data-label="${rows}"]`));
   }
 
   /**

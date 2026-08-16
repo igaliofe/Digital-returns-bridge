@@ -56,7 +56,7 @@ public class CustomerService {
 
     @Transactional
     public void delete(Long id) {
-        Customer customer = findById(id);
-        customerRepo.save(customer);
+        findById(id);
+        customerRepo.delete(id);
     }
 }

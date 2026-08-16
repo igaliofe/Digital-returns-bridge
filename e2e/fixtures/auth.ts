@@ -94,8 +94,8 @@ export const LOGIN_ERROR = {
   unknownPhone: (phone: string) => `User with id ${phone} not found`,
   /** ValidationException("USER_INACTIVE", ...) — deactivated account. */
   inactive: 'User account is inactive',
-  /** p:inputText requiredMessage. */
-  phoneRequired: 'Phone number is required',
+  /** p:inputText requiredMessage — Hebrew, see `login.xhtml`. */
+  phoneRequired: 'יש להזין מספר טלפון',
 } as const;
 
 /** Fills the phone and submits. Does NOT wait for navigation. */
@@ -119,8 +119,9 @@ export type PageForRole = (role: Role) => Promise<Page>;
 
 export interface AuthWorkerFixtures {
   /**
-   * Worker-scoped storageState file per role. One UI login per role per worker;
-   * every test in the worker reuses the resulting JSESSIONID cookie.
+   * Worker-scoped storageState file per role, named by parallel slot. One UI
+   * login per role per slot; every test in the worker reuses the resulting
+   * JSESSIONID cookie.
    */
   authStates: Record<Role, string>;
 }
@@ -148,16 +149,28 @@ export interface AuthTestFixtures {
   managerPage: Page;
 }
 
+/**
+ * Keyed by parallelIndex, NOT workerIndex: workerIndex is a monotonic counter
+ * that Playwright bumps on every worker RESPAWN (a worker dies after a failure,
+ * the replacement gets a fresh index), so a bad run once produced ~242 indices,
+ * ~968 storageState files and ~968 real UI logins. parallelIndex is the stable
+ * slot id — it stays in [0, workers) no matter how often a slot restarts, so the
+ * directory stays at `4 × workers` files however often a slot dies.
+ *
+ * Note this bounds the FILE count, not the login count: a respawned worker still
+ * logs in afresh and overwrites the path, because a state file left by a dead
+ * worker may carry a JSESSIONID the server has already invalidated.
+ */
 async function statesForWorker(
   browser: import('@playwright/test').Browser,
   baseURL: string | undefined,
-  workerIndex: number,
+  parallelIndex: number,
 ): Promise<Record<Role, string>> {
   fs.mkdirSync(AUTH_STATE_DIR, { recursive: true });
   const states = {} as Record<Role, string>;
 
   for (const role of ROLES) {
-    const file = path.join(AUTH_STATE_DIR, `${role.toLowerCase()}-w${workerIndex}.json`);
+    const file = path.join(AUTH_STATE_DIR, `${role.toLowerCase()}-p${parallelIndex}.json`);
     const context = await browser.newContext(baseURL ? { baseURL } : {});
     try {
       const page = await context.newPage();
@@ -175,7 +188,7 @@ export const test = base.extend<AuthTestFixtures, AuthWorkerFixtures>({
   authStates: [
     async ({ browser }, use, workerInfo) => {
       const baseURL = workerInfo.project.use.baseURL;
-      const states = await statesForWorker(browser, baseURL, workerInfo.workerIndex);
+      const states = await statesForWorker(browser, baseURL, workerInfo.parallelIndex);
       await use(states);
     },
     { scope: 'worker' },

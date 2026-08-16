@@ -22,7 +22,7 @@
 
     <h:form id="createForm" enctype="multipart/form-data">
         <p:panel header="Return Details" styleClass="drb-panel">
-            <p:messages showDetail="true" closable="true"/>
+            <p:messages showDetail="true" closable="true" globalOnly="true"/>
 
             <p:fieldset legend="Selected Item" style="margin-bottom:16px;">
                 <p:panelGrid columns="4" style="width:100%;">
@@ -42,16 +42,28 @@
                          columnClasses="ui-panelgrid-col,ui-panelgrid-col">
 
                 <p:outputLabel for="orderNumber" value="Order Number"/>
-                <p:inputText id="orderNumber" value="#{createReturnWizardBean.orderNumber}"
-                             placeholder="e.g. ORD-12345" style="width:100%;"/>
+                <h:panelGroup layout="block">
+                    <p:inputText id="orderNumber" value="#{createReturnWizardBean.orderNumber}"
+                                 placeholder="e.g. ORD-12345" style="width:100%;"
+                                 validatorMessage="מספר הזמנה ארוך מדי (עד 60 תווים)">
+                        <f:validateLength maximum="60"/>
+                    </p:inputText>
+                    <p:message for="orderNumber" display="text"/>
+                </h:panelGroup>
 
                 <p:outputLabel for="originalDeliveryDate" value="Original Delivery Date"/>
                 <p:datePicker id="originalDeliveryDate" value="#{createReturnWizardBean.originalDeliveryDate}"
                               pattern="dd/MM/yyyy" showIcon="true"/>
 
                 <p:outputLabel for="quantity" value="Quantity"/>
-                <p:inputNumber id="quantity" value="#{createReturnWizardBean.quantity}"
-                               decimalPlaces="0" minValue="1" style="width:100%;"/>
+                <h:panelGroup layout="block">
+                    <p:inputNumber id="quantity" value="#{createReturnWizardBean.quantity}"
+                                   decimalPlaces="0" minValue="1" style="width:100%;"
+                                   validatorMessage="הכמות חייבת להיות לפחות 1">
+                        <f:validateLongRange minimum="1"/>
+                    </p:inputNumber>
+                    <p:message for="quantity" display="text"/>
+                </h:panelGroup>
 
                 <p:outputLabel for="underWarranty" value="Under Warranty"/>
                 <p:selectBooleanCheckbox id="underWarranty" value="#{createReturnWizardBean.underWarranty}"/>
@@ -60,12 +72,15 @@
                 <p:selectBooleanCheckbox id="wasUsed" value="#{createReturnWizardBean.wasUsed}"/>
 
                 <p:outputLabel for="returnReason" value="Return Reason (category) *"/>
-                <p:selectOneMenu id="returnReason" value="#{createReturnWizardBean.returnReason}"
-                                 required="true" requiredMessage="Please select a return reason">
-                    <f:selectItem itemLabel="— Select Reason —" itemValue="#{null}"/>
-                    <f:selectItems value="#{createReturnWizardBean.returnReasons}" var="rr"
-                                   itemLabel="#{rr.name()}" itemValue="#{rr.name()}"/>
-                </p:selectOneMenu>
+                <h:panelGroup layout="block">
+                    <p:selectOneMenu id="returnReason" value="#{createReturnWizardBean.returnReason}"
+                                     required="true" requiredMessage="יש לבחור סיבת החזרה">
+                        <f:selectItem itemLabel="— Select Reason —" itemValue="#{null}"/>
+                        <f:selectItems value="#{createReturnWizardBean.returnReasons}" var="rr"
+                                       itemLabel="#{rr.name()}" itemValue="#{rr.name()}"/>
+                    </p:selectOneMenu>
+                    <p:message for="returnReason" display="text"/>
+                </h:panelGroup>
 
                 <p:outputLabel for="defectStage" value="Defect Stage"/>
                 <p:selectOneMenu id="defectStage" value="#{createReturnWizardBean.defectStage}">
@@ -86,9 +101,12 @@
                              placeholder="e.g. front-left leg" style="width:100%;"/>
 
                 <p:outputLabel for="reason" value="Free-text Notes *"/>
-                <p:inputTextarea id="reason" value="#{createReturnWizardBean.reason}"
-                                 rows="3" style="width:100%;"
-                                 required="true" requiredMessage="Please provide a reason"/>
+                <h:panelGroup layout="block">
+                    <p:inputTextarea id="reason" value="#{createReturnWizardBean.reason}"
+                                     rows="3" style="width:100%;"
+                                     required="true" requiredMessage="יש להזין הערות חופשיות"/>
+                    <p:message for="reason" display="text"/>
+                </h:panelGroup>
 
                 <p:outputLabel for="defect" value="Defect Description"/>
                 <p:inputTextarea id="defect" value="#{createReturnWizardBean.defectDescription}"
@@ -143,10 +161,16 @@
                 <p:commandButton value="Create Return Request"
                                  action="#{createReturnWizardBean.create}"
                                  icon="pi pi-save"
-                                 styleClass="drb-btn-primary"/>
+                                 styleClass="drb-btn-primary"
+                                 update="createForm"/>
+                <!-- immediate + process="@this": Back must never run this form's
+                     validation. Without it a half-filled step 3 fails `required` on
+                     Free-text Notes and the button silently does nothing. -->
                 <p:commandButton value="Back"
                                  action="#{createReturnWizardBean.backToStep2}"
                                  icon="pi pi-arrow-left"
+                                 immediate="true"
+                                 process="@this"
                                  styleClass="drb-btn-secondary"/>
                 <p:button value="Cancel"
                           href="#{request.contextPath}/returns/list.xhtml"

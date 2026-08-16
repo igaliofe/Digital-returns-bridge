@@ -297,12 +297,12 @@ test.describe('routes render clean', () => {
     await expectControlReady(page, controlOn('login', 'sign-in'), '/login.xhtml anonymous');
   });
 
-  test.fixme(
+  test(
     '/returns/details.xhtml?id=abc answers with the not-found state, never a 5xx',
     async ({ pageForRole }) => {
-      // GAP 4 — ReturnDetailsBean.init() does a bare Long.parseLong(idParam) inside @PostConstruct
-      // and web.xml declares no <error-page>, so a hand-edited id becomes a raw stack-trace 500.
-      // See docs/e2e-findings.md.
+      // Was GAP 4: ReturnDetailsBean.init() did a bare Long.parseLong(idParam) inside
+      // @PostConstruct and web.xml declares no <error-page>, so a hand-edited id became a raw
+      // stack-trace 500. `parseId` now guards it. See docs/e2e-findings.md.
       const page = await pageForRole('MANAGER');
       const response = await page.goto('/returns/details.xhtml?id=abc');
       expect(response?.status(), 'a non-numeric ?id must not fail the request').toBeLessThan(400);

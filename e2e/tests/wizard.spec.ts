@@ -126,7 +126,9 @@ test('happy path: REP creates a return from a seeded purchase and lands on its d
   expect(dto.defectDescription).toBe('Deep scratch across the lid');
   expect(dto.wasUsed).toBe(true);
   expect(dto.priority).toBe('HIGH');
-  expect(dto.barcode).toBeNull(); // a barcode only exists once a driver assigns one
+  // A barcode only exists once a driver assigns one. `toBeFalsy`, not `toBeNull`:
+  // JSON-B omits null properties, so the key is absent and the DTO field reads `undefined`.
+  expect(dto.barcode).toBeFalsy();
 
   const consumed = await api.getPurchase(data.customer.id, purchase.id);
   expect(consumed?.handled).toBe(true);
@@ -159,7 +161,7 @@ test('signature and driver are optional: Create succeeds and the return stays OP
 
   const dto = await api.getReturn(returnId);
   expect(dto.status).toBe('OPEN'); // no driver -> no automatic WAITING_FOR_PICKUP
-  expect(dto.driverId).toBeNull();
+  expect(dto.driverId).toBeFalsy(); // JSON-B omits null properties, so the key is absent
   expect(dto.reason).toBe(notes);
   expect(await api.imageTypesOf(returnId)).not.toContain('SERVICE_REP_SIGNATURE');
 

@@ -45,7 +45,10 @@
                 <p:cellEditor>
                     <f:facet name="output"><h:outputText value="#{prod.imageUrl}"/></f:facet>
                     <f:facet name="input">
-                        <p:inputText value="#{prod.imageUrl}" style="width:100%;"/>
+                        <p:inputText value="#{prod.imageUrl}" style="width:100%;"
+                                     validatorMessage="כתובת התמונה ארוכה מדי (עד 500 תווים)">
+                            <f:validateLength maximum="500"/>
+                        </p:inputText>
                     </f:facet>
                 </p:cellEditor>
             </p:column>
@@ -54,7 +57,11 @@
                 <p:cellEditor>
                     <f:facet name="output"><h:outputText value="#{prod.sku}"/></f:facet>
                     <f:facet name="input">
-                        <p:inputText value="#{prod.sku}" style="width:100%;"/>
+                        <p:inputText value="#{prod.sku}" style="width:100%;"
+                                     required="true" requiredMessage="יש להזין SKU"
+                                     validatorMessage="SKU ארוך מדי (עד 60 תווים)">
+                            <f:validateLength maximum="60"/>
+                        </p:inputText>
                     </f:facet>
                 </p:cellEditor>
             </p:column>
@@ -63,7 +70,11 @@
                 <p:cellEditor>
                     <f:facet name="output"><h:outputText value="#{prod.name}"/></f:facet>
                     <f:facet name="input">
-                        <p:inputText value="#{prod.name}" style="width:100%;"/>
+                        <p:inputText value="#{prod.name}" style="width:100%;"
+                                     required="true" requiredMessage="יש להזין שם מוצר"
+                                     validatorMessage="שם המוצר ארוך מדי (עד 120 תווים)">
+                            <f:validateLength maximum="120"/>
+                        </p:inputText>
                     </f:facet>
                 </p:cellEditor>
             </p:column>
@@ -72,7 +83,10 @@
                 <p:cellEditor>
                     <f:facet name="output"><h:outputText value="#{prod.category}"/></f:facet>
                     <f:facet name="input">
-                        <p:inputText value="#{prod.category}" style="width:100%;"/>
+                        <p:inputText value="#{prod.category}" style="width:100%;"
+                                     validatorMessage="הקטגוריה ארוכה מדי (עד 80 תווים)">
+                            <f:validateLength maximum="80"/>
+                        </p:inputText>
                     </f:facet>
                 </p:cellEditor>
             </p:column>
@@ -85,7 +99,10 @@
                         </h:outputText>
                     </f:facet>
                     <f:facet name="input">
-                        <p:inputText value="#{prod.price}" style="width:100%;"/>
+                        <p:inputText value="#{prod.price}" style="width:100%;"
+                                     validatorMessage="המחיר חייב להיות מספר לא שלילי">
+                            <f:validateDoubleRange minimum="0"/>
+                        </p:inputText>
                     </f:facet>
                 </p:cellEditor>
             </p:column>
@@ -113,38 +130,74 @@
         <h:form id="createProductForm" enctype="multipart/form-data">
             <p:panelGrid columns="2" style="width:100%;">
                 <p:outputLabel for="newSku" value="SKU *"/>
-                <p:inputText id="newSku" value="#{productAdminBean.newProduct.sku}"
-                             required="true" style="width:100%;"/>
+                <h:panelGroup layout="block">
+                    <p:inputText id="newSku" value="#{productAdminBean.newProduct.sku}"
+                                 required="true" requiredMessage="יש להזין SKU"
+                                 validatorMessage="SKU ארוך מדי (עד 60 תווים)"
+                                 style="width:100%;">
+                        <f:validateLength maximum="60"/>
+                    </p:inputText>
+                    <p:message for="newSku" display="text"/>
+                </h:panelGroup>
 
                 <p:outputLabel for="newName" value="Name *"/>
-                <p:inputText id="newName" value="#{productAdminBean.newProduct.name}"
-                             required="true" style="width:100%;"/>
+                <h:panelGroup layout="block">
+                    <p:inputText id="newName" value="#{productAdminBean.newProduct.name}"
+                                 required="true" requiredMessage="יש להזין שם מוצר"
+                                 validatorMessage="שם המוצר ארוך מדי (עד 120 תווים)"
+                                 style="width:100%;">
+                        <f:validateLength maximum="120"/>
+                    </p:inputText>
+                    <p:message for="newName" display="text"/>
+                </h:panelGroup>
 
                 <p:outputLabel for="newCategory" value="Category"/>
-                <p:inputText id="newCategory" value="#{productAdminBean.newProduct.category}"
-                             style="width:100%;"/>
+                <h:panelGroup layout="block">
+                    <p:inputText id="newCategory" value="#{productAdminBean.newProduct.category}"
+                                 validatorMessage="הקטגוריה ארוכה מדי (עד 80 תווים)"
+                                 style="width:100%;">
+                        <f:validateLength maximum="80"/>
+                    </p:inputText>
+                    <p:message for="newCategory" display="text"/>
+                </h:panelGroup>
 
                 <p:outputLabel for="newDesc" value="Description"/>
                 <p:inputTextarea id="newDesc" value="#{productAdminBean.newProduct.description}"
                                  rows="3" style="width:100%;"/>
 
                 <p:outputLabel for="newPrice" value="Price"/>
-                <p:inputText id="newPrice" value="#{productAdminBean.newProduct.price}"
-                             style="width:100%;"/>
+                <h:panelGroup layout="block">
+                    <p:inputText id="newPrice" value="#{productAdminBean.newProduct.price}"
+                                 validatorMessage="המחיר חייב להיות מספר לא שלילי"
+                                 style="width:100%;">
+                        <f:validateDoubleRange minimum="0"/>
+                    </p:inputText>
+                    <p:message for="newPrice" display="text"/>
+                </h:panelGroup>
 
                 <p:outputLabel for="newImageUrl" value="Image URL"/>
-                <p:inputText id="newImageUrl" value="#{productAdminBean.newProduct.imageUrl}"
-                             placeholder="https://..." style="width:100%;"/>
+                <h:panelGroup layout="block">
+                    <p:inputText id="newImageUrl" value="#{productAdminBean.newProduct.imageUrl}"
+                                 placeholder="https://..."
+                                 validatorMessage="כתובת התמונה ארוכה מדי (עד 500 תווים)"
+                                 style="width:100%;">
+                        <f:validateLength maximum="500"/>
+                    </p:inputText>
+                    <p:message for="newImageUrl" display="text"/>
+                </h:panelGroup>
 
                 <p:outputLabel for="newImageFile" value="Or Upload Image"/>
                 <h:inputFile id="newImageFile" value="#{productAdminBean.uploadedImage}"
                              accept="image/*" style="width:100%;"/>
             </p:panelGrid>
             <div style="margin-top:12px;text-align:right;">
+                <!-- Never update createDialog here: re-rendering the dialog re-emits it hidden,
+                     so a failed validation would close it instead of showing the messages.
+                     Updating createProductForm alone re-renders the p:message text in place. -->
                 <p:commandButton value="Save"
                                  action="#{productAdminBean.saveNew}"
                                  icon="pi pi-save"
-                                 update="productsForm createDialog createProductForm"
+                                 update="productsForm createProductForm"
                                  oncomplete="if (!args.validationFailed) PF('createProductDlg').hide();"/>
                 <p:commandButton value="Cancel"
                                  onclick="PF('createProductDlg').hide(); return false;"

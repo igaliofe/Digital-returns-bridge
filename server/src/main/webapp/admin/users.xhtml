@@ -41,7 +41,11 @@
                 <p:cellEditor>
                     <f:facet name="output"><h:outputText value="#{u.fullName}"/></f:facet>
                     <f:facet name="input">
-                        <p:inputText value="#{u.fullName}" style="width:100%;"/>
+                        <p:inputText value="#{u.fullName}" style="width:100%;"
+                                     required="true" requiredMessage="יש להזין שם מלא"
+                                     validatorMessage="שם מלא ארוך מדי (עד 120 תווים)">
+                            <f:validateLength maximum="120"/>
+                        </p:inputText>
                     </f:facet>
                 </p:cellEditor>
             </p:column>
@@ -50,7 +54,11 @@
                 <p:cellEditor>
                     <f:facet name="output"><h:outputText value="#{u.phoneNumber}"/></f:facet>
                     <f:facet name="input">
-                        <p:inputText value="#{u.phoneNumber}" style="width:100%;"/>
+                        <p:inputText value="#{u.phoneNumber}" style="width:100%;"
+                                     required="true" requiredMessage="יש להזין מספר טלפון"
+                                     validatorMessage="מספר טלפון לא תקין (לדוגמה 0501234567)">
+                            <f:validateRegex pattern="^0\d{8,9}$"/>
+                        </p:inputText>
                     </f:facet>
                 </p:cellEditor>
             </p:column>
@@ -59,7 +67,8 @@
                 <p:cellEditor>
                     <f:facet name="output"><h:outputText value="#{u.role.name()}"/></f:facet>
                     <f:facet name="input">
-                        <p:selectOneMenu value="#{u.role}">
+                        <p:selectOneMenu value="#{u.role}"
+                                         required="true" requiredMessage="יש לבחור תפקיד">
                             <f:selectItems value="#{userAdminBean.roles}" var="r"
                                            itemLabel="#{r.name()}" itemValue="#{r}"/>
                         </p:selectOneMenu>
@@ -101,28 +110,49 @@
         <h:form id="createUserForm">
             <p:panelGrid columns="2" style="width:100%;">
                 <p:outputLabel for="newFullName" value="Full Name *"/>
-                <p:inputText id="newFullName" value="#{userAdminBean.newUser.fullName}"
-                             required="true" style="width:100%;"/>
+                <h:panelGroup layout="block">
+                    <p:inputText id="newFullName" value="#{userAdminBean.newUser.fullName}"
+                                 required="true" requiredMessage="יש להזין שם מלא"
+                                 validatorMessage="שם מלא ארוך מדי (עד 120 תווים)"
+                                 style="width:100%;">
+                        <f:validateLength maximum="120"/>
+                    </p:inputText>
+                    <p:message for="newFullName" display="text"/>
+                </h:panelGroup>
 
                 <p:outputLabel for="newPhone" value="Phone *"/>
-                <p:inputText id="newPhone" value="#{userAdminBean.newUser.phoneNumber}"
-                             required="true" style="width:100%;"/>
+                <h:panelGroup layout="block">
+                    <p:inputText id="newPhone" value="#{userAdminBean.newUser.phoneNumber}"
+                                 required="true" requiredMessage="יש להזין מספר טלפון"
+                                 validatorMessage="מספר טלפון לא תקין (לדוגמה 0501234567)"
+                                 style="width:100%;">
+                        <f:validateRegex pattern="^0\d{8,9}$"/>
+                    </p:inputText>
+                    <p:message for="newPhone" display="text"/>
+                </h:panelGroup>
 
                 <p:outputLabel for="newRole" value="Role *"/>
-                <p:selectOneMenu id="newRole" value="#{userAdminBean.newUser.role}" required="true">
-                    <f:selectItem itemLabel="— Select Role —" itemValue="#{null}"/>
-                    <f:selectItems value="#{userAdminBean.roles}" var="r"
-                                   itemLabel="#{r.name()}" itemValue="#{r}"/>
-                </p:selectOneMenu>
+                <h:panelGroup layout="block">
+                    <p:selectOneMenu id="newRole" value="#{userAdminBean.newUser.role}"
+                                     required="true" requiredMessage="יש לבחור תפקיד">
+                        <f:selectItem itemLabel="— Select Role —" itemValue="#{null}"/>
+                        <f:selectItems value="#{userAdminBean.roles}" var="r"
+                                       itemLabel="#{r.name()}" itemValue="#{r}"/>
+                    </p:selectOneMenu>
+                    <p:message for="newRole" display="text"/>
+                </h:panelGroup>
 
                 <p:outputLabel for="newActive" value="Active"/>
                 <p:selectBooleanCheckbox id="newActive" value="#{userAdminBean.newUser.active}"/>
             </p:panelGrid>
             <div style="margin-top:12px;text-align:right;">
+                <!-- Never update createDialog here: re-rendering the dialog re-emits it hidden,
+                     so a failed validation would close it instead of showing the messages.
+                     Updating createUserForm alone re-renders the p:message text in place. -->
                 <p:commandButton value="Save"
                                  action="#{userAdminBean.saveNew}"
                                  icon="pi pi-save"
-                                 update="usersForm createDialog createUserForm"
+                                 update="usersForm createUserForm"
                                  oncomplete="if (!args.validationFailed) PF('createUserDlg').hide();"/>
                 <p:commandButton value="Cancel"
                                  onclick="PF('createUserDlg').hide(); return false;"

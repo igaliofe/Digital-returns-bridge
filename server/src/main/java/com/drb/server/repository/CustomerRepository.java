@@ -47,4 +47,12 @@ public class CustomerRepository {
             .getResultList();
         return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
     }
+
+    /** Hard delete. No-op when the row is already gone. */
+    public void delete(Long id) {
+        Customer customer = em.find(Customer.class, id);
+        if (customer != null) {
+            em.remove(customer);
+        }
+    }
 }

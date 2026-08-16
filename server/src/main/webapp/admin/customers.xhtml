@@ -39,7 +39,11 @@
                 <p:cellEditor>
                     <f:facet name="output"><h:outputText value="#{c.fullName}"/></f:facet>
                     <f:facet name="input">
-                        <p:inputText value="#{c.fullName}" style="width:100%;"/>
+                        <p:inputText value="#{c.fullName}" style="width:100%;"
+                                     required="true" requiredMessage="יש להזין שם מלא"
+                                     validatorMessage="שם מלא ארוך מדי (עד 120 תווים)">
+                            <f:validateLength maximum="120"/>
+                        </p:inputText>
                     </f:facet>
                 </p:cellEditor>
             </p:column>
@@ -48,7 +52,10 @@
                 <p:cellEditor>
                     <f:facet name="output"><h:outputText value="#{c.phone}"/></f:facet>
                     <f:facet name="input">
-                        <p:inputText value="#{c.phone}" style="width:100%;"/>
+                        <p:inputText value="#{c.phone}" style="width:100%;"
+                                     validatorMessage="מספר טלפון לא תקין (לדוגמה 0501234567)">
+                            <f:validateRegex pattern="^0\d{8,9}$"/>
+                        </p:inputText>
                     </f:facet>
                 </p:cellEditor>
             </p:column>
@@ -57,7 +64,11 @@
                 <p:cellEditor>
                     <f:facet name="output"><h:outputText value="#{c.email}"/></f:facet>
                     <f:facet name="input">
-                        <p:inputText value="#{c.email}" style="width:100%;"/>
+                        <p:inputText value="#{c.email}" style="width:100%;"
+                                     validatorMessage="כתובת אימייל לא תקינה (עד 120 תווים)">
+                            <f:validateLength maximum="120"/>
+                            <f:validateRegex pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$"/>
+                        </p:inputText>
                     </f:facet>
                 </p:cellEditor>
             </p:column>
@@ -66,7 +77,10 @@
                 <p:cellEditor>
                     <f:facet name="output"><h:outputText value="#{c.address}"/></f:facet>
                     <f:facet name="input">
-                        <p:inputText value="#{c.address}" style="width:100%;"/>
+                        <p:inputText value="#{c.address}" style="width:100%;"
+                                     validatorMessage="הכתובת ארוכה מדי (עד 255 תווים)">
+                            <f:validateLength maximum="255"/>
+                        </p:inputText>
                     </f:facet>
                 </p:cellEditor>
             </p:column>
@@ -94,26 +108,56 @@
         <h:form id="createCustomerForm">
             <p:panelGrid columns="2" style="width:100%;">
                 <p:outputLabel for="newName" value="Full Name *"/>
-                <p:inputText id="newName" value="#{customerAdminBean.newCustomer.fullName}"
-                             required="true" style="width:100%;"/>
+                <h:panelGroup layout="block">
+                    <p:inputText id="newName" value="#{customerAdminBean.newCustomer.fullName}"
+                                 required="true" requiredMessage="יש להזין שם מלא"
+                                 validatorMessage="שם מלא ארוך מדי (עד 120 תווים)"
+                                 style="width:100%;">
+                        <f:validateLength maximum="120"/>
+                    </p:inputText>
+                    <p:message for="newName" display="text"/>
+                </h:panelGroup>
 
                 <p:outputLabel for="newPhone" value="Phone *"/>
-                <p:inputText id="newPhone" value="#{customerAdminBean.newCustomer.phone}"
-                             required="true" style="width:100%;"/>
+                <h:panelGroup layout="block">
+                    <p:inputText id="newPhone" value="#{customerAdminBean.newCustomer.phone}"
+                                 required="true" requiredMessage="יש להזין מספר טלפון"
+                                 validatorMessage="מספר טלפון לא תקין (לדוגמה 0501234567)"
+                                 style="width:100%;">
+                        <f:validateRegex pattern="^0\d{8,9}$"/>
+                    </p:inputText>
+                    <p:message for="newPhone" display="text"/>
+                </h:panelGroup>
 
                 <p:outputLabel for="newEmail" value="Email"/>
-                <p:inputText id="newEmail" value="#{customerAdminBean.newCustomer.email}"
-                             style="width:100%;"/>
+                <h:panelGroup layout="block">
+                    <p:inputText id="newEmail" value="#{customerAdminBean.newCustomer.email}"
+                                 validatorMessage="כתובת אימייל לא תקינה (עד 120 תווים)"
+                                 style="width:100%;">
+                        <f:validateLength maximum="120"/>
+                        <f:validateRegex pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$"/>
+                    </p:inputText>
+                    <p:message for="newEmail" display="text"/>
+                </h:panelGroup>
 
                 <p:outputLabel for="newAddress" value="Address"/>
-                <p:inputText id="newAddress" value="#{customerAdminBean.newCustomer.address}"
-                             style="width:100%;"/>
+                <h:panelGroup layout="block">
+                    <p:inputText id="newAddress" value="#{customerAdminBean.newCustomer.address}"
+                                 validatorMessage="הכתובת ארוכה מדי (עד 255 תווים)"
+                                 style="width:100%;">
+                        <f:validateLength maximum="255"/>
+                    </p:inputText>
+                    <p:message for="newAddress" display="text"/>
+                </h:panelGroup>
             </p:panelGrid>
             <div style="margin-top:12px;text-align:right;">
+                <!-- Never update createDialog here: re-rendering the dialog re-emits it hidden,
+                     so a failed validation would close it instead of showing the messages.
+                     Updating createCustomerForm alone re-renders the p:message text in place. -->
                 <p:commandButton value="Save"
                                  action="#{customerAdminBean.saveNew}"
                                  icon="pi pi-save"
-                                 update="customersForm createDialog createCustomerForm"
+                                 update="customersForm createCustomerForm"
                                  oncomplete="if (!args.validationFailed) PF('createCustomerDlg').hide();"/>
                 <p:commandButton value="Cancel"
                                  onclick="PF('createCustomerDlg').hide(); return false;"

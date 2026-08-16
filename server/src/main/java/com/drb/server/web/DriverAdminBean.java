@@ -24,6 +24,10 @@ public class DriverAdminBean implements Serializable {
     private List<User> users;
     private Driver selected;
     private Driver newDriver;
+    // The create dialog binds the user picker to an id, not to a User entity: a
+    // selectOneMenu over entities needs a Converter, and without one JSF fails the
+    // submit with "null Converter" before saveNew() ever runs.
+    private Long newUserId;
     private boolean showCreateDialog;
 
     @PostConstruct
@@ -39,13 +43,16 @@ public class DriverAdminBean implements Serializable {
 
     public void prepareCreate() {
         newDriver = new Driver();
+        newUserId = null;
         showCreateDialog = true;
     }
 
     public void saveNew() {
         try {
+            newDriver.setUser(userService.findById(newUserId));
             driverService.save(newDriver);
             loadDrivers();
+            newUserId = null;
             showCreateDialog = false;
             FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_INFO, "Driver created", null));
@@ -84,6 +91,8 @@ public class DriverAdminBean implements Serializable {
     public Driver getSelected() { return selected; }
     public void setSelected(Driver selected) { this.selected = selected; }
     public Driver getNewDriver() { return newDriver; }
+    public Long getNewUserId() { return newUserId; }
+    public void setNewUserId(Long newUserId) { this.newUserId = newUserId; }
     public boolean isShowCreateDialog() { return showCreateDialog; }
     public void setShowCreateDialog(boolean showCreateDialog) { this.showCreateDialog = showCreateDialog; }
 }

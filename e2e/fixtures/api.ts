@@ -289,7 +289,8 @@ export interface WarehouseInspectionDto {
 
 export interface ReturnRequestDto {
   id: number;
-  barcode: string | null;
+  /** Absent, not null, while no driver has assigned one: JSON-B omits null properties. */
+  barcode?: string | null;
   barcodeAssignedAt: string | null;
   barcodeAssignedByDriverId: number | null;
   barcodeAssignedByDriverName: string | null;
@@ -506,7 +507,8 @@ export class DrbApi {
     return (await this.getReturn(id)).status;
   }
 
-  async barcodeOf(id: number): Promise<string | null> {
+  /** `undefined` (key omitted) for a return that has no barcode yet — never `null`. */
+  async barcodeOf(id: number): Promise<string | null | undefined> {
     return (await this.getReturn(id)).barcode;
   }
 

@@ -262,7 +262,12 @@ export class SelectItemPage extends WizardStepPage {
 
   /** Customer panel values: 'Name' | 'Phone' | 'Email' | 'Address'. */
   async customerField(label: 'Name' | 'Phone' | 'Email' | 'Address'): Promise<string> {
-    const cell = this.customerPanel.locator(`td:has(label:text-is("${label}")) + td`).first();
+    // `p:panelGrid` defaults to layout="tabless" in PrimeFaces 13 — the cells are
+    // `.ui-panelgrid-cell` divs, never `<td>`, and the label text sits in a nested
+    // `<span class="ui-outputlabel-label">`. Same shape as the warehouse digital file.
+    const cell = this.customerPanel
+      .locator(`.ui-panelgrid-cell:has(.ui-outputlabel-label:text-is("${label}")) + .ui-panelgrid-cell`)
+      .first();
     return (await cell.innerText()).trim();
   }
 }
@@ -377,7 +382,11 @@ export class NewReturnPage extends WizardStepPage {
     this.generalPhotoExists = page.locator(byId(F.generalPhotoExists));
     this.focusedDefectPhotoExists = page.locator(byId(F.focusedDefectPhotoExists));
 
-    this.signaturePad = this.form.locator('.ui-signature').first();
+    // NOT `.ui-signature` — PrimeFaces 13 renders the pad container as
+    // `<div class="ui-inputfield ui-widget ui-state-default ui-corner-all">` holding two
+    // hidden inputs (`_value`, `_base64`); the jQuery plugin adds only its own widget class
+    // client-side, so no `ui-signature` ever exists. The `_base64` input is unique to it.
+    this.signaturePad = this.form.locator('div:has(> input[type="hidden"][id$="_base64"])').last();
     this.signatureCanvas = this.signaturePad.locator('canvas').first();
     this.signatureHiddenValue = this.form.locator('input[type="hidden"][id$="_value"]').first();
     this.clearSignature = this.form.locator('button:has-text("Clear Signature")');
@@ -527,7 +536,10 @@ export class NewReturnPage extends WizardStepPage {
 
   /** Selected Item fieldset values: 'Customer' | 'Phone' | 'Product' | 'SKU'. */
   async selectedItemField(label: 'Customer' | 'Phone' | 'Product' | 'SKU'): Promise<string> {
-    const cell = this.selectedItemFieldset.locator(`td:has(label:text-is("${label}")) + td`).first();
+    // Tabless `p:panelGrid` again — `.ui-panelgrid-cell` divs, label text in a nested span.
+    const cell = this.selectedItemFieldset
+      .locator(`.ui-panelgrid-cell:has(.ui-outputlabel-label:text-is("${label}")) + .ui-panelgrid-cell`)
+      .first();
     return (await cell.innerText()).trim();
   }
 

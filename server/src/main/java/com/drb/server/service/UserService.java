@@ -51,9 +51,12 @@ public class UserService {
     }
 
     @Transactional
+    /**
+     * Hard delete. Deactivating an account is a separate operation — see
+     * {@code UserResource#setActive} / {@code PATCH /users/{id}/active}.
+     */
     public void delete(Long id) {
-        User user = findById(id);
-        user.setActive(false);
-        userRepo.save(user);
+        findById(id);
+        userRepo.delete(id);
     }
 }

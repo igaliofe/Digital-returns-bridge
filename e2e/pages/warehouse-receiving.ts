@@ -144,9 +144,20 @@ export class WarehouseReceivingPage extends BasePage {
    * 'Was Used', 'Priority', 'Status', 'Barcode', 'Driver', plus the Service Defect Detail
    * labels ('Return Reason', 'Defect Type', 'Defect Stage', 'Defect Location', 'Reason Notes',
    * 'Defect Description').
+   *
+   * `p:panelGrid` defaults to `layout="tabless"`, so there is no table to walk: each label and
+   * each value is its own `<div class="ui-panelgrid-cell">`, adjacent siblings inside a
+   * `<div class="ui-g">` row. The label itself is a `p:outputLabel`, whose text lives in a nested
+   * `<span class="ui-outputlabel-label">` — and Playwright's `:text-is()` only returns the
+   * SMALLEST element carrying the text, so it matches that span and never the `<label>` wrapping
+   * it. Anchoring on the span is therefore the only exact-text form that resolves here.
    */
   fileFieldValue(label: string): Locator {
-    return this.digitalFileForm.locator(`td:has(label:text-is("${label}")) + td`).first();
+    return this.digitalFileForm
+      .locator(
+        `.ui-panelgrid-cell:has(.ui-outputlabel-label:text-is("${label}")) + .ui-panelgrid-cell`,
+      )
+      .first();
   }
 
   async fileFieldText(label: string): Promise<string> {

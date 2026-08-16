@@ -54,5 +54,6 @@ public class ProductService {
     @Transactional
     public void delete(Long id) {
         findById(id);
+        productRepo.delete(id);
     }
 }

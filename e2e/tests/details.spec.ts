@@ -41,17 +41,6 @@ import {
   STATUS_LABEL,
 } from '../pages';
 
-/**
- * Statuses a return can hold while `barcode` is still null — the two the driver
- * has not reached yet. `NEEDS_MORE_INFO` is provisioned through the warehouse
- * route (`needsMoreInfoVia: 'WAREHOUSE'`), which is the flow the screens doc
- * describes, so it carries a barcode like every post-pickup status.
- */
-const BARCODE_LESS: ReadonlySet<ReturnStatus> = new Set<ReturnStatus>([
-  'OPEN',
-  'WAITING_FOR_PICKUP',
-]);
-
 /** `dd/MM/yyyy HH:mm` — the `f:convertDateTime` pattern used across the screen. */
 const DATE_TIME = /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/;
 
@@ -147,24 +136,13 @@ test.describe('Return details — Journey 5', () => {
   for (const status of RETURN_STATUSES) {
     const title = `renders the full return file for a ${status} return`;
 
-    if (BARCODE_LESS.has(status)) {
-      test.fixme(title, async ({ managerPage, api, data }) => {
-        // GAP 6 — `returns/details.xhtml:103` uses `<p:message severity="warn"
-        // summary="Barcode not assigned" detail="..."/>` with no `for`. PrimeFaces
-        // `p:message` has no summary/detail attributes: it renders queued
-        // FacesMessages for the component `for` resolves to, and with a blank `for`
-        // `SearchExpressionFacade.resolveComponent` returns null, so MessageRenderer
-        // NPEs on `getClientId`. Every barcode-less return (OPEN, WAITING_FOR_PICKUP)
-        // therefore fails to render the whole page instead of showing the warning.
-        // Same root cause as the not-found message on line 16.
-        // See docs/e2e-findings.md.
-        await expectReturnFileRenders({ page: managerPage, api, data, status });
-      });
-    } else {
-      test(title, async ({ managerPage, api, data }) => {
-        await expectReturnFileRenders({ page: managerPage, api, data, status });
-      });
-    }
+    // Barcode-less statuses (OPEN, WAITING_FOR_PICKUP) used to be `test.fixme` under
+    // GAP 6: the "Barcode not assigned" notice was a `<p:message>` with no `for`, which
+    // NPE'd in MessageRenderer and took the whole page down with a 500. Both target-less
+    // messages are now plain markup, so every status renders. See docs/e2e-findings.md.
+    test(title, async ({ managerPage, api, data }) => {
+      await expectReturnFileRenders({ page: managerPage, api, data, status });
+    });
   }
 
   // -------------------------------------------------------------------------
@@ -321,13 +299,13 @@ test.describe('Return details — Journey 5', () => {
     await details.expectNotFound();
   });
 
-  test.fixme('non-numeric ?id=abc renders the not-found warning instead of a 500', async ({
+  test('non-numeric ?id=abc renders the not-found warning instead of a 500', async ({
     managerPage,
   }) => {
-    // GAP 4 — `ReturnDetailsBean.init()` does a bare `Long.parseLong(idParam)`, so
-    // a non-numeric id throws NumberFormatException out of @PostConstruct, and
-    // web.xml declares no <error-page>. Intended: the same warn message any other
-    // unresolvable id gets. See docs/e2e-findings.md.
+    // Was GAP 4: `ReturnDetailsBean.init()` did a bare `Long.parseLong(idParam)`, so a
+    // non-numeric id threw NumberFormatException out of @PostConstruct and web.xml
+    // declares no <error-page>. `parseId` now guards it and the page falls through to
+    // the not-found branch. See docs/e2e-findings.md.
     const details = new ReturnDetailsPage(managerPage);
 
     const res = await details.gotoIdRaw('abc');

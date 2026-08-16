@@ -36,9 +36,12 @@ public class DriverService {
     }
 
     @Transactional
+    /**
+     * Hard delete. Deactivating a driver is a separate operation — the Active
+     * checkbox on the admin row editor.
+     */
     public void delete(Long id) {
-        Driver driver = findById(id);
-        driver.setActive(false);
-        driverRepo.save(driver);
+        findById(id);
+        driverRepo.delete(id);
     }
 }

@@ -278,7 +278,8 @@ test.describe('Returns list — Journey 4', () => {
       data.makeReturn('BARCODE_ASSIGNED', { customerId: customer.id }),
     ]);
 
-    expect(await api.barcodeOf(withoutBarcode.id)).toBeNull();
+    // JSON-B drops null properties, so "no barcode" comes back as an ABSENT key, not null.
+    expect(await api.barcodeOf(withoutBarcode.id)).toBeFalsy();
     expect(await api.barcodeOf(withBarcode.id)).toBe(withBarcode.barcode);
 
     const list = new ReturnsListPage(repPage);
@@ -408,15 +409,16 @@ test.describe('Returns list — Journey 4', () => {
     await list.open();
     expect(await list.rowCount()).toBe(20);
 
+    // `expect.poll`, not a bare `rowCount()`: the resize XHR resolves before PrimeFaces
+    // has written the new tbody, so a one-shot `.count()` races the DOM patch.
     await list.setRowsPerPage(10);
-    expect(await list.rowCount()).toBe(10);
+    await expect.poll(() => list.rowCount()).toBe(10);
 
     await list.setRowsPerPage(50);
     // 45 seeded rows + whatever the run created: more than a 20-row page, and
     // never more than the 50 the dropdown asked for.
-    const widened = await list.rowCount();
-    expect(widened).toBeGreaterThan(20);
-    expect(widened).toBeLessThanOrEqual(50);
+    await expect.poll(() => list.rowCount()).toBeGreaterThan(20);
+    expect(await list.rowCount()).toBeLessThanOrEqual(50);
   });
 
   test("View opens the details screen for that row's return", async ({ repPage, data }) => {

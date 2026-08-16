@@ -12,8 +12,15 @@
 <ui:composition template="/WEB-INF/templates/layout.xhtml">
 <ui:define name="content">
 
+    <!-- Static page-state notice, not a queued FacesMessage: <p:message> needs a 'for' target to
+         render at all, and <p:messages> would render nothing since no message is ever queued here.
+         Plain markup wearing the PrimeFaces warn-message classes keeps the theme's look. -->
     <ui:fragment rendered="#{returnDetailsBean.returnRequest == null}">
-        <p:message severity="warn" summary="Return request not found." detail="Please check the ID parameter."/>
+        <div class="ui-message ui-message-warn ui-widget ui-corner-all">
+            <span class="ui-message-warn-icon"></span>
+            <span class="ui-message-warn-summary">Return request not found.</span>
+            <span class="ui-message-warn-detail">Please check the ID parameter.</span>
+        </div>
     </ui:fragment>
 
     <ui:fragment rendered="#{returnDetailsBean.returnRequest != null}">
@@ -99,9 +106,13 @@
         <!-- Barcode / Pickup -->
         <div class="drb-details-card" data-testid="barcode-block">
             <h2 class="drb-details-card-title">Barcode / Pickup</h2>
+            <!-- Same static-notice treatment as the not-found message above. -->
             <ui:fragment rendered="#{not returnDetailsBean.barcodeAssigned}">
-                <p:message severity="warn" summary="Barcode not assigned"
-                           detail="No barcode has been assigned to this return request yet."/>
+                <div class="ui-message ui-message-warn ui-widget ui-corner-all">
+                    <span class="ui-message-warn-icon"></span>
+                    <span class="ui-message-warn-summary">Barcode not assigned</span>
+                    <span class="ui-message-warn-detail">No barcode has been assigned to this return request yet.</span>
+                </div>
             </ui:fragment>
             <div class="drb-field-grid">
                 <div class="drb-field" style="max-width:300px;">

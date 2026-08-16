@@ -16,7 +16,9 @@
  *                      <div id="clientId_panel"> holding <li class="ui-selectonemenu-item" data-label>
  *   p:selectBooleanCheckbox -> <div id="clientId"> with hidden <input id="clientId_input" type=checkbox>
  *                      and a clickable <div class="ui-chkbox-box">
- *   p:signature     -> <div class="ui-signature"> + <canvas> + hidden <input id="clientId_value">
+ *   p:signature     -> <div class="ui-inputfield ui-widget"> + hidden <input id="clientId_value">
+ *                      and <input id="clientId_base64">; the <canvas> and the plugin's own
+ *                      widget class are added client-side. There is NO `ui-signature` class.
  *   p:messages      -> <div class="ui-messages"><div class="ui-messages-{sev}"><ul><li>
  *                        <span class="ui-messages-{sev}-summary"><span class="ui-messages-{sev}-detail">
  *   p:message       -> <div class="ui-message"><span class="ui-message-{sev}-detail">

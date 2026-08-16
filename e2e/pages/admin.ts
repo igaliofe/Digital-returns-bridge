@@ -34,6 +34,16 @@ import {
   pfMessages,
 } from './pf';
 
+/**
+ * Anchored, whitespace-tolerant matcher for a cell's whole text. Used instead of `:text-is()`,
+ * which requires the matched element to be the smallest one holding the text — false for every
+ * `p:cellEditor` column, where the value sits in a nested `div.ui-cell-editor-output`.
+ */
+function exactText(value: string | number): RegExp {
+  const escaped = String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`^\\s*${escaped}\\s*$`);
+}
+
 export interface AdminPageConfig {
   path: string;
   /** `h:form` wrapping the table, e.g. `usersForm`. */
@@ -128,14 +138,28 @@ export abstract class AdminCrudPage extends BasePage {
     return (await this.emptyMessage.count()) > 0;
   }
 
+  /**
+   * Row whose `column`-th cell reads exactly `value`.
+   *
+   * NOT `td:nth-child(n):text-is(...)`: Playwright's `:text-is()` only matches when the element
+   * is the SMALLEST one holding the text, and every editable column wraps its value in
+   * `div.ui-cell-editor-output` — so the `<td>` never matches and the lookup silently finds
+   * nothing. Filtering the cell by an anchored regex works for both plain and editable cells.
+   */
+  protected rowByCell(column: number, value: string | number): Locator {
+    return this.rows.filter({
+      has: this.page.locator(`td:nth-child(${column})`).filter({ hasText: exactText(value) }),
+    });
+  }
+
   /** Row whose ID cell is exactly `id`. */
   rowById(id: number): Locator {
-    return this.rows.filter({ has: this.page.locator(`td:nth-child(1):text-is("${id}")`) });
+    return this.rowByCell(1, id);
   }
 
   /** Row containing an exact cell text anywhere (name, phone, sku, ...). */
   rowByCellText(text: string): Locator {
-    return this.rows.filter({ has: this.page.locator(`td:text-is("${text}")`) });
+    return this.rows.filter({ has: this.page.locator('td').filter({ hasText: exactText(text) }) });
   }
 
   cell(row: Locator, column: string): Locator {
@@ -303,9 +327,18 @@ export abstract class AdminCrudPage extends BasePage {
    */
   async findRowAcrossPages(row: Locator): Promise<boolean> {
     const pages = Math.max(await this.pageCount(), 1);
+    // `count()` is a single sample: called right after a create, it can read the table
+    // mid-ajax-rebuild and miss a row that lands milliseconds later. Wait per page instead —
+    // generously when there is only one page to search, briefly when walking several.
+    const perPage = pages === 1 ? 10_000 : 2_000;
     for (let page = 1; page <= pages; page += 1) {
       await this.goToPageIfNeeded(page);
-      if ((await row.count()) > 0) return true;
+      try {
+        await row.first().waitFor({ state: 'attached', timeout: perPage });
+        return true;
+      } catch {
+        // not on this page — keep walking
+      }
     }
     return false;
   }
@@ -371,15 +404,11 @@ export class AdminUsersPage extends AdminCrudPage {
   }
 
   rowByPhone(phone: string): Locator {
-    return this.rows.filter({
-      has: this.page.locator(`td:nth-child(${USER_COLUMNS.phone}):text-is("${phone}")`),
-    });
+    return this.rowByCell(USER_COLUMNS.phone, phone);
   }
 
   rowByName(fullName: string): Locator {
-    return this.rows.filter({
-      has: this.page.locator(`td:nth-child(${USER_COLUMNS.fullName}):text-is("${fullName}")`),
-    });
+    return this.rowByCell(USER_COLUMNS.fullName, fullName);
   }
 
   /** Open the dialog, fill it, save. Expects success ("User created"). */
@@ -463,15 +492,11 @@ export class AdminCustomersPage extends AdminCrudPage {
   }
 
   rowByPhone(phone: string): Locator {
-    return this.rows.filter({
-      has: this.page.locator(`td:nth-child(${CUSTOMER_COLUMNS.phone}):text-is("${phone}")`),
-    });
+    return this.rowByCell(CUSTOMER_COLUMNS.phone, phone);
   }
 
   rowByName(fullName: string): Locator {
-    return this.rows.filter({
-      has: this.page.locator(`td:nth-child(${CUSTOMER_COLUMNS.fullName}):text-is("${fullName}")`),
-    });
+    return this.rowByCell(CUSTOMER_COLUMNS.fullName, fullName);
   }
 
   async createCustomer(input: NewCustomerInput): Promise<void> {
@@ -557,15 +582,11 @@ export class AdminProductsPage extends AdminCrudPage {
   }
 
   rowBySku(sku: string): Locator {
-    return this.rows.filter({
-      has: this.page.locator(`td:nth-child(${PRODUCT_COLUMNS.sku}):text-is("${sku}")`),
-    });
+    return this.rowByCell(PRODUCT_COLUMNS.sku, sku);
   }
 
   rowByName(name: string): Locator {
-    return this.rows.filter({
-      has: this.page.locator(`td:nth-child(${PRODUCT_COLUMNS.name}):text-is("${name}")`),
-    });
+    return this.rowByCell(PRODUCT_COLUMNS.name, name);
   }
 
   /** The catalog thumbnail in the Image column; absent when the product has no imageUrl. */
@@ -646,17 +667,11 @@ export class AdminDriversPage extends AdminCrudPage {
   }
 
   rowByPhone(phone: string): Locator {
-    return this.rows.filter({
-      has: this.page.locator(`td:nth-child(${DRIVER_COLUMNS.phone}):text-is("${phone}")`),
-    });
+    return this.rowByCell(DRIVER_COLUMNS.phone, phone);
   }
 
   rowByVehicle(vehicleNumber: string): Locator {
-    return this.rows.filter({
-      has: this.page.locator(
-        `td:nth-child(${DRIVER_COLUMNS.vehicleNumber}):text-is("${vehicleNumber}")`,
-      ),
-    });
+    return this.rowByCell(DRIVER_COLUMNS.vehicleNumber, vehicleNumber);
   }
 
   /** The Full Name column comes from the linked user and is NOT editable. */

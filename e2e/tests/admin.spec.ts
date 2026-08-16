@@ -117,8 +117,15 @@ function cleanupDriver(admin: AdminDriversPage, phone: string): void {
 // Misc
 // ---------------------------------------------------------------------------
 
-/** JSF's stock `required="true"` message — `{0}: Validation Error: Value is required.` */
-const REQUIRED_MESSAGE = /Value is required/i;
+/**
+ * Every `required="true"` field on the admin screens overrides JSF's stock
+ * "Validation Error: Value is required" with a Hebrew `requiredMessage`, and the
+ * four create-dialog tests each blank out a different field — so match the shared
+ * prefix rather than any one message: "יש להזין …" (enter) / "יש לבחור …" (choose).
+ * See `admin/users.xhtml:126,137`, `customers.xhtml:124`, `products.xhtml:135`,
+ * `drivers.xhtml:105`.
+ */
+const REQUIRED_MESSAGE = /יש (להזין|לבחור)/;
 
 // ===========================================================================
 // /admin/users.xhtml

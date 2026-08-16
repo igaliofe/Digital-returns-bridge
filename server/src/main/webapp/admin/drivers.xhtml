@@ -43,7 +43,10 @@
                 <p:cellEditor>
                     <f:facet name="output"><h:outputText value="#{d.phone}"/></f:facet>
                     <f:facet name="input">
-                        <p:inputText value="#{d.phone}" style="width:100%;"/>
+                        <p:inputText value="#{d.phone}" style="width:100%;"
+                                     validatorMessage="מספר טלפון לא תקין (לדוגמה 0501234567)">
+                            <f:validateRegex pattern="^0\d{8,9}$"/>
+                        </p:inputText>
                     </f:facet>
                 </p:cellEditor>
             </p:column>
@@ -52,7 +55,10 @@
                 <p:cellEditor>
                     <f:facet name="output"><h:outputText value="#{d.vehicleNumber}"/></f:facet>
                     <f:facet name="input">
-                        <p:inputText value="#{d.vehicleNumber}" style="width:100%;"/>
+                        <p:inputText value="#{d.vehicleNumber}" style="width:100%;"
+                                     validatorMessage="מספר הרכב ארוך מדי (עד 30 תווים)">
+                            <f:validateLength maximum="30"/>
+                        </p:inputText>
                     </f:facet>
                 </p:cellEditor>
             </p:column>
@@ -91,29 +97,51 @@
         <h:form id="createDriverForm">
             <p:panelGrid columns="2" style="width:100%;">
                 <p:outputLabel for="newUser" value="User Account *"/>
-                <p:selectOneMenu id="newUser" value="#{driverAdminBean.newDriver.user}"
-                                 required="true">
-                    <f:selectItem itemLabel="— Select User —" itemValue="#{null}"/>
-                    <f:selectItems value="#{driverAdminBean.users}" var="u"
-                                   itemLabel="#{u.fullName} (#{u.phoneNumber})" itemValue="#{u}"/>
-                </p:selectOneMenu>
+                <h:panelGroup layout="block">
+                    <!-- Bound to the user id, not the User entity: an entity itemValue would need a
+                         registered Converter and otherwise fails the submit with "null Converter".
+                         saveNew() resolves the id back to a User before persisting. -->
+                    <p:selectOneMenu id="newUser" value="#{driverAdminBean.newUserId}"
+                                     required="true" requiredMessage="יש לבחור משתמש">
+                        <f:selectItem itemLabel="— Select User —" itemValue="#{null}"/>
+                        <f:selectItems value="#{driverAdminBean.users}" var="u"
+                                       itemLabel="#{u.fullName} (#{u.phoneNumber})" itemValue="#{u.id}"/>
+                    </p:selectOneMenu>
+                    <p:message for="newUser" display="text"/>
+                </h:panelGroup>
 
                 <p:outputLabel for="newPhone" value="Phone *"/>
-                <p:inputText id="newPhone" value="#{driverAdminBean.newDriver.phone}"
-                             required="true" style="width:100%;"/>
+                <h:panelGroup layout="block">
+                    <p:inputText id="newPhone" value="#{driverAdminBean.newDriver.phone}"
+                                 required="true" requiredMessage="יש להזין מספר טלפון"
+                                 validatorMessage="מספר טלפון לא תקין (לדוגמה 0501234567)"
+                                 style="width:100%;">
+                        <f:validateRegex pattern="^0\d{8,9}$"/>
+                    </p:inputText>
+                    <p:message for="newPhone" display="text"/>
+                </h:panelGroup>
 
                 <p:outputLabel for="newVehicle" value="Vehicle Number"/>
-                <p:inputText id="newVehicle" value="#{driverAdminBean.newDriver.vehicleNumber}"
-                             style="width:100%;"/>
+                <h:panelGroup layout="block">
+                    <p:inputText id="newVehicle" value="#{driverAdminBean.newDriver.vehicleNumber}"
+                                 validatorMessage="מספר הרכב ארוך מדי (עד 30 תווים)"
+                                 style="width:100%;">
+                        <f:validateLength maximum="30"/>
+                    </p:inputText>
+                    <p:message for="newVehicle" display="text"/>
+                </h:panelGroup>
 
                 <p:outputLabel for="newActive" value="Active"/>
                 <p:selectBooleanCheckbox id="newActive" value="#{driverAdminBean.newDriver.active}"/>
             </p:panelGrid>
             <div style="margin-top:12px;text-align:right;">
+                <!-- Never update createDialog here: re-rendering the dialog re-emits it hidden,
+                     so a failed validation would close it instead of showing the messages.
+                     Updating createDriverForm alone re-renders the p:message text in place. -->
                 <p:commandButton value="Save"
                                  action="#{driverAdminBean.saveNew}"
                                  icon="pi pi-save"
-                                 update="driversForm createDialog createDriverForm"
+                                 update="driversForm createDriverForm"
                                  oncomplete="if (!args.validationFailed) PF('createDriverDlg').hide();"/>
                 <p:commandButton value="Cancel"
                                  onclick="PF('createDriverDlg').hide(); return false;"
