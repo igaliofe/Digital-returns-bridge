@@ -5,6 +5,7 @@ import com.drb.server.rest.dto.WarehouseInspectionRequest;
 import com.drb.server.rest.security.AuthenticatedUser;
 import com.drb.server.service.WarehouseInspectionService;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -23,7 +24,7 @@ public class WarehouseInspectionResource {
     @PUT
     @Path("/{inspectionId}")
     public Response update(@PathParam("inspectionId") Long inspectionId,
-                           WarehouseInspectionRequest req) {
+                           @Valid WarehouseInspectionRequest req) {
         User user = authenticatedUser.get();
         return Response.ok(WarehouseInspectionDto.from(
             warehouseInspectionService.update(inspectionId, req, user)

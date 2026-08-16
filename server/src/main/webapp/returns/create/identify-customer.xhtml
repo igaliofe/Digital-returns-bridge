@@ -21,18 +21,23 @@
                 <h2 class="drb-wizard-title">Customer Identification</h2>
                 <p class="drb-wizard-desc">Enter the customer's phone number to pull up their file, purchase history and active return status.</p>
 
-                <p:messages showDetail="true" closable="true"/>
+                <p:messages showDetail="true" closable="true" globalOnly="true"/>
 
                 <label class="drb-field-label" for="phone">Customer Phone Number</label>
                 <div class="drb-wizard-row">
                     <p:inputText id="phone" value="#{createReturnWizardBean.phoneNumber}"
                                  placeholder="e.g. 0501234567" required="true"
-                                 requiredMessage="Phone number is required"
-                                 style="width:100%;"/>
+                                 requiredMessage="יש להזין מספר טלפון"
+                                 validatorMessage="מספר טלפון לא תקין (לדוגמה 0501234567)"
+                                 style="width:100%;">
+                        <f:validateRegex pattern="^0\d{8,9}$"/>
+                    </p:inputText>
                     <p:commandButton value="Find Customer →"
                                      action="#{createReturnWizardBean.lookupCustomer}"
-                                     styleClass="drb-btn-primary"/>
+                                     styleClass="drb-btn-primary"
+                                     update="identifyForm"/>
                 </div>
+                <p:message for="phone" display="text"/>
                 <p class="drb-wizard-hint">We'll match the number against registered customers. If no match is found, you can create a new customer record.</p>
             </div>
         </h:form>

@@ -4,6 +4,7 @@ import com.drb.server.domain.Driver;
 import com.drb.server.domain.ReturnRequest;
 import com.drb.server.domain.enums.ReturnStatus;
 import com.drb.server.service.DriverService;
+import com.drb.server.service.EnumParser;
 import com.drb.server.service.ReturnRequestService;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.view.ViewScoped;
@@ -40,7 +41,8 @@ public class ReturnListBean implements Serializable {
 
     public void load() {
         if (filterStatus != null && !filterStatus.isBlank()) {
-            returns = returnService.findByStatus(ReturnStatus.valueOf(filterStatus));
+            returns = returnService.findByStatus(
+                EnumParser.parse(ReturnStatus.class, filterStatus, "filterStatus"));
         } else if (filterDriverId != null) {
             returns = returnService.findByDriverId(filterDriverId);
         } else {

@@ -5,6 +5,8 @@ import com.drb.server.domain.enums.DefectType;
 import com.drb.server.domain.enums.ReturnReason;
 import com.drb.server.domain.enums.ReturnStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -14,6 +16,7 @@ public class ReturnRequest {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Size(max = 60)
     @Column(name = "barcode", unique = true)
     private String barcode;
 
@@ -24,10 +27,12 @@ public class ReturnRequest {
     @JoinColumn(name = "barcode_assigned_by_driver_id")
     private Driver barcodeAssignedByDriver;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
@@ -40,10 +45,12 @@ public class ReturnRequest {
     @JoinColumn(name = "driver_id")
     private Driver driver;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "opened_by_user_id")
     private User openedByUser;
 
+    @Size(max = 60)
     @Column(name = "order_number")
     private String orderNumber;
 
@@ -53,6 +60,7 @@ public class ReturnRequest {
     @Column(name = "defect_description")
     private String defectDescription;
 
+    @Size(max = 20)
     @Column(name = "priority")
     private String priority;
 
@@ -83,6 +91,7 @@ public class ReturnRequest {
     @Column(name = "defect_location_text")
     private String defectLocationText;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private ReturnStatus status = ReturnStatus.OPEN;
@@ -92,6 +101,10 @@ public class ReturnRequest {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
 
     @PrePersist
     void prePersist() {
@@ -150,4 +163,6 @@ public class ReturnRequest {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public Long getVersion() { return version; }
+    public void setVersion(Long version) { this.version = version; }
 }

@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.drb.driver.R;
 import com.drb.driver.api.ApiClient;
+import com.drb.driver.api.ApiErrors;
 import com.drb.driver.model.PickupConfirmationRequest;
 import com.drb.driver.model.ReturnImageModel;
 import com.drb.driver.model.ReturnRequestModel;
@@ -242,6 +243,9 @@ public class PickupConfirmationActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     Toast.makeText(PickupConfirmationActivity.this, "Pickup confirmed!", Toast.LENGTH_SHORT).show();
                     finish();
+                } else if (ApiErrors.isConcurrentModification(response)) {
+                    Toast.makeText(PickupConfirmationActivity.this,
+                        ApiErrors.CONCURRENT_MODIFICATION_MESSAGE, Toast.LENGTH_LONG).show();
                 } else if (response.code() == 409) {
                     Toast.makeText(PickupConfirmationActivity.this,
                         "Cannot confirm pickup — barcode not yet assigned", Toast.LENGTH_LONG).show();

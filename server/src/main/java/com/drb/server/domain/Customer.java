@@ -1,6 +1,8 @@
 package com.drb.server.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 @Entity
@@ -9,15 +11,20 @@ public class Customer {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
+    @Size(max = 120)
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
+    @Size(max = 30)
     @Column(nullable = false)
     private String phone;
 
+    @Size(max = 120)
     @Column
     private String email;
 
+    @Size(max = 255)
     @Column
     private String address;
 

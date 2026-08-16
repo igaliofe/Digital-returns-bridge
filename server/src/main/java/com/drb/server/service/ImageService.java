@@ -8,6 +8,7 @@ import com.drb.server.domain.User;
 import com.drb.server.domain.enums.ImageType;
 import com.drb.server.repository.ReturnImageRepository;
 import com.drb.server.service.exception.NotFoundException;
+import com.drb.server.service.exception.ValidationException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -31,7 +32,10 @@ public class ImageService {
     public ReturnImage upload(Long returnId, EntityPart file, String imageType, User uploadedBy) {
         LOG.info("Uploading image (EntityPart) for return " + returnId);
         ReturnRequest rr = returnService.getById(returnId);
-        ImageType type = ImageType.valueOf(imageType);
+        ImageType type = EnumParser.parse(ImageType.class, imageType, "imageType");
+        if (type == null) {
+            throw new ValidationException("IMAGE_TYPE_BLANK", "Image type cannot be blank");
+        }
         InputStream stream = file.getContent();
         UploadResult result = cloudinaryService.upload(stream, type, returnId);
         return saveImage(rr, result, type.name(), uploadedBy);
@@ -42,7 +46,8 @@ public class ImageService {
     public ReturnImage upload(Long returnId, byte[] data, String imageType, User uploadedBy) {
         LOG.info("Uploading image (byte[]) for return " + returnId);
         ReturnRequest rr = returnService.getById(returnId);
-        ImageType type = imageType != null ? ImageType.valueOf(imageType) : ImageType.SERVICE_GENERAL_IMAGE;
+        ImageType parsed = EnumParser.parse(ImageType.class, imageType, "imageType");
+        ImageType type = parsed != null ? parsed : ImageType.SERVICE_GENERAL_IMAGE;
         UploadResult result = cloudinaryService.upload(new ByteArrayInputStream(data), type, returnId);
         return saveImage(rr, result, type.name(), uploadedBy);
     }

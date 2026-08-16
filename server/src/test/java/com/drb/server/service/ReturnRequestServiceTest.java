@@ -77,10 +77,10 @@ class ReturnRequestServiceTest {
     @Test
     void assignBarcodeHappyPath() throws Exception {
         ReturnRequest rr = returnWithStatus(1L, ReturnStatus.WAITING_FOR_PICKUP);
-        when(returnRepo.findById(1L)).thenReturn(Optional.of(rr));
+        when(returnRepo.findByIdForUpdate(1L)).thenReturn(Optional.of(rr));
         when(driverRepo.findById(2L)).thenReturn(Optional.of(driver));
         when(returnRepo.findByBarcode("BC001")).thenReturn(Optional.empty());
-        when(returnRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(returnRepo.saveAndFlush(any())).thenAnswer(inv -> inv.getArgument(0));
         when(statusHistoryRepo.save(any(StatusHistory.class))).thenAnswer(inv -> inv.getArgument(0));
 
         ReturnRequest result = service.assignBarcode(1L, "BC001", 2L);
@@ -94,7 +94,7 @@ class ReturnRequestServiceTest {
     @Test
     void assignBarcodeBlankBarcodeThrowsValidationExceptionWithBarcodeBankCode() {
         ReturnRequest rr = returnWithStatus(1L, ReturnStatus.WAITING_FOR_PICKUP);
-        when(returnRepo.findById(1L)).thenReturn(Optional.of(rr));
+        when(returnRepo.findByIdForUpdate(1L)).thenReturn(Optional.of(rr));
 
         assertThatThrownBy(() -> service.assignBarcode(1L, "   ", 2L))
             .isInstanceOf(ValidationException.class)
@@ -105,7 +105,7 @@ class ReturnRequestServiceTest {
     void assignBarcodeDuplicateBarcodeThrowsValidationExceptionWithBarcodeAlreadyAssigned() {
         ReturnRequest rr = returnWithStatus(1L, ReturnStatus.WAITING_FOR_PICKUP);
         ReturnRequest other = returnWithStatus(99L, ReturnStatus.WAITING_FOR_PICKUP);
-        when(returnRepo.findById(1L)).thenReturn(Optional.of(rr));
+        when(returnRepo.findByIdForUpdate(1L)).thenReturn(Optional.of(rr));
         when(driverRepo.findById(2L)).thenReturn(Optional.of(driver));
         when(returnRepo.findByBarcode("DUP")).thenReturn(Optional.of(other));
 
@@ -117,7 +117,7 @@ class ReturnRequestServiceTest {
     @Test
     void assignBarcodeMissingDriverThrowsNotFoundException() {
         ReturnRequest rr = returnWithStatus(1L, ReturnStatus.WAITING_FOR_PICKUP);
-        when(returnRepo.findById(1L)).thenReturn(Optional.of(rr));
+        when(returnRepo.findByIdForUpdate(1L)).thenReturn(Optional.of(rr));
         when(driverRepo.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.assignBarcode(1L, "BC001", 99L))
@@ -126,7 +126,7 @@ class ReturnRequestServiceTest {
 
     @Test
     void assignBarcodeMissingReturnThrowsNotFoundException() {
-        when(returnRepo.findById(999L)).thenReturn(Optional.empty());
+        when(returnRepo.findByIdForUpdate(999L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.assignBarcode(999L, "BC001", 2L))
             .isInstanceOf(NotFoundException.class);
@@ -148,7 +148,7 @@ class ReturnRequestServiceTest {
     @MethodSource("legalTransitions")
     void legalStatusTransitionSucceeds(ReturnStatus from, ReturnStatus to) {
         ReturnRequest rr = returnWithStatus(1L, from);
-        when(returnRepo.findById(1L)).thenReturn(Optional.of(rr));
+        when(returnRepo.findByIdForUpdate(1L)).thenReturn(Optional.of(rr));
         when(returnRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
         when(statusHistoryRepo.save(any(StatusHistory.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -173,7 +173,7 @@ class ReturnRequestServiceTest {
     @MethodSource("illegalTransitions")
     void illegalStatusTransitionThrowsException(ReturnStatus from, ReturnStatus to) {
         ReturnRequest rr = returnWithStatus(1L, from);
-        when(returnRepo.findById(1L)).thenReturn(Optional.of(rr));
+        when(returnRepo.findByIdForUpdate(1L)).thenReturn(Optional.of(rr));
 
         assertThatThrownBy(() -> service.transitionStatus(1L, to, null, "test"))
             .isInstanceOf(IllegalStatusTransitionException.class)
@@ -189,7 +189,7 @@ class ReturnRequestServiceTest {
         // BARCODE_ASSIGNED is required before PICKED_UP;
         // attempting OPEN -> PICKED_UP must be rejected
         ReturnRequest rr = returnWithStatus(1L, ReturnStatus.OPEN);
-        when(returnRepo.findById(1L)).thenReturn(Optional.of(rr));
+        when(returnRepo.findByIdForUpdate(1L)).thenReturn(Optional.of(rr));
 
         assertThatThrownBy(() -> service.transitionStatus(1L, ReturnStatus.PICKED_UP, null, "test"))
             .isInstanceOf(IllegalStatusTransitionException.class);

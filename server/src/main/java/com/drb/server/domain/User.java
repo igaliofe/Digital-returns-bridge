@@ -2,6 +2,8 @@ package com.drb.server.domain;
 
 import com.drb.server.domain.enums.Role;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 @Entity
@@ -10,12 +12,17 @@ public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
+    @Size(max = 30)
     @Column(name = "phone_number", unique = true, nullable = false)
     private String phoneNumber;
 
+    @NotNull
+    @Size(max = 120)
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;

@@ -3,6 +3,7 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
       xmlns:p="http://primefaces.org/ui">
 <h:head>
     <title>Login — Tollman&apos;s</title>
@@ -27,15 +28,18 @@
                 <label class="drb-field-label" for="phone">Phone Number</label>
                 <p:inputText id="phone" value="#{loginBean.phoneNumber}"
                              placeholder="e.g. 0501234567" required="true"
-                             requiredMessage="Phone number is required"
-                             style="width:100%;margin-bottom:18px;"/>
-                <p:message for="phone" display="text"/>
+                             requiredMessage="יש להזין מספר טלפון"
+                             validatorMessage="מספר טלפון לא תקין (לדוגמה 0501234567)"
+                             style="width:100%;margin-bottom:18px;">
+                    <f:validateRegex pattern="^0\d{8,9}$"/>
+                </p:inputText>
+                <p:message id="phoneMsg" for="phone" display="text"/>
 
                 <p:commandButton value="Sign In"
                                  action="#{loginBean.login}"
                                  styleClass="drb-btn-primary"
                                  style="width:100%;"
-                                 update="msgs"/>
+                                 update="msgs phoneMsg"/>
 
                 <p class="drb-login-hint">Enter your registered phone number to receive portal access.</p>
             </h:form>

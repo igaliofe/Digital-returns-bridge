@@ -22,10 +22,11 @@ public class WarehouseInspectionService {
         WarehouseInspection existing = inspectionRepo.findById(inspectionId);
         if (existing == null) throw new NotFoundException("WarehouseInspection", inspectionId);
         if (req.warehouseDecision != null && !req.warehouseDecision.isBlank()) {
-            existing.setWarehouseDecision(WarehouseDecision.valueOf(req.warehouseDecision));
+            existing.setWarehouseDecision(
+                EnumParser.parse(WarehouseDecision.class, req.warehouseDecision, "warehouseDecision"));
         }
         if (req.itemCondition != null && !req.itemCondition.isBlank()) {
-            existing.setItemCondition(ItemCondition.valueOf(req.itemCondition));
+            existing.setItemCondition(EnumParser.parse(ItemCondition.class, req.itemCondition, "itemCondition"));
         }
         if (req.callFullyHandled != null) {
             existing.setCallFullyHandled(req.callFullyHandled);

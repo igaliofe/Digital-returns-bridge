@@ -50,6 +50,26 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
         </dependency>
+        <!--
+            JPA provider for the concurrency test only. WildFly supplies Hibernate at
+            runtime, so this stays out of the WAR and off the main compile classpath.
+        -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!--
+            jakarta.jakartaee-api bundles the JSON-B API, and Hibernate refuses to boot
+            when that API is present with no implementation behind it. WildFly ships one;
+            outside the container the tests need this stand-in.
+        -->
+        <dependency>
+            <groupId>org.eclipse</groupId>
+            <artifactId>yasson</artifactId>
+            <version>3.0.3</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-core</artifactId>

@@ -4,6 +4,7 @@ import com.drb.server.domain.ReturnRequest;
 import com.drb.server.domain.enums.ReturnStatus;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 
@@ -24,8 +25,27 @@ public class ReturnRequestRepository {
         return em.merge(returnRequest);
     }
 
+    /**
+     * Saves and forces the INSERT/UPDATE out to the database immediately, so that a unique-index
+     * violation is thrown here rather than at transaction commit — far away from the caller that
+     * knows how to translate it. Used by the barcode assignment path.
+     */
+    public ReturnRequest saveAndFlush(ReturnRequest returnRequest) {
+        ReturnRequest saved = save(returnRequest);
+        em.flush();
+        return saved;
+    }
+
     public Optional<ReturnRequest> findById(Long id) {
         return Optional.ofNullable(em.find(ReturnRequest.class, id));
+    }
+
+    /**
+     * Loads a return request with a row-level write lock, so that concurrent
+     * check-then-act callers serialise instead of both passing the same guard.
+     */
+    public Optional<ReturnRequest> findByIdForUpdate(Long id) {
+        return Optional.ofNullable(em.find(ReturnRequest.class, id, LockModeType.PESSIMISTIC_WRITE));
     }
 
     public List<ReturnRequest> findAll() {

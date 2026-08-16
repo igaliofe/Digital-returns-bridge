@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.drb.driver.R;
 import com.drb.driver.api.ApiClient;
+import com.drb.driver.api.ApiErrors;
 import com.drb.driver.model.ReturnRequestModel;
 import com.drb.driver.model.TimelineEntry;
 import com.drb.driver.session.SessionManager;
@@ -210,6 +211,10 @@ public class WarehouseReturnDetailsActivity extends AppCompatActivity {
     }
 
     private void handleError(Response<?> response) {
+        if (ApiErrors.isConcurrentModification(response)) {
+            Toast.makeText(this, ApiErrors.CONCURRENT_MODIFICATION_MESSAGE, Toast.LENGTH_LONG).show();
+            return;
+        }
         int code = response.code();
         String msg;
         switch (code) {

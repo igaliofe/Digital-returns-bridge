@@ -5,6 +5,7 @@ import com.drb.server.rest.dto.PickupUpdateDto;
 import com.drb.server.rest.security.AuthenticatedUser;
 import com.drb.server.service.PickupUpdateService;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -23,7 +24,7 @@ public class PickupUpdateResource {
     @PUT
     @Path("/{pickupUpdateId}")
     public Response update(@PathParam("pickupUpdateId") Long pickupUpdateId,
-                           PickupConfirmationRequest req) {
+                           @Valid PickupConfirmationRequest req) {
         User user = authenticatedUser.get();
         return Response.ok(PickupUpdateDto.from(
             pickupUpdateService.update(pickupUpdateId, req, user)

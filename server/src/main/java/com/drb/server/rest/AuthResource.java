@@ -6,6 +6,7 @@ import com.drb.server.rest.dto.UserDto;
 import com.drb.server.rest.security.AuthenticatedUser;
 import com.drb.server.service.AuthService;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -22,7 +23,7 @@ public class AuthResource {
     private AuthenticatedUser authenticatedUser;
     @POST
     @Path("/login")
-    public Response login(LoginRequest req) {
+    public Response login(@Valid LoginRequest req) {
         String token = authService.login(req.phoneNumber);
         User user = authService.getByToken(token);
         LoginResponse resp = new LoginResponse();

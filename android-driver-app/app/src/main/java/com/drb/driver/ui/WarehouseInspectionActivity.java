@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.drb.driver.R;
 import com.drb.driver.api.ApiClient;
+import com.drb.driver.api.ApiErrors;
 import com.drb.driver.model.PickupUpdateModel;
 import com.drb.driver.model.ReturnImageModel;
 import com.drb.driver.model.ReturnRequestModel;
@@ -279,6 +280,9 @@ public class WarehouseInspectionActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     Toast.makeText(WarehouseInspectionActivity.this, "Requested more info", Toast.LENGTH_SHORT).show();
                     finish();
+                } else if (ApiErrors.isConcurrentModification(response)) {
+                    Toast.makeText(WarehouseInspectionActivity.this,
+                        ApiErrors.CONCURRENT_MODIFICATION_MESSAGE, Toast.LENGTH_LONG).show();
                 } else {
                     Toast.makeText(WarehouseInspectionActivity.this, "Failed (" + response.code() + ")", Toast.LENGTH_LONG).show();
                 }
@@ -314,6 +318,10 @@ public class WarehouseInspectionActivity extends AppCompatActivity {
                         Toast.makeText(WarehouseInspectionActivity.this, "Inspection saved", Toast.LENGTH_SHORT).show();
                         finish();
                     }
+                } else if (ApiErrors.isConcurrentModification(response)) {
+                    btnSubmit.setEnabled(true);
+                    Toast.makeText(WarehouseInspectionActivity.this,
+                        ApiErrors.CONCURRENT_MODIFICATION_MESSAGE, Toast.LENGTH_LONG).show();
                 } else {
                     btnSubmit.setEnabled(true);
                     Toast.makeText(WarehouseInspectionActivity.this, "Submit failed (" + response.code() + ")", Toast.LENGTH_LONG).show();
@@ -336,6 +344,9 @@ public class WarehouseInspectionActivity extends AppCompatActivity {
                 btnSubmit.setEnabled(true);
                 if (response.isSuccessful()) {
                     Toast.makeText(WarehouseInspectionActivity.this, "Inspection saved and request closed", Toast.LENGTH_SHORT).show();
+                } else if (ApiErrors.isConcurrentModification(response)) {
+                    Toast.makeText(WarehouseInspectionActivity.this,
+                        "Inspection saved. " + ApiErrors.CONCURRENT_MODIFICATION_MESSAGE, Toast.LENGTH_LONG).show();
                 } else {
                     Toast.makeText(WarehouseInspectionActivity.this, "Inspection saved, but closing failed (" + response.code() + ")", Toast.LENGTH_LONG).show();
                 }

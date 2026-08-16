@@ -5,12 +5,14 @@ import com.drb.server.domain.User;
 import com.drb.server.rest.dto.*;
 import com.drb.server.rest.exception.ErrorEnvelope;
 import com.drb.server.rest.security.AuthenticatedUser;
+import com.drb.server.service.EnumParser;
 import com.drb.server.service.ImageService;
 import com.drb.server.service.ReturnRequestService;
 import com.drb.server.service.exception.NotFoundException;
 import com.drb.server.service.exception.ValidationException;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -67,7 +69,7 @@ public class ReturnResource {
     }
 
     @POST
-    public Response create(CreateReturnRequest req) {
+    public Response create(@Valid CreateReturnRequest req) {
         ReturnRequest rr = new ReturnRequest();
         applyChecklistFields(rr, req);
         User user = authenticatedUser.get();
@@ -78,7 +80,7 @@ public class ReturnResource {
 
     @PUT
     @Path("/{returnId}")
-    public Response update(@PathParam("returnId") Long returnId, CreateReturnRequest req) {
+    public Response update(@PathParam("returnId") Long returnId, @Valid CreateReturnRequest req) {
         ReturnRequest rr = new ReturnRequest();
         applyChecklistFields(rr, req);
         return Response.ok(ReturnRequestDto.from(returnRequestService.update(returnId, rr))).build();
@@ -95,21 +97,18 @@ public class ReturnResource {
         rr.setQuantity(req.quantity);
         rr.setUnderWarranty(req.underWarranty);
         rr.setWasUsed(req.wasUsed);
-        if (req.returnReason != null && !req.returnReason.isBlank()) {
-            rr.setReturnReason(com.drb.server.domain.enums.ReturnReason.valueOf(req.returnReason));
-        }
-        if (req.defectType != null && !req.defectType.isBlank()) {
-            rr.setDefectType(com.drb.server.domain.enums.DefectType.valueOf(req.defectType));
-        }
-        if (req.defectStage != null && !req.defectStage.isBlank()) {
-            rr.setDefectStage(com.drb.server.domain.enums.DefectStage.valueOf(req.defectStage));
-        }
+        rr.setReturnReason(EnumParser.parse(
+            com.drb.server.domain.enums.ReturnReason.class, req.returnReason, "returnReason"));
+        rr.setDefectType(EnumParser.parse(
+            com.drb.server.domain.enums.DefectType.class, req.defectType, "defectType"));
+        rr.setDefectStage(EnumParser.parse(
+            com.drb.server.domain.enums.DefectStage.class, req.defectStage, "defectStage"));
         rr.setDefectLocationText(req.defectLocationText);
     }
 
     @PATCH
     @Path("/{returnId}/assign-driver")
-    public Response assignDriver(@PathParam("returnId") Long returnId, AssignDriverRequest req) {
+    public Response assignDriver(@PathParam("returnId") Long returnId, @Valid AssignDriverRequest req) {
         return Response.ok(ReturnRequestDto.from(
             returnRequestService.assignDriver(returnId, req.driverId)
         )).build();
@@ -117,7 +116,7 @@ public class ReturnResource {
 
     @PATCH
     @Path("/{returnId}/assign-barcode")
-    public Response assignBarcode(@PathParam("returnId") Long returnId, AssignBarcodeRequest req) {
+    public Response assignBarcode(@PathParam("returnId") Long returnId, @Valid AssignBarcodeRequest req) {
         try {
             ReturnRequest rr = returnRequestService.assignBarcode(returnId, req.barcode, req.driverId);
             return Response.ok(ReturnRequestDto.from(rr)).build();
@@ -136,7 +135,7 @@ public class ReturnResource {
 
     @PATCH
     @Path("/{returnId}/status")
-    public Response changeStatus(@PathParam("returnId") Long returnId, StatusChangeRequest req) {
+    public Response changeStatus(@PathParam("returnId") Long returnId, @Valid StatusChangeRequest req) {
         User user = authenticatedUser.get();
         return Response.ok(ReturnRequestDto.from(
             returnRequestService.changeStatus(returnId, req.status, req.comment, user)
@@ -145,7 +144,7 @@ public class ReturnResource {
 
     @PATCH
     @Path("/{returnId}/priority")
-    public Response changePriority(@PathParam("returnId") Long returnId, PriorityChangeRequest req) {
+    public Response changePriority(@PathParam("returnId") Long returnId, @Valid PriorityChangeRequest req) {
         return Response.ok(ReturnRequestDto.from(
             returnRequestService.changePriority(returnId, req.priority)
         )).build();
@@ -211,7 +210,7 @@ public class ReturnResource {
     @POST
     @Path("/{returnId}/pickup-updates")
     public Response createPickupUpdate(@PathParam("returnId") Long returnId,
-                                       PickupConfirmationRequest req) {
+                                       @Valid PickupConfirmationRequest req) {
         User user = authenticatedUser.get();
         return Response.status(201).entity(PickupUpdateDto.from(
             returnRequestService.createPickupUpdate(returnId, req, user)
@@ -221,7 +220,7 @@ public class ReturnResource {
     @POST
     @Path("/{returnId}/pickup-confirmation")
     public Response confirmPickup(@PathParam("returnId") Long returnId,
-                                  PickupConfirmationRequest req) {
+                                  @Valid PickupConfirmationRequest req) {
         User user = authenticatedUser.get();
         return Response.ok(ReturnRequestDto.from(
             returnRequestService.confirmPickup(returnId, req, user)
@@ -240,7 +239,7 @@ public class ReturnResource {
     @POST
     @Path("/{returnId}/status-history")
     public Response addManualStatusHistory(@PathParam("returnId") Long returnId,
-                                           ManualStatusHistoryRequest req) {
+                                           @Valid ManualStatusHistoryRequest req) {
         User user = authenticatedUser.get();
         return Response.status(201).entity(StatusHistoryDto.from(
             returnRequestService.addStatusHistory(returnId, req.newStatus, req.comment, user)
@@ -260,7 +259,7 @@ public class ReturnResource {
     @Path("/{returnId}/warehouse-inspections")
     @RolesAllowed({"WAREHOUSE", "MANAGER"})
     public Response createWarehouseInspection(@PathParam("returnId") Long returnId,
-                                              WarehouseInspectionRequest req) {
+                                              @Valid WarehouseInspectionRequest req) {
         User user = authenticatedUser.get();
         return Response.status(201).entity(WarehouseInspectionDto.from(
             returnRequestService.createWarehouseInspection(returnId, req, user)

@@ -1,6 +1,8 @@
 package com.drb.server.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -10,12 +12,17 @@ public class Product {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
+    @Size(max = 60)
     @Column(unique = true, nullable = false)
     private String sku;
 
+    @NotNull
+    @Size(max = 120)
     @Column(nullable = false)
     private String name;
 
+    @Size(max = 80)
     @Column
     private String category;
 
@@ -25,6 +32,7 @@ public class Product {
     @Column(precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Size(max = 500)
     @Column(name = "image_url", length = 500)
     private String imageUrl;
 

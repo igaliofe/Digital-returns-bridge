@@ -10,8 +10,10 @@ import com.drb.server.domain.enums.ItemCondition;
 import com.drb.server.domain.enums.WarehouseDecision;
 import com.drb.server.repository.PickupUpdateRepository;
 import com.drb.server.repository.ReturnImageRepository;
+import com.drb.server.service.EnumParser;
 import com.drb.server.service.WarehouseService;
 
+import com.drb.server.service.exception.ConcurrentModificationConflictException;
 import com.drb.server.service.exception.NotFoundException;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
@@ -57,6 +59,15 @@ public class WarehouseReceivingBean implements Serializable {
     private String warehouseNotes;
     private String moreInfoNotes;
 
+    /** Shown when another warehouse user changed the same return first. */
+    static final String CONCURRENT_MODIFICATION_MESSAGE =
+        "הרשומה עודכנה על ידי משתמש אחר. רענן את הדף ונסה שוב";
+
+    private void addConcurrentModificationMessage() {
+        getFacesContext().addMessage(null,
+            new FacesMessage(FacesMessage.SEVERITY_ERROR, CONCURRENT_MODIFICATION_MESSAGE, null));
+    }
+
     public void searchByBarcode() {
         foundReturn = null;
         barcodeNotFoundError = null;
@@ -97,6 +108,8 @@ public class WarehouseReceivingBean implements Serializable {
             loadDigitalFile();
             getFacesContext().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_INFO, "Marked as arrived", null));
+        } catch (ConcurrentModificationConflictException e) {
+            addConcurrentModificationMessage();
         } catch (Exception e) {
             getFacesContext().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.getMessage()));
@@ -109,6 +122,8 @@ public class WarehouseReceivingBean implements Serializable {
             loadDigitalFile();
             getFacesContext().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_INFO, "More info requested", null));
+        } catch (ConcurrentModificationConflictException e) {
+            addConcurrentModificationMessage();
         } catch (Exception e) {
             getFacesContext().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.getMessage()));
@@ -118,16 +133,18 @@ public class WarehouseReceivingBean implements Serializable {
     public void createInspection() {
         try {
             WarehouseInspection inspection = new WarehouseInspection();
-            inspection.setWarehouseDecision(warehouseDecision != null && !warehouseDecision.isBlank()
-                ? WarehouseDecision.valueOf(warehouseDecision) : null);
-            inspection.setItemCondition(itemCondition != null && !itemCondition.isBlank()
-                ? ItemCondition.valueOf(itemCondition) : null);
+            inspection.setWarehouseDecision(
+                EnumParser.parse(WarehouseDecision.class, warehouseDecision, "warehouseDecision"));
+            inspection.setItemCondition(
+                EnumParser.parse(ItemCondition.class, itemCondition, "itemCondition"));
             inspection.setCallFullyHandled(callFullyHandled);
             inspection.setWarehouseNotes(warehouseNotes);
             inspection.setInspectedByUser(getLoggedInUser());
             warehouseService.createInspection(foundReturn.getId(), inspection);
             getFacesContext().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_INFO, "Inspection saved", null));
+        } catch (ConcurrentModificationConflictException e) {
+            addConcurrentModificationMessage();
         } catch (Exception e) {
             getFacesContext().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.getMessage()));

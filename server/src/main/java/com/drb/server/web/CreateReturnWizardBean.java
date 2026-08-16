@@ -6,6 +6,7 @@ import com.drb.server.domain.enums.DefectType;
 import com.drb.server.domain.enums.ReturnReason;
 import com.drb.server.rest.dto.CreateReturnRequest;
 import com.drb.server.service.*;
+import com.drb.server.service.exception.ConcurrentModificationConflictException;
 import com.drb.server.service.exception.NotFoundException;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.SessionScoped;
@@ -31,6 +32,10 @@ public class CreateReturnWizardBean implements Serializable {
     @Inject private transient CustomerPurchaseService purchaseService;
     @Inject private transient DriverService driverService;
     @Inject private transient ImageService imageService;
+
+    /** Shown when another user changed the same return first. */
+    static final String CONCURRENT_MODIFICATION_MESSAGE =
+        "הרשומה עודכנה על ידי משתמש אחר. רענן את הדף ונסה שוב";
 
     private int currentStep = 1;
     private String phoneNumber;
@@ -179,6 +184,9 @@ public class CreateReturnWizardBean implements Serializable {
 
             resetWizard();
             return "/returns/details.xhtml?id=" + saved.getId() + "&faces-redirect=true";
+        } catch (ConcurrentModificationConflictException e) {
+            addError(CONCURRENT_MODIFICATION_MESSAGE);
+            return null;
         } catch (Exception e) {
             addError("Error creating return: " + e.getMessage());
             return null;
@@ -205,15 +213,9 @@ public class CreateReturnWizardBean implements Serializable {
         rr.setQuantity(quantity);
         rr.setUnderWarranty(underWarranty);
         rr.setWasUsed(wasUsed);
-        if (returnReason != null && !returnReason.isBlank()) {
-            rr.setReturnReason(ReturnReason.valueOf(returnReason));
-        }
-        if (defectStage != null && !defectStage.isBlank()) {
-            rr.setDefectStage(DefectStage.valueOf(defectStage));
-        }
-        if (defectType != null && !defectType.isBlank()) {
-            rr.setDefectType(DefectType.valueOf(defectType));
-        }
+        rr.setReturnReason(EnumParser.parse(ReturnReason.class, returnReason, "returnReason"));
+        rr.setDefectStage(EnumParser.parse(DefectStage.class, defectStage, "defectStage"));
+        rr.setDefectType(EnumParser.parse(DefectType.class, defectType, "defectType"));
         rr.setDefectLocationText(defectLocationText);
         rr.setOpenedByUser(loggedIn);
         return rr;

@@ -1,6 +1,8 @@
 package com.drb.server.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 @Entity
@@ -9,13 +11,16 @@ public class Driver {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Size(max = 30)
     @Column(name = "vehicle_number")
     private String vehicleNumber;
 
+    @Size(max = 30)
     @Column
     private String phone;
 

@@ -8,6 +8,7 @@ import com.drb.server.service.CustomerPurchaseService;
 import com.drb.server.service.CustomerService;
 import com.drb.server.service.exception.NotFoundException;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -62,7 +63,7 @@ public class CustomerResource {
         return Response.ok(CustomerDto.from(customerService.findById(id))).build();
     }
     @POST
-    public Response create(CreateCustomerRequest req) {
+    public Response create(@Valid CreateCustomerRequest req) {
         Customer c = new Customer();
         c.setFullName(req.fullName);
         c.setPhone(req.phone);
@@ -72,7 +73,7 @@ public class CustomerResource {
     }
     @PUT
     @Path("/{id}")
-    public Response update(@PathParam("id") Long id, CreateCustomerRequest req) {
+    public Response update(@PathParam("id") Long id, @Valid CreateCustomerRequest req) {
         Customer c = new Customer();
         c.setFullName(req.fullName);
         c.setPhone(req.phone);

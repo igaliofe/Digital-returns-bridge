@@ -27,13 +27,13 @@ public class PickupUpdateService {
     public PickupUpdate update(Long id, PickupConfirmationRequest req, User user) {
         PickupUpdate existing = findById(id);
         if (req.itemCondition != null && !req.itemCondition.isBlank()) {
-            existing.setItemCondition(ItemCondition.valueOf(req.itemCondition));
+            existing.setItemCondition(EnumParser.parse(ItemCondition.class, req.itemCondition, "itemCondition"));
         }
         if (req.defectType != null && !req.defectType.isBlank()) {
-            existing.setDefectType(DefectType.valueOf(req.defectType));
+            existing.setDefectType(EnumParser.parse(DefectType.class, req.defectType, "defectType"));
         }
         if (req.defectLocation != null && !req.defectLocation.isBlank()) {
-            existing.setDefectLocation(DefectLocation.valueOf(req.defectLocation));
+            existing.setDefectLocation(EnumParser.parse(DefectLocation.class, req.defectLocation, "defectLocation"));
         }
         if (req.defectLocationOther != null) {
             existing.setDefectLocationOther(req.defectLocationOther);

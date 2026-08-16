@@ -3,9 +3,11 @@ import com.drb.server.domain.User;
 import com.drb.server.domain.enums.Role;
 import com.drb.server.rest.dto.CreateUserRequest;
 import com.drb.server.rest.dto.UserDto;
+import com.drb.server.service.EnumParser;
 import com.drb.server.service.UserService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -29,20 +31,20 @@ public class UserResource {
         return Response.ok(UserDto.from(userService.findById(id))).build();
     }
     @POST
-    public Response create(CreateUserRequest req) {
+    public Response create(@Valid CreateUserRequest req) {
         User u = new User();
         u.setPhoneNumber(req.phoneNumber);
         u.setFullName(req.fullName);
-        u.setRole(Role.valueOf(req.role));
+        u.setRole(EnumParser.parse(Role.class, req.role, "role"));
         return Response.status(201).entity(UserDto.from(userService.create(u))).build();
     }
     @PUT
     @Path("/{id}")
-    public Response update(@PathParam("id") Long id, CreateUserRequest req) {
+    public Response update(@PathParam("id") Long id, @Valid CreateUserRequest req) {
         User u = new User();
         u.setPhoneNumber(req.phoneNumber);
         u.setFullName(req.fullName);
-        u.setRole(Role.valueOf(req.role));
+        u.setRole(EnumParser.parse(Role.class, req.role, "role"));
         return Response.ok(UserDto.from(userService.update(id, u))).build();
     }
     @PATCH

@@ -90,7 +90,8 @@ CREATE TABLE return_requests (
                                     CHECK (defect_stage IN ('INITIAL_SHIPPING','AFTER_USE','MISSING_PART')),
     defect_location_text        TEXT,
     created_at                  TIMESTAMP    NOT NULL DEFAULT NOW(),
-    updated_at                  TIMESTAMP    NOT NULL DEFAULT NOW()
+    updated_at                  TIMESTAMP    NOT NULL DEFAULT NOW(),
+    version                     BIGINT       NOT NULL DEFAULT 0  -- JPA @Version, optimistic locking
 );
 
 CREATE TABLE return_images (

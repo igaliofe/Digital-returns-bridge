@@ -4,6 +4,7 @@ import com.drb.server.rest.dto.CreateProductRequest;
 import com.drb.server.rest.dto.ProductDto;
 import com.drb.server.service.ProductService;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -31,7 +32,7 @@ public class ProductResource {
         return Response.ok(ProductDto.from(productService.findById(id))).build();
     }
     @POST
-    public Response create(CreateProductRequest req) {
+    public Response create(@Valid CreateProductRequest req) {
         Product p = new Product();
         p.setSku(req.sku);
         p.setName(req.name);
@@ -43,7 +44,7 @@ public class ProductResource {
     }
     @PUT
     @Path("/{id}")
-    public Response update(@PathParam("id") Long id, CreateProductRequest req) {
+    public Response update(@PathParam("id") Long id, @Valid CreateProductRequest req) {
         Product p = new Product();
         p.setSku(req.sku);
         p.setName(req.name);
