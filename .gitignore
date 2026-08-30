@@ -1,6 +1,7 @@
 # ===== OS / Editor =====
 .DS_Store
 Thumbs.db
+~$*          # Word/Excel lock files
 *.swp
 *~
 

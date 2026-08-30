@@ -7,7 +7,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ANDROID="$ROOT/android-driver-app"
 COMPOSE=(docker compose -f "$ROOT/infra/docker-compose.yml" --env-file "$ROOT/infra/.env")
-API="http://localhost:8080/digital-returns-bridge/api"
+API="http://localhost:8080/api"   # WAR deploys as ROOT.war -> context root "/", no app-name prefix
 PKG="com.drb.driver"
 LAUNCH="$PKG/.ui.LoginActivity"
 

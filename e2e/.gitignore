@@ -6,3 +6,6 @@ playwright-report
 .auth
 blob-report
 playwright/.cache
+
+# Capture-run output (e2e/capture.config.ts)
+test-results-capture/
