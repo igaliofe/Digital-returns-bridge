@@ -13,6 +13,7 @@ import {
   AdminCustomersPage,
   AdminDriversPage,
   AdminProductsPage,
+  AdminPurchasesPage,
   AdminUsersPage,
 } from './admin';
 import type { BasePage } from './base';
@@ -59,6 +60,8 @@ export function screenForRoute(routeId: RouteId, page: Page): BasePage {
       return new AdminUsersPage(page);
     case 'admin-customers':
       return new AdminCustomersPage(page);
+    case 'admin-purchases':
+      return new AdminPurchasesPage(page);
     case 'admin-products':
       return new AdminProductsPage(page);
     case 'admin-drivers':

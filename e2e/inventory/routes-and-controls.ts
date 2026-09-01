@@ -36,6 +36,7 @@ export type RouteId =
   | 'reports'
   | 'admin-users'
   | 'admin-customers'
+  | 'admin-purchases'
   | 'admin-products'
   | 'admin-drivers';
 
@@ -272,6 +273,21 @@ export const LAYOUT_CONTROLS: readonly ControlSpec[] = [
     effect: 'Admin submenu link.',
     targetPath: '/admin/customers.xhtml',
     targetRouteId: 'admin-customers',
+    roles: MANAGER_ONLY,
+    conditional: true,
+    requiresState: 'admin dropdown hovered or focus-within',
+    gap: 2,
+  },
+  {
+    id: 'nav-admin-purchases',
+    label: 'Purchases',
+    kind: 'nav',
+    element: 'link',
+    formId: null,
+    selector: '[data-testid="nav-admin-purchases"]',
+    effect: 'Admin submenu link.',
+    targetPath: '/admin/purchases.xhtml',
+    targetRouteId: 'admin-purchases',
     roles: MANAGER_ONLY,
     conditional: true,
     requiresState: 'admin dropdown hovered or focus-within',
@@ -555,6 +571,44 @@ export const ROUTES: readonly RouteSpec[] = [
         targetPath: '/returns/list.xhtml',
         targetRouteId: 'returns-list',
       },
+      {
+        id: 'add-purchase',
+        label: 'Add Purchase',
+        kind: 'dialog',
+        element: 'button',
+        formId: 'selectForm',
+        selector: '[data-testid="add-purchase"]',
+        effect:
+          'CreateReturnWizardBean.prepareAddPurchase() then PF shows #addPurchaseDialog with a blank ' +
+          'purchase. Escape hatch for a customer with no history: without a handled=false purchase row ' +
+          'the wizard cannot reach step 3 at all.',
+        opensDialog: '#addPurchaseDialog',
+      },
+      {
+        id: 'add-purchase-save',
+        label: 'Save',
+        kind: 'ajax',
+        element: 'button',
+        formId: 'addPurchaseForm',
+        selector: '#addPurchaseForm button:has-text("Save")',
+        effect:
+          'CreateReturnWizardBean.saveNewPurchase(): persists the purchase for the identified ' +
+          'customer, re-renders selectForm so the new row appears with a "Select" link, and hides the ' +
+          'dialog. On validation failure the dialog STAYS OPEN and the messages show.',
+        conditional: true,
+        requiresState: 'the Add Purchase dialog is open',
+      },
+      {
+        id: 'add-purchase-cancel',
+        label: 'Cancel',
+        kind: 'ajax',
+        element: 'button',
+        formId: 'addPurchaseForm',
+        selector: '#addPurchaseForm button:has-text("Cancel")',
+        effect: 'type="button" + PF(\'addPurchaseDlg\').hide() — pure client-side close, no post.',
+        conditional: true,
+        requiresState: 'the Add Purchase dialog is open',
+      },
     ],
     chromeSelectors: ['#selectForm\\:purchasesTable .ui-paginator a'],
   },
@@ -735,6 +789,57 @@ export const ROUTES: readonly RouteSpec[] = [
       confirmPrefix: 'Delete customer',
     }),
     chromeSelectors: ['#customersForm\\:customersTable .ui-paginator a'],
+  },
+
+  // -------------------------------------------------------------------------
+  {
+    // Not built from adminControls(): purchases.xhtml is read-only + create. The table has no
+    // row editor and no Delete — a purchase row is consumed by the wizard (handled=true), never
+    // removed. So this route has exactly three controls.
+    id: 'admin-purchases',
+    path: '/admin/purchases.xhtml',
+    title: 'Purchases Admin',
+    allowedRoles: MANAGER_ONLY,
+    deniedRoles: denied(MANAGER_ONLY),
+    usesLayout: true,
+    controls: [
+      {
+        id: 'new',
+        label: 'New Purchase',
+        kind: 'dialog',
+        element: 'button',
+        formId: 'purchasesForm',
+        selector: '#purchasesForm button:has-text("New Purchase")',
+        effect: 'PurchaseAdminBean.prepareCreate() then PF shows the create dialog with a blank purchase.',
+        opensDialog: '#createDialog',
+      },
+      {
+        id: 'dialog-save',
+        label: 'Save',
+        kind: 'ajax',
+        element: 'button',
+        formId: 'createPurchaseForm',
+        selector: '#createPurchaseForm button:has-text("Save")',
+        effect:
+          'saveNew(): creates the purchase, adds info "Purchase created", refreshes the table and ' +
+          'hides the dialog. When a required field is blank, validation fails, the dialog STAYS OPEN ' +
+          'and the required message shows.',
+        conditional: true,
+        requiresState: 'the create dialog is open',
+      },
+      {
+        id: 'dialog-cancel',
+        label: 'Cancel',
+        kind: 'ajax',
+        element: 'button',
+        formId: 'createPurchaseForm',
+        selector: '#createPurchaseForm button:has-text("Cancel")',
+        effect: 'Client-side PF hide() — closes the dialog without posting.',
+        conditional: true,
+        requiresState: 'the create dialog is open',
+      },
+    ],
+    chromeSelectors: ['#purchasesForm\\:purchasesTable .ui-paginator a'],
   },
 
   // -------------------------------------------------------------------------

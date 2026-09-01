@@ -25,6 +25,10 @@ target/
 hs_err_pid*
 
 # ===== Gradle / Android =====
+# gradle-wrapper.jar is deliberately committed — this re-include must stay AFTER the `*.jar`
+# rule above (last match wins). Without the jar `./gradlew` cannot bootstrap, so a fresh
+# clone could not build the Android app at all.
+!android-driver-app/gradle/wrapper/gradle-wrapper.jar
 .gradle/
 build/
 local.properties

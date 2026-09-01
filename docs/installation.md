@@ -352,6 +352,11 @@ cd android-driver-app
 ./gradlew installDebug -PdrbApiBaseUrl=http://10.0.2.2:8080/api/      # Windows: .\gradlew.bat
 ```
 
+> **`SDK location not found`?** Gradle cannot guess where the Android SDK lives. Android Studio
+> writes `local.properties` for you the first time you open the project (it is gitignored, so a
+> fresh clone has none). From a plain terminal, export `ANDROID_HOME` first — macOS
+> `~/Library/Android/sdk`, Windows `%LOCALAPPDATA%\Android\Sdk`.
+
 Or open `android-driver-app` in Android Studio and press **Run**. On first launch, allow the
 **Camera** permission — it is used for barcode scanning and photos.
 

@@ -11,21 +11,36 @@ Native Android Java app for drivers to manage pickups, scan barcodes, and upload
 
 ## Build
 
+Opening this folder in Android Studio and pressing **Run** is the easiest route — it writes
+`local.properties` with the SDK path for you.
+
+From the command line, Gradle needs to be told where the SDK is, or the build stops with
+`SDK location not found`. Either export `ANDROID_HOME` (macOS default:
+`~/Library/Android/sdk`, Windows: `%LOCALAPPDATA%\Android\Sdk`) or write the path into
+`local.properties` yourself as `sdk.dir=...`.
+
 ```bash
 cd android-driver-app
+export ANDROID_HOME="$HOME/Library/Android/sdk"
 ./gradlew :app:assembleDebug
 # APK: app/build/outputs/apk/debug/app-debug.apk
 ```
 
 ## Configuration
 
-The API base URL is set in `app/build.gradle`:
-```groovy
-buildConfigField "String", "API_BASE_URL", '"http://10.0.2.2:8080/"'
+The API base URL comes from the `drbApiBaseUrl` Gradle property, injected into
+`BuildConfig.API_BASE_URL`. It **must** end with `/api/`.
+
+`gradle.properties` ships with a hardcoded LAN address from the original dev machine, so it
+will not work anywhere else. Override it per build instead:
+
+```bash
+./gradlew installDebug -PdrbApiBaseUrl=http://10.0.2.2:8080/api/
 ```
 
 - `10.0.2.2` is the Android emulator's alias for `localhost` on the host machine.
-- Change this to your server's actual IP/hostname for real device testing.
+- For a physical device use the host's LAN IP, e.g. `http://192.168.1.50:8080/api/`, with the
+  phone on the same Wi-Fi and port 8080 open in the firewall.
 
 ## Permissions
 

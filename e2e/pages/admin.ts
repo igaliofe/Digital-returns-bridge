@@ -717,3 +717,109 @@ export class AdminDriversPage extends AdminCrudPage {
     await this.expectInfo('Driver deleted');
   }
 }
+
+// ---------------------------------------------------------------------------
+// Purchases
+// ---------------------------------------------------------------------------
+
+export const ADMIN_PURCHASE_COLUMNS = {
+  id: 1,
+  customer: 2,
+  phone: 3,
+  product: 4,
+  sku: 5,
+  orderNumber: 6,
+  quantity: 7,
+  deliveryDate: 8,
+  warranty: 9,
+  status: 10,
+} as const;
+
+export interface NewPurchaseInput {
+  /** Option label of the Customer dropdown: `<fullName> (<phone>)`. */
+  customerLabel: string;
+  /** Option label of the Product dropdown: `<name> (<sku>)`. */
+  productLabel: string;
+  orderNumber: string;
+  quantity: number;
+  /** `dd/MM/yyyy`, matching the datePicker's pattern. */
+  deliveryDate: string;
+  underWarranty: boolean;
+}
+
+/**
+ * The purchases admin screen is read-only + create: no row editor and no Delete. A purchase row is
+ * consumed by the wizard (`handled=true`), never removed — so the inherited `startRowEdit` /
+ * `deleteRow` helpers have nothing to drive here and no spec calls them.
+ */
+export class AdminPurchasesPage extends AdminCrudPage {
+  readonly newCustomer: Locator;
+  readonly newProduct: Locator;
+  readonly newOrderNumber: Locator;
+  readonly newQuantity: Locator;
+  readonly newDeliveryDate: Locator;
+  readonly newWarranty: Locator;
+
+  constructor(page: Page) {
+    super(page, {
+      path: '/admin/purchases.xhtml',
+      formId: 'purchasesForm',
+      tableId: 'purchasesForm:purchasesTable',
+      dialogFormId: 'createPurchaseForm',
+      newButtonLabel: 'New Purchase',
+      headingText: 'Customer Purchases',
+      columns: ADMIN_PURCHASE_COLUMNS,
+    });
+    this.newCustomer = page.locator(byId('createPurchaseForm:newCustomer'));
+    this.newProduct = page.locator(byId('createPurchaseForm:newProduct'));
+    this.newOrderNumber = pfInput(page, 'createPurchaseForm:newOrderNumber');
+    this.newQuantity = pfInput(page, 'createPurchaseForm:newQuantity');
+    this.newDeliveryDate = pfInput(page, 'createPurchaseForm:newDeliveryDate');
+    this.newWarranty = page.locator(byId('createPurchaseForm:newWarranty'));
+  }
+
+  rowByOrderNumber(orderNumber: string): Locator {
+    return this.rowByCell(ADMIN_PURCHASE_COLUMNS.orderNumber, orderNumber);
+  }
+
+  /** `Handled` once the wizard has consumed the row, `Available` before that. */
+  async statusOf(row: Locator): Promise<string> {
+    return this.cellText(row, 'status');
+  }
+
+  async createPurchase(input: NewPurchaseInput): Promise<void> {
+    await this.openCreateDialog();
+    await this.fillCreateForm(input);
+    await this.saveCreateDialog();
+    await this.expectInfo('Purchase created');
+  }
+
+  async fillCreateForm(input: Partial<NewPurchaseInput>): Promise<void> {
+    if (input.customerLabel !== undefined) {
+      await pfSelectOne(this.page, 'createPurchaseForm:newCustomer', input.customerLabel);
+    }
+    if (input.productLabel !== undefined) {
+      await pfSelectOne(this.page, 'createPurchaseForm:newProduct', input.productLabel);
+    }
+    if (input.orderNumber !== undefined) {
+      await pfFill(this.page, 'createPurchaseForm:newOrderNumber', input.orderNumber);
+    }
+    if (input.quantity !== undefined) {
+      await pfFill(this.page, 'createPurchaseForm:newQuantity', String(input.quantity));
+    }
+    if (input.deliveryDate !== undefined) {
+      await pfFill(this.page, 'createPurchaseForm:newDeliveryDate', input.deliveryDate);
+    }
+    if (input.underWarranty !== undefined) {
+      await pfSetCheckbox(this.page, 'createPurchaseForm:newWarranty', input.underWarranty);
+    }
+  }
+
+  async customerOptions(): Promise<string[]> {
+    return pfSelectOptions(this.page, 'createPurchaseForm:newCustomer');
+  }
+
+  async productOptions(): Promise<string[]> {
+    return pfSelectOptions(this.page, 'createPurchaseForm:newProduct');
+  }
+}
