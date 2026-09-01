@@ -6,6 +6,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ANDROID="$ROOT/android-driver-app"
+E2E="$ROOT/e2e"
 COMPOSE=(docker compose -f "$ROOT/infra/docker-compose.yml" --env-file "$ROOT/infra/.env")
 API="http://localhost:8080/api"   # WAR deploys as ROOT.war -> context root "/", no app-name prefix
 PKG="com.drb.driver"
@@ -49,6 +50,42 @@ app_reinstall() {
 }
 app_logcat() { require_device; c "logcat (app only)"; adb logcat --pid="$(adb shell pidof -s "$PKG")"; }
 
+# ─────────────────────────── e2e (playwright) ─────────────────────────
+# NOTE: e2e/global-setup.ts drives the stack ITSELF — it shells out to
+# `./dev.sh nuke` + `./dev.sh docker:rebuild` so every run starts from a fresh
+# DB (schema+seed) and a WAR built from HEAD. So do NOT run `up` here first;
+# that would only build twice. It also preflights the Cloudinary creds in
+# infra/.env and aborts before touching containers if they are placeholders.
+require_e2e_deps() {
+  command -v npm >/dev/null || { echo "npm not found — install Node 18+ to run the e2e suite."; exit 1; }
+  [ -d "$E2E/node_modules" ] || { c "npm install (first run)"; (cd "$E2E" && npm install); }
+  # Playwright's chromium lives in a shared cache, not node_modules, so it can be
+  # missing even when node_modules is present. `install` is a no-op once cached.
+  c "playwright install chromium"
+  (cd "$E2E" && npx playwright install chromium)
+}
+
+# e2e: full suite. Extra args pass straight through to playwright, e.g.
+#   ./dev.sh e2e tests/auth.spec.ts
+#   ./dev.sh e2e --grep @wizard --workers=4
+e2e_run() {
+  require_e2e_deps
+  c "playwright test ${*:-(all specs)}"
+  (cd "$E2E" && npx playwright test "$@")
+}
+
+# e2e:fast: skip the WAR rebuild (E2E_SKIP_BUILD=1). DB is still nuked+reseeded.
+# Only safe when the deployed WAR already matches HEAD — global-setup's staleness
+# check catches the obvious case, not a subtle one.
+e2e_fast() {
+  require_e2e_deps
+  c "playwright test (E2E_SKIP_BUILD=1 — no WAR rebuild)"
+  (cd "$E2E" && E2E_SKIP_BUILD=1 npx playwright test "$@")
+}
+
+# e2e:report: open the HTML report from the last run.
+e2e_report() { c "playwright show-report"; (cd "$E2E" && npx playwright show-report); }
+
 # ─────────────────────────── logs ─────────────────────────────────────
 logs_server() { c "docker compose logs -f server"; "${COMPOSE[@]}" logs -f server; }
 logs_debug()  { c "GET $API/debug/logs?n=${1:-50}"; curl -s "$API/debug/logs?n=${1:-50}" | python3 -m json.tool 2>/dev/null || curl -s "$API/debug/logs?n=${1:-50}"; }
@@ -69,6 +106,11 @@ Tollman's — dev tasks
     app:reinstall     rebuild APK + install to device + launch
     app:logcat        stream device logcat for $PKG
 
+  E2E (Playwright — boots its own stack, see note in script):
+    e2e [args]        full suite; args pass through (spec path, --grep, --workers)
+    e2e:fast [args]   same, but skip the WAR rebuild (E2E_SKIP_BUILD=1)
+    e2e:report        open the HTML report from the last run
+
   Logs:
     logs:server       follow WildFly logs (docker)
     logs:debug [n]    fetch last n remote/debug logs (default 50)
@@ -84,6 +126,9 @@ case "${1:-help}" in
   nuke)           stack_nuke ;;
   app:reinstall)  app_reinstall ;;
   app:logcat)     app_logcat ;;
+  e2e)            shift; e2e_run "$@" ;;
+  e2e:fast)       shift; e2e_fast "$@" ;;
+  e2e:report)     e2e_report ;;
   logs:server)    logs_server ;;
   logs:debug)     logs_debug "${2:-50}" ;;
   logs:clear)     logs_clear ;;

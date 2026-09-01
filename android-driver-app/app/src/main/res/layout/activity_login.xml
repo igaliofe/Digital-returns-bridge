@@ -113,6 +113,7 @@
             android:id="@+id/etPhone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="@color/drb_text_primary"
             android:inputType="phone"/>
     </com.google.android.material.textfield.TextInputLayout>
 

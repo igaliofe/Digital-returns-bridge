@@ -6,7 +6,6 @@ import { defineConfig, devices } from '@playwright/test';
  * The app is deployed as ROOT.war (see server/Dockerfile), so the context root
  * is "/" — there is NO /digital-returns-bridge prefix. Pages live at
  * http://localhost:8080/<route>.xhtml and the REST API at http://localhost:8080/api.
- * (dev.sh still carries a stale API constant with the old prefix; ignore it.)
  */
 
 const BASE_URL = process.env.E2E_BASE_URL ?? 'http://localhost:8080';
