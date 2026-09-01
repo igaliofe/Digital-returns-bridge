@@ -5,7 +5,8 @@
       xmlns:h="jakarta.faces.html"
       xmlns:f="jakarta.faces.core"
       xmlns:ui="jakarta.faces.facelets"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pt="jakarta.faces.passthrough">
 <f:metadata>
     <f:viewAction action="#{createReturnWizardBean.ensureStep2}"/>
 </f:metadata>
@@ -76,7 +77,7 @@
                             <p:commandButton value="Select"
                                              action="#{createReturnWizardBean.selectPurchase(p.id)}"
                                              icon="pi pi-check"
-                                             styleClass="drb-btn-primary"
+                                             styleClass="drb-btn-primary drb-btn-compact"
                                              rendered="#{not p.handled}"/>
                             <h:outputText value="—" rendered="#{p.handled}" style="color:#999;"/>
                         </p:column>
@@ -90,11 +91,96 @@
                         <p:button value="Cancel"
                                   href="#{request.contextPath}/returns/list.xhtml"
                                   styleClass="drb-btn-secondary"/>
+                        <!-- Escape hatch for a customer with no history: without a purchase row
+                             the wizard cannot reach step 3 at all. -->
+                        <p:commandButton value="Add Purchase" icon="pi pi-plus"
+                                         pt:data-testid="add-purchase"
+                                         action="#{createReturnWizardBean.prepareAddPurchase}"
+                                         update="addPurchaseForm"
+                                         oncomplete="PF('addPurchaseDlg').show();"
+                                         styleClass="drb-btn-primary"
+                                         style="margin-left:auto;"/>
                     </div>
                 </p:panel>
             </h:form>
         </div>
     </div>
+
+    <p:dialog id="addPurchaseDialog" header="Add Purchase" widgetVar="addPurchaseDlg"
+              modal="true" resizable="false" style="width:440px;">
+        <h:form id="addPurchaseForm">
+            <p:messages showDetail="true" closable="true"/>
+            <div class="drb-dlg-row drb-dlg-row-static">
+                <p:outputLabel value="Customer"/>
+                <h:outputText value="#{createReturnWizardBean.customer.fullName} (#{createReturnWizardBean.customer.phone})"/>
+            </div>
+
+            <div class="drb-dlg-row">
+                <p:outputLabel for="purchaseProduct" value="Product"/>
+                <!-- Bound to the id, not the entity: an entity itemValue would need a registered
+                     Converter and otherwise fails the submit with "null Converter". -->
+                <p:selectOneMenu id="purchaseProduct" value="#{createReturnWizardBean.newPurchaseProductId}"
+                                 filter="true" filterMatchMode="contains"
+                                 required="true" requiredMessage="Select a product">
+                    <f:selectItem itemLabel="— Select Product —" itemValue="#{null}"/>
+                    <f:selectItems value="#{createReturnWizardBean.products}" var="pr"
+                                   itemLabel="#{pr.name} (#{pr.sku})" itemValue="#{pr.id}"/>
+                </p:selectOneMenu>
+                <p:message for="purchaseProduct" display="text"/>
+            </div>
+
+            <div class="drb-dlg-row">
+                <p:outputLabel for="purchaseOrderNumber" value="Order #"/>
+                <p:inputText id="purchaseOrderNumber"
+                             value="#{createReturnWizardBean.newPurchase.orderNumber}"
+                             validatorMessage="Order number is too long (max 60 characters)">
+                    <f:validateLength maximum="60"/>
+                </p:inputText>
+                <p:message for="purchaseOrderNumber" display="text"/>
+            </div>
+
+            <div class="drb-dlg-row">
+                <p:outputLabel for="purchaseQuantity" value="Quantity"/>
+                <p:inputNumber id="purchaseQuantity"
+                               value="#{createReturnWizardBean.newPurchase.quantity}"
+                               decimalPlaces="0" minValue="1"
+                               validatorMessage="Quantity must be at least 1">
+                    <f:validateLongRange minimum="1"/>
+                </p:inputNumber>
+                <p:message for="purchaseQuantity" display="text"/>
+            </div>
+
+            <div class="drb-dlg-row">
+                <p:outputLabel for="purchaseDeliveryDate" value="Delivery Date"/>
+                <p:datePicker id="purchaseDeliveryDate"
+                              value="#{createReturnWizardBean.newPurchase.originalDeliveryDate}"
+                              pattern="dd/MM/yyyy" showIcon="true"/>
+                <p:message for="purchaseDeliveryDate" display="text"/>
+            </div>
+
+            <div class="drb-dlg-row drb-dlg-row-inline">
+                <p:selectBooleanCheckbox id="purchaseWarranty"
+                                         value="#{createReturnWizardBean.newPurchase.underWarranty}"/>
+                <p:outputLabel for="purchaseWarranty" value="Under Warranty"/>
+            </div>
+
+            <div style="margin-top:12px;text-align:right;">
+                <!-- Never update addPurchaseDialog here: re-rendering the dialog re-emits it hidden,
+                     so a failed validation would close it instead of showing the messages. -->
+                <p:commandButton value="Save"
+                                 action="#{createReturnWizardBean.saveNewPurchase}"
+                                 icon="pi pi-save"
+                                 update="selectForm addPurchaseForm"
+                                 oncomplete="if (!args.validationFailed) PF('addPurchaseDlg').hide();"
+                                 styleClass="drb-btn-primary"/>
+                <p:commandButton value="Cancel"
+                                 onclick="PF('addPurchaseDlg').hide(); return false;"
+                                 type="button"
+                                 styleClass="drb-btn-secondary"
+                                 style="margin-left:6px;"/>
+            </div>
+        </h:form>
+    </p:dialog>
 
 </ui:define>
 </ui:composition>

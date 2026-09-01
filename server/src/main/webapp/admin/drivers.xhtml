@@ -44,7 +44,7 @@
                     <f:facet name="output"><h:outputText value="#{d.phone}"/></f:facet>
                     <f:facet name="input">
                         <p:inputText value="#{d.phone}" style="width:100%;"
-                                     validatorMessage="מספר טלפון לא תקין (לדוגמה 0501234567)">
+                                     validatorMessage="Invalid phone number (e.g. 0501234567)">
                             <f:validateRegex pattern="^0\d{8,9}$"/>
                         </p:inputText>
                     </f:facet>
@@ -56,7 +56,7 @@
                     <f:facet name="output"><h:outputText value="#{d.vehicleNumber}"/></f:facet>
                     <f:facet name="input">
                         <p:inputText value="#{d.vehicleNumber}" style="width:100%;"
-                                     validatorMessage="מספר הרכב ארוך מדי (עד 30 תווים)">
+                                     validatorMessage="Vehicle number is too long (max 30 characters)">
                             <f:validateLength maximum="30"/>
                         </p:inputText>
                     </f:facet>
@@ -96,13 +96,13 @@
               modal="true" resizable="false" style="width:400px;">
         <h:form id="createDriverForm">
             <p:panelGrid columns="2" style="width:100%;">
-                <p:outputLabel for="newUser" value="User Account *"/>
+                <p:outputLabel for="newUser" value="User Account"/>
                 <h:panelGroup layout="block">
                     <!-- Bound to the user id, not the User entity: an entity itemValue would need a
                          registered Converter and otherwise fails the submit with "null Converter".
                          saveNew() resolves the id back to a User before persisting. -->
                     <p:selectOneMenu id="newUser" value="#{driverAdminBean.newUserId}"
-                                     required="true" requiredMessage="יש לבחור משתמש">
+                                     required="true" requiredMessage="Select a user">
                         <f:selectItem itemLabel="— Select User —" itemValue="#{null}"/>
                         <f:selectItems value="#{driverAdminBean.users}" var="u"
                                        itemLabel="#{u.fullName} (#{u.phoneNumber})" itemValue="#{u.id}"/>
@@ -110,11 +110,11 @@
                     <p:message for="newUser" display="text"/>
                 </h:panelGroup>
 
-                <p:outputLabel for="newPhone" value="Phone *"/>
+                <p:outputLabel for="newPhone" value="Phone"/>
                 <h:panelGroup layout="block">
                     <p:inputText id="newPhone" value="#{driverAdminBean.newDriver.phone}"
-                                 required="true" requiredMessage="יש להזין מספר טלפון"
-                                 validatorMessage="מספר טלפון לא תקין (לדוגמה 0501234567)"
+                                 required="true" requiredMessage="Phone number is required"
+                                 validatorMessage="Invalid phone number (e.g. 0501234567)"
                                  style="width:100%;">
                         <f:validateRegex pattern="^0\d{8,9}$"/>
                     </p:inputText>
@@ -124,7 +124,7 @@
                 <p:outputLabel for="newVehicle" value="Vehicle Number"/>
                 <h:panelGroup layout="block">
                     <p:inputText id="newVehicle" value="#{driverAdminBean.newDriver.vehicleNumber}"
-                                 validatorMessage="מספר הרכב ארוך מדי (עד 30 תווים)"
+                                 validatorMessage="Vehicle number is too long (max 30 characters)"
                                  style="width:100%;">
                         <f:validateLength maximum="30"/>
                     </p:inputText>
@@ -142,11 +142,12 @@
                                  action="#{driverAdminBean.saveNew}"
                                  icon="pi pi-save"
                                  update="driversForm createDriverForm"
-                                 oncomplete="if (!args.validationFailed) PF('createDriverDlg').hide();"/>
+                                 oncomplete="if (!args.validationFailed) PF('createDriverDlg').hide();"
+                                 styleClass="drb-btn-primary"/>
                 <p:commandButton value="Cancel"
                                  onclick="PF('createDriverDlg').hide(); return false;"
                                  type="button"
-                                 styleClass="ui-button-secondary"
+                                 styleClass="drb-btn-secondary"
                                  style="margin-left:6px;"/>
             </div>
         </h:form>

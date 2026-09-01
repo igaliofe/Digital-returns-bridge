@@ -233,7 +233,7 @@ test.describe('web screenshots', () => {
  */
 test('warehouse receiving — concurrent modification conflict', async ({ data, loginAs }) => {
   test.slow();
-  const CONFLICT = 'הרשומה עודכנה על ידי משתמש אחר. רענן את הדף ונסה שוב';
+  const CONFLICT = 'This record was updated by another user. Refresh the page and try again';
   const ATTEMPTS = 12;
 
   for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {

@@ -1004,3 +1004,69 @@ label.ui-outputlabel {
     background: #1a2433 !important;
     border-color: #1a2433 !important;
 }
+
+/* ── Stacked dialog fields (purchase dialogs) ──
+   p:panelGrid's responsive cell classes cap a two-column dialog at ~164px per
+   field, which crushes the filtered selects and wraps the date picker's trigger
+   button onto its own line. Stacking label over full-width control avoids it. */
+.drb-dlg-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.drb-dlg-row > .ui-outputlabel {
+    font-weight: 600;
+}
+
+.drb-dlg-row .ui-selectonemenu,
+.drb-dlg-row .ui-calendar,
+.drb-dlg-row .ui-inputfield,
+.drb-dlg-row .ui-inputnumber,
+.drb-dlg-row .ui-inputnumber input {
+    width: 100%;
+}
+
+/* Checkbox reads as "[x] Under Warranty", not a stacked label. */
+.drb-dlg-row-inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Read-only value (the wizard's fixed customer) — plain text, not a control. */
+.drb-dlg-row-static {
+    gap: 2px;
+    margin-bottom: 18px;
+}
+
+/* showIcon renders <input> + trigger button inside .ui-calendar; a 100%-wide
+   input pushes the button onto its own line, so lay the pair out as a row. */
+.drb-dlg-row .ui-calendar {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+}
+
+.drb-dlg-row .ui-calendar > input.ui-inputfield {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+}
+
+.drb-dlg-row .ui-calendar .ui-datepicker-trigger {
+    flex: 0 0 auto;
+}
+
+/* Row-action button inside a data table. The full-size button padding (11px 18px)
+   overflows a 100px Action column, so the button spills past the cell. */
+.drb-btn-compact.ui-button,
+.drb-btn-compact.ui-button.ui-state-default {
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+}
+
+.drb-btn-compact.ui-button .ui-button-icon-left {
+    margin-right: 4px;
+}

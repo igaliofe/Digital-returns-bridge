@@ -28,8 +28,8 @@
                 <label class="drb-field-label" for="phone">Phone Number</label>
                 <p:inputText id="phone" value="#{loginBean.phoneNumber}"
                              placeholder="e.g. 0501234567" required="true"
-                             requiredMessage="יש להזין מספר טלפון"
-                             validatorMessage="מספר טלפון לא תקין (לדוגמה 0501234567)"
+                             requiredMessage="Phone number is required"
+                             validatorMessage="Invalid phone number (e.g. 0501234567)"
                              style="width:100%;margin-bottom:18px;">
                     <f:validateRegex pattern="^0\d{8,9}$"/>
                 </p:inputText>

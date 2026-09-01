@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+<h:head><title>Purchases Admin — Tollman's</title></h:head>
+<h:body>
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+<ui:define name="content">
+
+    <h1 class="drb-page-title">Customer Purchases</h1>
+    <p class="drb-page-subtitle">
+        Links a customer to a product they bought. A return can only be opened against a purchase,
+        so a customer with no rows here cannot reach step 3 of the return wizard.
+    </p>
+
+    <h:form id="purchasesForm">
+        <p:messages showDetail="true" closable="true"/>
+
+        <p:toolbar style="margin-bottom:8px;">
+            <p:toolbarGroup>
+                <p:commandButton value="New Purchase" icon="pi pi-plus"
+                                 action="#{purchaseAdminBean.prepareCreate}"
+                                 update="purchasesForm createPurchaseForm"
+                                 oncomplete="PF('createPurchaseDlg').show();"/>
+            </p:toolbarGroup>
+        </p:toolbar>
+
+        <p:dataTable id="purchasesTable" value="#{purchaseAdminBean.purchases}" var="p"
+                     paginator="true" rows="20"
+                     emptyMessage="No purchases recorded yet."
+                     styleClass="drb-table" style="width:100%;">
+
+            <p:column headerText="ID" style="width:60px;">
+                <h:outputText value="#{p.id}"/>
+            </p:column>
+
+            <p:column headerText="Customer" sortBy="#{p.customer.fullName}"
+                      filterBy="#{p.customer.fullName}" filterMatchMode="contains">
+                <h:outputText value="#{p.customer.fullName}"/>
+            </p:column>
+
+            <p:column headerText="Phone">
+                <h:outputText value="#{p.customer.phone}"/>
+            </p:column>
+
+            <p:column headerText="Product" sortBy="#{p.product.name}"
+                      filterBy="#{p.product.name}" filterMatchMode="contains">
+                <h:outputText value="#{p.product.name}"/>
+            </p:column>
+
+            <p:column headerText="SKU">
+                <h:outputText value="#{p.product.sku}"/>
+            </p:column>
+
+            <p:column headerText="Order #" sortBy="#{p.orderNumber}">
+                <h:outputText value="#{p.orderNumber}"/>
+            </p:column>
+
+            <p:column headerText="Qty" style="width:60px;">
+                <h:outputText value="#{p.quantity}"/>
+            </p:column>
+
+            <p:column headerText="Delivery Date" sortBy="#{p.originalDeliveryDate}">
+                <h:outputText value="#{p.originalDeliveryDate}">
+                    <f:convertDateTime pattern="dd/MM/yyyy" type="localDate"/>
+                </h:outputText>
+            </p:column>
+
+            <p:column headerText="Warranty" style="width:80px;">
+                <h:outputText value="#{p.underWarranty ? 'Yes' : 'No'}"/>
+            </p:column>
+
+            <p:column headerText="Status" style="width:120px;">
+                <h:panelGroup layout="span" styleClass="drb-chip drb-chip-handled" rendered="#{p.handled}">Handled</h:panelGroup>
+                <h:panelGroup layout="span" styleClass="drb-chip drb-chip-available" rendered="#{not p.handled}">Available</h:panelGroup>
+            </p:column>
+        </p:dataTable>
+    </h:form>
+
+    <!-- Create Dialog -->
+    <p:dialog id="createDialog" header="New Purchase" widgetVar="createPurchaseDlg"
+              modal="true" resizable="false" style="width:460px;">
+        <h:form id="createPurchaseForm">
+            <div class="drb-dlg-row">
+                <p:outputLabel for="newCustomer" value="Customer"/>
+                <!-- Bound to the id, not the entity: an entity itemValue would need a registered
+                     Converter and otherwise fails the submit with "null Converter". -->
+                <p:selectOneMenu id="newCustomer" value="#{purchaseAdminBean.newCustomerId}"
+                                 filter="true" filterMatchMode="contains"
+                                 required="true" requiredMessage="Select a customer">
+                    <f:selectItem itemLabel="— Select Customer —" itemValue="#{null}"/>
+                    <f:selectItems value="#{purchaseAdminBean.customers}" var="c"
+                                   itemLabel="#{c.fullName} (#{c.phone})" itemValue="#{c.id}"/>
+                </p:selectOneMenu>
+                <p:message for="newCustomer" display="text"/>
+            </div>
+
+            <div class="drb-dlg-row">
+                <p:outputLabel for="newProduct" value="Product"/>
+                <p:selectOneMenu id="newProduct" value="#{purchaseAdminBean.newProductId}"
+                                 filter="true" filterMatchMode="contains"
+                                 required="true" requiredMessage="Select a product">
+                    <f:selectItem itemLabel="— Select Product —" itemValue="#{null}"/>
+                    <f:selectItems value="#{purchaseAdminBean.products}" var="pr"
+                                   itemLabel="#{pr.name} (#{pr.sku})" itemValue="#{pr.id}"/>
+                </p:selectOneMenu>
+                <p:message for="newProduct" display="text"/>
+            </div>
+
+            <div class="drb-dlg-row">
+                <p:outputLabel for="newOrderNumber" value="Order #"/>
+                <p:inputText id="newOrderNumber" value="#{purchaseAdminBean.newPurchase.orderNumber}"
+                             validatorMessage="Order number is too long (max 60 characters)">
+                    <f:validateLength maximum="60"/>
+                </p:inputText>
+                <p:message for="newOrderNumber" display="text"/>
+            </div>
+
+            <div class="drb-dlg-row">
+                <p:outputLabel for="newQuantity" value="Quantity"/>
+                <p:inputNumber id="newQuantity" value="#{purchaseAdminBean.newPurchase.quantity}"
+                               decimalPlaces="0" minValue="1"
+                               validatorMessage="Quantity must be at least 1">
+                    <f:validateLongRange minimum="1"/>
+                </p:inputNumber>
+                <p:message for="newQuantity" display="text"/>
+            </div>
+
+            <div class="drb-dlg-row">
+                <p:outputLabel for="newDeliveryDate" value="Delivery Date"/>
+                <p:datePicker id="newDeliveryDate"
+                              value="#{purchaseAdminBean.newPurchase.originalDeliveryDate}"
+                              pattern="dd/MM/yyyy" showIcon="true"/>
+                <p:message for="newDeliveryDate" display="text"/>
+            </div>
+
+            <div class="drb-dlg-row drb-dlg-row-inline">
+                <p:selectBooleanCheckbox id="newWarranty"
+                                         value="#{purchaseAdminBean.newPurchase.underWarranty}"/>
+                <p:outputLabel for="newWarranty" value="Under Warranty"/>
+            </div>
+
+            <div style="margin-top:12px;text-align:right;">
+                <!-- Never update createDialog here: re-rendering the dialog re-emits it hidden,
+                     so a failed validation would close it instead of showing the messages. -->
+                <p:commandButton value="Save"
+                                 action="#{purchaseAdminBean.saveNew}"
+                                 icon="pi pi-save"
+                                 update="purchasesForm createPurchaseForm"
+                                 oncomplete="if (!args.validationFailed) PF('createPurchaseDlg').hide();"
+                                 styleClass="drb-btn-primary"/>
+                <p:commandButton value="Cancel"
+                                 onclick="PF('createPurchaseDlg').hide(); return false;"
+                                 type="button"
+                                 styleClass="drb-btn-secondary"
+                                 style="margin-left:6px;"/>
+            </div>
+        </h:form>
+    </p:dialog>
+
+</ui:define>
+</ui:composition>
+</h:body>
+</html>

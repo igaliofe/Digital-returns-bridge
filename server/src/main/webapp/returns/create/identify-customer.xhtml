@@ -27,8 +27,8 @@
                 <div class="drb-wizard-row">
                     <p:inputText id="phone" value="#{createReturnWizardBean.phoneNumber}"
                                  placeholder="e.g. 0501234567" required="true"
-                                 requiredMessage="יש להזין מספר טלפון"
-                                 validatorMessage="מספר טלפון לא תקין (לדוגמה 0501234567)"
+                                 requiredMessage="Phone number is required"
+                                 validatorMessage="Invalid phone number (e.g. 0501234567)"
                                  style="width:100%;">
                         <f:validateRegex pattern="^0\d{8,9}$"/>
                     </p:inputText>

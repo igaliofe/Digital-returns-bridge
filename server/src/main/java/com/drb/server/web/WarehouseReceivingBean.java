@@ -61,7 +61,7 @@ public class WarehouseReceivingBean implements Serializable {
 
     /** Shown when another warehouse user changed the same return first. */
     static final String CONCURRENT_MODIFICATION_MESSAGE =
-        "הרשומה עודכנה על ידי משתמש אחר. רענן את הדף ונסה שוב";
+        "This record was updated by another user. Refresh the page and try again";
 
     private void addConcurrentModificationMessage() {
         getFacesContext().addMessage(null,

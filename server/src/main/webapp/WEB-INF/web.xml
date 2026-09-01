@@ -17,6 +17,16 @@
         <param-value>-1</param-value>
     </context-param>
 
+    <!-- Mojarra defaults resource Cache-Control to max-age=604800 (a week), and
+         h:outputStylesheet emits no version in the URL — so an edited drb.css keeps
+         serving stale to anyone who loaded a page before the change. An hour still
+         spares the ~490KB of PrimeFaces JS/CSS from re-downloading during a session,
+         but a stylesheet fix reaches an existing browser the same day. -->
+    <context-param>
+        <param-name>com.sun.faces.defaultResourceMaxAge</param-name>
+        <param-value>3600000</param-value>
+    </context-param>
+
     <context-param>
         <param-name>primefaces.THEME</param-name>
         <param-value>saga</param-value>

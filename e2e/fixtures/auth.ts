@@ -94,8 +94,8 @@ export const LOGIN_ERROR = {
   unknownPhone: (phone: string) => `User with id ${phone} not found`,
   /** ValidationException("USER_INACTIVE", ...) — deactivated account. */
   inactive: 'User account is inactive',
-  /** p:inputText requiredMessage — Hebrew, see `login.xhtml`. */
-  phoneRequired: 'יש להזין מספר טלפון',
+  /** p:inputText requiredMessage, see `login.xhtml`. */
+  phoneRequired: 'Phone number is required',
 } as const;
 
 /** Fills the phone and submits. Does NOT wait for navigation. */

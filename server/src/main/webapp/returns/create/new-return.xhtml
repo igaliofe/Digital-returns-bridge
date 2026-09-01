@@ -45,7 +45,7 @@
                 <h:panelGroup layout="block">
                     <p:inputText id="orderNumber" value="#{createReturnWizardBean.orderNumber}"
                                  placeholder="e.g. ORD-12345" style="width:100%;"
-                                 validatorMessage="מספר הזמנה ארוך מדי (עד 60 תווים)">
+                                 validatorMessage="Order number is too long (max 60 characters)">
                         <f:validateLength maximum="60"/>
                     </p:inputText>
                     <p:message for="orderNumber" display="text"/>
@@ -59,7 +59,7 @@
                 <h:panelGroup layout="block">
                     <p:inputNumber id="quantity" value="#{createReturnWizardBean.quantity}"
                                    decimalPlaces="0" minValue="1" style="width:100%;"
-                                   validatorMessage="הכמות חייבת להיות לפחות 1">
+                                   validatorMessage="Quantity must be at least 1">
                         <f:validateLongRange minimum="1"/>
                     </p:inputNumber>
                     <p:message for="quantity" display="text"/>
@@ -71,10 +71,10 @@
                 <p:outputLabel for="wasUsed" value="Was Used"/>
                 <p:selectBooleanCheckbox id="wasUsed" value="#{createReturnWizardBean.wasUsed}"/>
 
-                <p:outputLabel for="returnReason" value="Return Reason (category) *"/>
+                <p:outputLabel for="returnReason" value="Return Reason (category)"/>
                 <h:panelGroup layout="block">
                     <p:selectOneMenu id="returnReason" value="#{createReturnWizardBean.returnReason}"
-                                     required="true" requiredMessage="יש לבחור סיבת החזרה">
+                                     required="true" requiredMessage="Select a return reason">
                         <f:selectItem itemLabel="— Select Reason —" itemValue="#{null}"/>
                         <f:selectItems value="#{createReturnWizardBean.returnReasons}" var="rr"
                                        itemLabel="#{rr.name()}" itemValue="#{rr.name()}"/>
@@ -100,11 +100,11 @@
                 <p:inputText id="defectLocationText" value="#{createReturnWizardBean.defectLocationText}"
                              placeholder="e.g. front-left leg" style="width:100%;"/>
 
-                <p:outputLabel for="reason" value="Free-text Notes *"/>
+                <p:outputLabel for="reason" value="Free-text Notes"/>
                 <h:panelGroup layout="block">
                     <p:inputTextarea id="reason" value="#{createReturnWizardBean.reason}"
                                      rows="3" style="width:100%;"
-                                     required="true" requiredMessage="יש להזין הערות חופשיות"/>
+                                     required="true" requiredMessage="Free-text notes are required"/>
                     <p:message for="reason" display="text"/>
                 </h:panelGroup>
 
@@ -154,7 +154,7 @@
                 <br/>
                 <p:commandButton value="Clear Signature" type="button"
                                  onclick="PF('sigPad').clear();"
-                                 styleClass="ui-button-secondary" style="margin-top:8px;"/>
+                                 styleClass="drb-btn-secondary" style="margin-top:8px;"/>
             </p:fieldset>
 
             <div class="drb-btn-row" style="margin-top:16px;">

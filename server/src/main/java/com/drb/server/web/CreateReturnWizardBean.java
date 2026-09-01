@@ -32,10 +32,11 @@ public class CreateReturnWizardBean implements Serializable {
     @Inject private transient CustomerPurchaseService purchaseService;
     @Inject private transient DriverService driverService;
     @Inject private transient ImageService imageService;
+    @Inject private transient ProductService productService;
 
     /** Shown when another user changed the same return first. */
     static final String CONCURRENT_MODIFICATION_MESSAGE =
-        "הרשומה עודכנה על ידי משתמש אחר. רענן את הדף ונסה שוב";
+        "This record was updated by another user. Refresh the page and try again";
 
     private int currentStep = 1;
     private String phoneNumber;
@@ -61,6 +62,12 @@ public class CreateReturnWizardBean implements Serializable {
     private String defectStage;
     private String defectType;
     private String defectLocationText;
+
+    // Step 2 "Add purchase" dialog. The customer is fixed to the one identified in step 1,
+    // so only the product and the purchase details are collected here.
+    private CustomerPurchase newPurchase = new CustomerPurchase();
+    private Long newPurchaseProductId;
+    private List<Product> products = new ArrayList<>();
 
     private List<Part> generalImages = new ArrayList<>();
     private List<Part> defectImages = new ArrayList<>();
@@ -135,6 +142,39 @@ public class CreateReturnWizardBean implements Serializable {
         applyPurchase(purchase);
         currentStep = 3;
         return "/returns/create/new-return.xhtml?faces-redirect=true";
+    }
+
+    /** Open the step 2 "Add purchase" dialog for the customer already identified in step 1. */
+    public void prepareAddPurchase() {
+        newPurchase = new CustomerPurchase();
+        newPurchase.setQuantity(1);
+        newPurchaseProductId = null;
+        if (products.isEmpty()) {
+            products = productService.findAll();
+        }
+    }
+
+    /**
+     * Record a purchase for the current customer without leaving the wizard.
+     *
+     * A customer with no purchase history cannot reach step 3 at all, and until this existed
+     * the only remedy was an admin inserting the row (or seed.sql). The new row lands in the
+     * step 2 table as Available, ready to select.
+     */
+    public void saveNewPurchase() {
+        if (customer == null) {
+            addError("Identify a customer first");
+            return;
+        }
+        try {
+            purchaseService.create(customer.getId(), newPurchaseProductId, newPurchase);
+            purchases = purchaseService.findByCustomerId(customer.getId());
+            prepareAddPurchase();
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_INFO, "Purchase added", ""));
+        } catch (Exception e) {
+            addError("Error adding purchase: " + e.getMessage());
+        }
     }
 
     public String backToStep1() {
@@ -382,4 +422,9 @@ public class CreateReturnWizardBean implements Serializable {
     public void setFocusedDefectPhotoExists(boolean focusedDefectPhotoExists) { this.focusedDefectPhotoExists = focusedDefectPhotoExists; }
     public String getSignatureData() { return signatureData; }
     public void setSignatureData(String signatureData) { this.signatureData = signatureData; }
+
+    public CustomerPurchase getNewPurchase() { return newPurchase; }
+    public Long getNewPurchaseProductId() { return newPurchaseProductId; }
+    public void setNewPurchaseProductId(Long newPurchaseProductId) { this.newPurchaseProductId = newPurchaseProductId; }
+    public List<Product> getProducts() { return products; }
 }

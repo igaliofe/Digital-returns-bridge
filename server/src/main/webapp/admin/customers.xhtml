@@ -40,8 +40,8 @@
                     <f:facet name="output"><h:outputText value="#{c.fullName}"/></f:facet>
                     <f:facet name="input">
                         <p:inputText value="#{c.fullName}" style="width:100%;"
-                                     required="true" requiredMessage="יש להזין שם מלא"
-                                     validatorMessage="שם מלא ארוך מדי (עד 120 תווים)">
+                                     required="true" requiredMessage="Full name is required"
+                                     validatorMessage="Full name is too long (max 120 characters)">
                             <f:validateLength maximum="120"/>
                         </p:inputText>
                     </f:facet>
@@ -53,7 +53,7 @@
                     <f:facet name="output"><h:outputText value="#{c.phone}"/></f:facet>
                     <f:facet name="input">
                         <p:inputText value="#{c.phone}" style="width:100%;"
-                                     validatorMessage="מספר טלפון לא תקין (לדוגמה 0501234567)">
+                                     validatorMessage="Invalid phone number (e.g. 0501234567)">
                             <f:validateRegex pattern="^0\d{8,9}$"/>
                         </p:inputText>
                     </f:facet>
@@ -65,7 +65,7 @@
                     <f:facet name="output"><h:outputText value="#{c.email}"/></f:facet>
                     <f:facet name="input">
                         <p:inputText value="#{c.email}" style="width:100%;"
-                                     validatorMessage="כתובת אימייל לא תקינה (עד 120 תווים)">
+                                     validatorMessage="Invalid email address (max 120 characters)">
                             <f:validateLength maximum="120"/>
                             <f:validateRegex pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$"/>
                         </p:inputText>
@@ -78,7 +78,7 @@
                     <f:facet name="output"><h:outputText value="#{c.address}"/></f:facet>
                     <f:facet name="input">
                         <p:inputText value="#{c.address}" style="width:100%;"
-                                     validatorMessage="הכתובת ארוכה מדי (עד 255 תווים)">
+                                     validatorMessage="Address is too long (max 255 characters)">
                             <f:validateLength maximum="255"/>
                         </p:inputText>
                     </f:facet>
@@ -107,22 +107,22 @@
               modal="true" resizable="false" style="width:400px;">
         <h:form id="createCustomerForm">
             <p:panelGrid columns="2" style="width:100%;">
-                <p:outputLabel for="newName" value="Full Name *"/>
+                <p:outputLabel for="newName" value="Full Name"/>
                 <h:panelGroup layout="block">
                     <p:inputText id="newName" value="#{customerAdminBean.newCustomer.fullName}"
-                                 required="true" requiredMessage="יש להזין שם מלא"
-                                 validatorMessage="שם מלא ארוך מדי (עד 120 תווים)"
+                                 required="true" requiredMessage="Full name is required"
+                                 validatorMessage="Full name is too long (max 120 characters)"
                                  style="width:100%;">
                         <f:validateLength maximum="120"/>
                     </p:inputText>
                     <p:message for="newName" display="text"/>
                 </h:panelGroup>
 
-                <p:outputLabel for="newPhone" value="Phone *"/>
+                <p:outputLabel for="newPhone" value="Phone"/>
                 <h:panelGroup layout="block">
                     <p:inputText id="newPhone" value="#{customerAdminBean.newCustomer.phone}"
-                                 required="true" requiredMessage="יש להזין מספר טלפון"
-                                 validatorMessage="מספר טלפון לא תקין (לדוגמה 0501234567)"
+                                 required="true" requiredMessage="Phone number is required"
+                                 validatorMessage="Invalid phone number (e.g. 0501234567)"
                                  style="width:100%;">
                         <f:validateRegex pattern="^0\d{8,9}$"/>
                     </p:inputText>
@@ -132,7 +132,7 @@
                 <p:outputLabel for="newEmail" value="Email"/>
                 <h:panelGroup layout="block">
                     <p:inputText id="newEmail" value="#{customerAdminBean.newCustomer.email}"
-                                 validatorMessage="כתובת אימייל לא תקינה (עד 120 תווים)"
+                                 validatorMessage="Invalid email address (max 120 characters)"
                                  style="width:100%;">
                         <f:validateLength maximum="120"/>
                         <f:validateRegex pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$"/>
@@ -143,7 +143,7 @@
                 <p:outputLabel for="newAddress" value="Address"/>
                 <h:panelGroup layout="block">
                     <p:inputText id="newAddress" value="#{customerAdminBean.newCustomer.address}"
-                                 validatorMessage="הכתובת ארוכה מדי (עד 255 תווים)"
+                                 validatorMessage="Address is too long (max 255 characters)"
                                  style="width:100%;">
                         <f:validateLength maximum="255"/>
                     </p:inputText>
@@ -158,11 +158,12 @@
                                  action="#{customerAdminBean.saveNew}"
                                  icon="pi pi-save"
                                  update="customersForm createCustomerForm"
-                                 oncomplete="if (!args.validationFailed) PF('createCustomerDlg').hide();"/>
+                                 oncomplete="if (!args.validationFailed) PF('createCustomerDlg').hide();"
+                                 styleClass="drb-btn-primary"/>
                 <p:commandButton value="Cancel"
                                  onclick="PF('createCustomerDlg').hide(); return false;"
                                  type="button"
-                                 styleClass="ui-button-secondary"
+                                 styleClass="drb-btn-secondary"
                                  style="margin-left:6px;"/>
             </div>
         </h:form>

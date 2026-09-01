@@ -46,7 +46,7 @@
                     <f:facet name="output"><h:outputText value="#{prod.imageUrl}"/></f:facet>
                     <f:facet name="input">
                         <p:inputText value="#{prod.imageUrl}" style="width:100%;"
-                                     validatorMessage="כתובת התמונה ארוכה מדי (עד 500 תווים)">
+                                     validatorMessage="Image URL is too long (max 500 characters)">
                             <f:validateLength maximum="500"/>
                         </p:inputText>
                     </f:facet>
@@ -58,8 +58,8 @@
                     <f:facet name="output"><h:outputText value="#{prod.sku}"/></f:facet>
                     <f:facet name="input">
                         <p:inputText value="#{prod.sku}" style="width:100%;"
-                                     required="true" requiredMessage="יש להזין SKU"
-                                     validatorMessage="SKU ארוך מדי (עד 60 תווים)">
+                                     required="true" requiredMessage="SKU is required"
+                                     validatorMessage="SKU is too long (max 60 characters)">
                             <f:validateLength maximum="60"/>
                         </p:inputText>
                     </f:facet>
@@ -71,8 +71,8 @@
                     <f:facet name="output"><h:outputText value="#{prod.name}"/></f:facet>
                     <f:facet name="input">
                         <p:inputText value="#{prod.name}" style="width:100%;"
-                                     required="true" requiredMessage="יש להזין שם מוצר"
-                                     validatorMessage="שם המוצר ארוך מדי (עד 120 תווים)">
+                                     required="true" requiredMessage="Product name is required"
+                                     validatorMessage="Product name is too long (max 120 characters)">
                             <f:validateLength maximum="120"/>
                         </p:inputText>
                     </f:facet>
@@ -84,7 +84,7 @@
                     <f:facet name="output"><h:outputText value="#{prod.category}"/></f:facet>
                     <f:facet name="input">
                         <p:inputText value="#{prod.category}" style="width:100%;"
-                                     validatorMessage="הקטגוריה ארוכה מדי (עד 80 תווים)">
+                                     validatorMessage="Category is too long (max 80 characters)">
                             <f:validateLength maximum="80"/>
                         </p:inputText>
                     </f:facet>
@@ -100,7 +100,7 @@
                     </f:facet>
                     <f:facet name="input">
                         <p:inputText value="#{prod.price}" style="width:100%;"
-                                     validatorMessage="המחיר חייב להיות מספר לא שלילי">
+                                     validatorMessage="Price must be a non-negative number">
                             <f:validateDoubleRange minimum="0"/>
                         </p:inputText>
                     </f:facet>
@@ -129,22 +129,22 @@
               modal="true" resizable="false" style="width:400px;">
         <h:form id="createProductForm" enctype="multipart/form-data">
             <p:panelGrid columns="2" style="width:100%;">
-                <p:outputLabel for="newSku" value="SKU *"/>
+                <p:outputLabel for="newSku" value="SKU"/>
                 <h:panelGroup layout="block">
                     <p:inputText id="newSku" value="#{productAdminBean.newProduct.sku}"
-                                 required="true" requiredMessage="יש להזין SKU"
-                                 validatorMessage="SKU ארוך מדי (עד 60 תווים)"
+                                 required="true" requiredMessage="SKU is required"
+                                 validatorMessage="SKU is too long (max 60 characters)"
                                  style="width:100%;">
                         <f:validateLength maximum="60"/>
                     </p:inputText>
                     <p:message for="newSku" display="text"/>
                 </h:panelGroup>
 
-                <p:outputLabel for="newName" value="Name *"/>
+                <p:outputLabel for="newName" value="Name"/>
                 <h:panelGroup layout="block">
                     <p:inputText id="newName" value="#{productAdminBean.newProduct.name}"
-                                 required="true" requiredMessage="יש להזין שם מוצר"
-                                 validatorMessage="שם המוצר ארוך מדי (עד 120 תווים)"
+                                 required="true" requiredMessage="Product name is required"
+                                 validatorMessage="Product name is too long (max 120 characters)"
                                  style="width:100%;">
                         <f:validateLength maximum="120"/>
                     </p:inputText>
@@ -154,7 +154,7 @@
                 <p:outputLabel for="newCategory" value="Category"/>
                 <h:panelGroup layout="block">
                     <p:inputText id="newCategory" value="#{productAdminBean.newProduct.category}"
-                                 validatorMessage="הקטגוריה ארוכה מדי (עד 80 תווים)"
+                                 validatorMessage="Category is too long (max 80 characters)"
                                  style="width:100%;">
                         <f:validateLength maximum="80"/>
                     </p:inputText>
@@ -168,7 +168,7 @@
                 <p:outputLabel for="newPrice" value="Price"/>
                 <h:panelGroup layout="block">
                     <p:inputText id="newPrice" value="#{productAdminBean.newProduct.price}"
-                                 validatorMessage="המחיר חייב להיות מספר לא שלילי"
+                                 validatorMessage="Price must be a non-negative number"
                                  style="width:100%;">
                         <f:validateDoubleRange minimum="0"/>
                     </p:inputText>
@@ -179,7 +179,7 @@
                 <h:panelGroup layout="block">
                     <p:inputText id="newImageUrl" value="#{productAdminBean.newProduct.imageUrl}"
                                  placeholder="https://..."
-                                 validatorMessage="כתובת התמונה ארוכה מדי (עד 500 תווים)"
+                                 validatorMessage="Image URL is too long (max 500 characters)"
                                  style="width:100%;">
                         <f:validateLength maximum="500"/>
                     </p:inputText>
@@ -198,11 +198,12 @@
                                  action="#{productAdminBean.saveNew}"
                                  icon="pi pi-save"
                                  update="productsForm createProductForm"
-                                 oncomplete="if (!args.validationFailed) PF('createProductDlg').hide();"/>
+                                 oncomplete="if (!args.validationFailed) PF('createProductDlg').hide();"
+                                 styleClass="drb-btn-primary"/>
                 <p:commandButton value="Cancel"
                                  onclick="PF('createProductDlg').hide(); return false;"
                                  type="button"
-                                 styleClass="ui-button-secondary"
+                                 styleClass="drb-btn-secondary"
                                  style="margin-left:6px;"/>
             </div>
         </h:form>

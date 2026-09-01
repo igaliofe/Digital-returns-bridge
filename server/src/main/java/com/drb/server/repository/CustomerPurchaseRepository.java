@@ -31,6 +31,15 @@ public class CustomerPurchaseRepository {
         return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
     }
 
+    public List<CustomerPurchase> findAll() {
+        return em.createQuery(
+                "SELECT cp FROM CustomerPurchase cp " +
+                "JOIN FETCH cp.customer JOIN FETCH cp.product " +
+                "ORDER BY cp.originalDeliveryDate DESC, cp.id DESC",
+                CustomerPurchase.class)
+            .getResultList();
+    }
+
     public List<CustomerPurchase> findByCustomerId(Long customerId) {
         return em.createQuery(
                 "SELECT cp FROM CustomerPurchase cp " +
