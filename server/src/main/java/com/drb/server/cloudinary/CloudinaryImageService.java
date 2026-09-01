@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @ApplicationScoped
@@ -46,6 +47,9 @@ public class CloudinaryImageService {
             LOG.info("Uploaded image to Cloudinary: " + pid);
             return new UploadResult(pid, url);
         } catch (Exception e) {
+            // Without this the real cause (bad credentials, quota, network) never reaches the log
+            // and the client only sees a bare 400.
+            LOG.log(Level.SEVERE, "Cloudinary upload failed for return " + returnId, e);
             throw new ValidationException("UPLOAD_FAILED", "Image upload failed: " + e.getMessage());
         }
     }

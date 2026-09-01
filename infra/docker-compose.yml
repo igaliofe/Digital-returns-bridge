@@ -35,7 +35,6 @@ services:
     restart: unless-stopped
     ports:
       - "8080:8080"
-      - "9990:9990"
     environment:
       DB_HOST: postgres
       DB_PORT: "5432"
@@ -45,8 +44,6 @@ services:
       CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-placeholder}
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-placeholder}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-placeholder}
-      WILDFLY_ADMIN_USER: ${WILDFLY_ADMIN_USER:-admin}
-      WILDFLY_ADMIN_PASSWORD: ${WILDFLY_ADMIN_PASSWORD:-admin123}
     depends_on:
       postgres:
         condition: service_healthy

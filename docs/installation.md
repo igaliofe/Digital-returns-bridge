@@ -35,8 +35,8 @@ make up
 make logs                            # ready when you see: Deployed "ROOT.war"
 ```
 
-`infra/.env` needs real values for `POSTGRES_PASSWORD`, the three `CLOUDINARY_*` variables and
-`WILDFLY_ADMIN_PASSWORD`. The `change_me_in_production` and `placeholder` defaults are not valid.
+`infra/.env` needs real values for `POSTGRES_PASSWORD` and the three `CLOUDINARY_*` variables. The
+`change_me_in_production` and `placeholder` defaults are not valid.
 
 First boot takes about a minute: Compose waits for the PostgreSQL healthcheck before starting the
 server, and WildFly then deploys `ROOT.war`.
@@ -372,8 +372,6 @@ firewall. Docker Compose already binds `0.0.0.0:8080`; for a local WildFly run, 
 | `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name | — uploads fail without it |
 | `CLOUDINARY_API_KEY` | Cloudinary API key | — uploads fail without it |
 | `CLOUDINARY_API_SECRET` | Cloudinary API secret | — uploads fail without it |
-| `WILDFLY_ADMIN_USER` | WildFly admin console user | `admin` |
-| `WILDFLY_ADMIN_PASSWORD` | WildFly admin console password | — must set |
 
 ---
 

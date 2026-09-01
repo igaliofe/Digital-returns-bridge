@@ -36,7 +36,6 @@
 
 4. **Verify startup**
    - Web UI: http://localhost:8080/login.xhtml
-   - WildFly management: http://localhost:9990
    - Check logs: `make logs`
 
 > **Mobile client note:** the single Android app serves BOTH field drivers
@@ -56,8 +55,6 @@
 | `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name — **required** (see note below) | placeholder |
 | `CLOUDINARY_API_KEY` | Cloudinary API key — **required** | placeholder |
 | `CLOUDINARY_API_SECRET` | Cloudinary API secret — **required** | placeholder |
-| `WILDFLY_ADMIN_USER` | WildFly management user | `admin` |
-| `WILDFLY_ADMIN_PASSWORD` | WildFly management password | change in .env |
 
 > **Cloudinary is required for core flows.** The placeholder defaults let the
 > stack boot, but any flow that uploads or reads an image will fail until real

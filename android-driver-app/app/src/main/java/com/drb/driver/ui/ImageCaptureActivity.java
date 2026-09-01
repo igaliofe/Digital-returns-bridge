@@ -3,6 +3,7 @@ package com.drb.driver.ui;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
+import androidx.exifinterface.media.ExifInterface;
 import com.drb.driver.R;
 import com.drb.driver.RemoteLogger;
 import com.drb.driver.api.ApiClient;
@@ -201,9 +203,67 @@ public class ImageCaptureActivity extends AppCompatActivity {
             int newH = Math.round(raw.getHeight() * scale);
             Bitmap scaled = Bitmap.createScaledBitmap(raw, newW, newH, true);
             raw.recycle();
-            return scaled;
+            raw = scaled;
         }
-        return raw;
+        return applyExifOrientation(path, raw);
+    }
+
+    /**
+     * Bake the camera's EXIF Orientation into the pixels.
+     *
+     * A phone camera stores the frame as the sensor read it — usually landscape — and records
+     * the correction as an EXIF tag rather than rotating the pixels. BitmapFactory ignores that
+     * tag, and Bitmap.compress writes no EXIF at all, so re-encoding the file (which we do to
+     * downscale it) would otherwise save sideways pixels with the only hint to rotate them
+     * discarded. The result is unrecoverably rotated for every later viewer: the preview here,
+     * Cloudinary, the web details page and the storekeeper's receiving screen.
+     */
+    private Bitmap applyExifOrientation(String path, Bitmap bitmap) {
+        int orientation;
+        try {
+            orientation = new ExifInterface(path).getAttributeInt(
+                ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+        } catch (IOException e) {
+            RemoteLogger.e("ImageCaptureActivity", "Cannot read EXIF orientation from " + path, e);
+            return bitmap;
+        }
+
+        Matrix matrix = new Matrix();
+        switch (orientation) {
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                matrix.postRotate(90f);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                matrix.postRotate(180f);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                matrix.postRotate(270f);
+                break;
+            case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                matrix.postScale(-1f, 1f);
+                break;
+            case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                matrix.postScale(1f, -1f);
+                break;
+            case ExifInterface.ORIENTATION_TRANSPOSE:
+                matrix.postRotate(90f);
+                matrix.postScale(-1f, 1f);
+                break;
+            case ExifInterface.ORIENTATION_TRANSVERSE:
+                matrix.postRotate(270f);
+                matrix.postScale(-1f, 1f);
+                break;
+            default:
+                // ORIENTATION_NORMAL or UNDEFINED — the pixels are already upright.
+                return bitmap;
+        }
+
+        Bitmap oriented = Bitmap.createBitmap(
+            bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        if (oriented != bitmap) {
+            bitmap.recycle();
+        }
+        return oriented;
     }
 
     private void uploadPhoto() {
@@ -243,7 +303,14 @@ public class ImageCaptureActivity extends AppCompatActivity {
                     Toast.makeText(ImageCaptureActivity.this, "Image uploaded successfully!", Toast.LENGTH_SHORT).show();
                     finish();
                 } else {
-                    String msg = "Upload failed: HTTP " + response.code() + " for returnId=" + returnId + " type=" + selectedType;
+                    String body = "";
+                    try {
+                        if (response.errorBody() != null) body = " body=" + response.errorBody().string();
+                    } catch (IOException ignored) {
+                        // best-effort: the status code below is still logged
+                    }
+                    String msg = "Upload failed: HTTP " + response.code() + " for returnId=" + returnId
+                        + " type=" + selectedType + body;
                     RemoteLogger.e("ImageCaptureActivity", msg);
                     Toast.makeText(ImageCaptureActivity.this, "Upload failed: " + response.code(), Toast.LENGTH_LONG).show();
                 }
